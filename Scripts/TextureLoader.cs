@@ -144,23 +144,28 @@ public class TextureLoader : MonoBehaviour
 		tex.Apply();
 		return tex;
 	}
-	public static Texture2D CreateLightMap(byte[] rgb)
+	public static Texture2D CreateLightmapTexture(byte[] rgb)
 	{
 		Texture2D tex = new Texture2D(128, 128, TextureFormat.RGBA32, false);
 		Color32[] colors = new Color32[128 * 128];
 		int j = 0;
 		for (int i = 0; i < 128 * 128; i++)
-			colors[i] = new Color32(CalcLight(rgb[j++]), CalcLight(rgb[j++]), CalcLight(rgb[j++]), (byte)1f);
+			colors[i] = new Color32(ChangeGamma(rgb[j++]), ChangeGamma(rgb[j++]), ChangeGamma(rgb[j++]), (byte)1f);
 		tex.SetPixels32(colors);
+		tex.wrapMode = TextureWrapMode.Clamp;
 		tex.Apply();
 		return tex;
 	}
-	public static byte CalcLight(byte color)
+	public static byte ChangeGamma(byte color)
 	{
-		int icolor = color;
-		//icolor += 200;
+		float scale = 1.0f, temp = 0.0f;
+		float icolor = color *  GameManager.Instance.gamma / 255f;
 
-		if (icolor > 255) icolor = 255;
+		if (icolor > 1.0f && (temp = (1.0f / icolor)) < scale) 
+			scale = temp;
+		
+		scale *= 255f;
+		icolor *= scale;
 
 		return (byte)icolor;
 	}

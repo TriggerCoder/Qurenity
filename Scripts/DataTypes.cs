@@ -72,7 +72,7 @@ public class BSPHeader
 		Directory[LumpType.Brushes].Name = "Brushes";
 		Directory[LumpType.BrushSides].Name = "Brush Sides";
 		Directory[LumpType.Vertexes].Name = "Vertexes";
-		Directory[LumpType.MeshVerts].Name = "Mesh Vertexes";
+		Directory[LumpType.VertIndices].Name = "Vertexes Indices";
 		Directory[LumpType.Effects].Name = "Effects";
 		Directory[LumpType.Faces].Name = "Faces";
 		Directory[LumpType.LightMaps].Name = "Light Maps";

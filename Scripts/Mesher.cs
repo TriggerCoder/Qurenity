@@ -62,6 +62,11 @@ public static class Mesher
 		bezObj.layer = GameManager.MapMeshesLayer;
 		bezObj.name = "Bezier";
 		bezObj.transform.SetParent(MapMeshes);
+
+		//PVS
+		ClusterPVSController cluster = bezObj.AddComponent<ClusterPVSController>();
+		cluster.RegisterClusterAndFaces(faces);
+
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
 
@@ -112,8 +117,8 @@ public static class Mesher
 		//the face.
 		int gridXstep = 0;
 		int gridYstep = 0;
-		int vertStep = face.vertex;
-		for (int i = 0; i < face.n_vertexes; i++)
+		int vertStep = face.startVertIndex;
+		for (int i = 0; i < face.numOfVerts; i++)
 		{
 			vertGrid[gridXstep, gridYstep] = MapLoader.verts[vertStep];
 			vertStep++;
@@ -152,39 +157,39 @@ public static class Mesher
 		bverts.Add(vertGrid[vi + 1, vj].position);
 		bverts.Add(vertGrid[vi + 2, vj].position);
 
-		uv.Add(vertGrid[vi, vj].texcoord);
-		uv.Add(vertGrid[vi + 1, vj].texcoord);
-		uv.Add(vertGrid[vi + 2, vj].texcoord);
+		uv.Add(vertGrid[vi, vj].textureCoord);
+		uv.Add(vertGrid[vi + 1, vj].textureCoord);
+		uv.Add(vertGrid[vi + 2, vj].textureCoord);
 
-		uv2.Add(vertGrid[vi, vj].lmcoord);
-		uv2.Add(vertGrid[vi + 1, vj].lmcoord);
-		uv2.Add(vertGrid[vi + 2, vj].lmcoord);
+		uv2.Add(vertGrid[vi, vj].lightmapCoord);
+		uv2.Add(vertGrid[vi + 1, vj].lightmapCoord);
+		uv2.Add(vertGrid[vi + 2, vj].lightmapCoord);
 
 		//Middle row
 		bverts.Add(vertGrid[vi, vj + 1].position);
 		bverts.Add(vertGrid[vi + 1, vj + 1].position);
 		bverts.Add(vertGrid[vi + 2, vj + 1].position);
 
-		uv.Add(vertGrid[vi, vj + 1].texcoord);
-		uv.Add(vertGrid[vi + 1, vj + 1].texcoord);
-		uv.Add(vertGrid[vi + 2, vj + 1].texcoord);
+		uv.Add(vertGrid[vi, vj + 1].textureCoord);
+		uv.Add(vertGrid[vi + 1, vj + 1].textureCoord);
+		uv.Add(vertGrid[vi + 2, vj + 1].textureCoord);
 
-		uv2.Add(vertGrid[vi, vj + 1].lmcoord);
-		uv2.Add(vertGrid[vi + 1, vj + 1].lmcoord);
-		uv2.Add(vertGrid[vi + 2, vj + 1].lmcoord);
+		uv2.Add(vertGrid[vi, vj + 1].lightmapCoord);
+		uv2.Add(vertGrid[vi + 1, vj + 1].lightmapCoord);
+		uv2.Add(vertGrid[vi + 2, vj + 1].lightmapCoord);
 
 		//Bottom row
 		bverts.Add(vertGrid[vi, vj + 2].position);
 		bverts.Add(vertGrid[vi + 1, vj + 2].position);
 		bverts.Add(vertGrid[vi + 2, vj + 2].position);
 
-		uv.Add(vertGrid[vi, vj + 2].texcoord);
-		uv.Add(vertGrid[vi + 1, vj + 2].texcoord);
-		uv.Add(vertGrid[vi + 2, vj + 2].texcoord);
+		uv.Add(vertGrid[vi, vj + 2].textureCoord);
+		uv.Add(vertGrid[vi + 1, vj + 2].textureCoord);
+		uv.Add(vertGrid[vi + 2, vj + 2].textureCoord);
 
-		uv2.Add(vertGrid[vi, vj + 2].lmcoord);
-		uv2.Add(vertGrid[vi + 1, vj + 2].lmcoord);
-		uv2.Add(vertGrid[vi + 2, vj + 2].lmcoord);
+		uv2.Add(vertGrid[vi, vj + 2].lightmapCoord);
+		uv2.Add(vertGrid[vi + 1, vj + 2].lightmapCoord);
+		uv2.Add(vertGrid[vi + 2, vj + 2].lightmapCoord);
 
 		//Now that we have our control grid, it's business as usual
 		Mesh bezMesh = new Mesh();
@@ -205,6 +210,11 @@ public static class Mesher
 		obj.layer = GameManager.MapMeshesLayer;
 		obj.name = "Mesh";
 		obj.transform.SetParent(MapMeshes);
+
+		//PVS
+		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
+		cluster.RegisterClusterAndFaces(faces);
+
 		// Our GeneratePolygonMesh will optimze and add the UVs for us
 		CombineInstance[] combine = new CombineInstance[faces.Length];
 		for (var i = 0; i < combine.Length; i++)
@@ -236,7 +246,7 @@ public static class Mesher
 		mesh.name = "BSPface (poly/mesh)";
 
 		// Rip verts, uvs, and normals
-		int vertexCount = face.n_vertexes;
+		int vertexCount = face.numOfVerts;
 		if (vertsCache.Capacity < vertexCount)
 		{
 			vertsCache.Capacity = vertexCount;
@@ -245,8 +255,8 @@ public static class Mesher
 			normalsCache.Capacity = vertexCount;
 		}
 
-		if (indiciesCache.Capacity < face.n_meshverts)
-			indiciesCache.Capacity = face.n_meshverts;
+		if (indiciesCache.Capacity < face.numOfIndices)
+			indiciesCache.Capacity = face.numOfIndices;
 
 		vertsCache.Clear();
 		uvCache.Clear();
@@ -254,21 +264,21 @@ public static class Mesher
 		normalsCache.Clear();
 		indiciesCache.Clear();
 
-		int vstep = face.vertex;
-		for (int n = 0; n < face.n_vertexes; n++)
+		int vstep = face.startVertIndex;
+		for (int n = 0; n < face.numOfVerts; n++)
 		{
 			vertsCache.Add(MapLoader.verts[vstep].position);
-			uvCache.Add(MapLoader.verts[vstep].texcoord);
-			uv2Cache.Add(MapLoader.verts[vstep].lmcoord);
+			uvCache.Add(MapLoader.verts[vstep].textureCoord);
+			uv2Cache.Add(MapLoader.verts[vstep].lightmapCoord);
 			normalsCache.Add(MapLoader.verts[vstep].normal);
 			vstep++;
 		}
 
 		// Rip meshverts / triangles
-		int mstep = face.meshvert;
-		for (int n = 0; n < face.n_meshverts; n++)
+		int mstep = face.startIndex;
+		for (int n = 0; n < face.numOfIndices; n++)
 		{
-			indiciesCache.Add(MapLoader.meshVerts[mstep]);
+			indiciesCache.Add(MapLoader.vertIndices[mstep]);
 			mstep++;
 		}
 

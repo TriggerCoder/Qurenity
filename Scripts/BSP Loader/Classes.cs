@@ -2,26 +2,81 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Plane
+public struct Node
 {
-	public Vector3 normal;
-	public float dist;
-
-	public Plane(Vector3 normal, float distance)
+	public int plane;					// The index into the planes array 
+	public int front;					// The child index for the front node 
+	public int back;					// The child index for the back node 
+	public Vector3 bb_Min;				// The bounding box min position. 
+	public Vector3 bb_Max;              // The bounding box max position.
+	public Node(int plane, int front, int back, Vector3Int bb_Min, Vector3Int bb_Max)
 	{
-		this.normal = normal;
-		this.dist = distance * GameManager.sizeDividor;
+		this.plane = plane;
+		this.front = front;
+		this.back = back;
+		this.front = front;
+		this.bb_Min = Vector3.zero;
+		this.bb_Max = Vector3.zero;
+		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
+		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
+	}
+	private Vector3 QuakeToUnityCoordSystem(Vector3Int vect3i)
+	{
+		Vector3 vect3 = new Vector3(-vect3i.x, vect3i.z, -vect3i.y);
+		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		return vect3;
 	}
 }
+public struct Leaf
+{
+	public int cluster;					// The visibility cluster 
+	public int area;					// The area portal 
+	public Vector3 bb_Min;				// The bounding box min position 
+	public Vector3 bb_Max;				// The bounding box max position 
+	public int leafFace;				// The first index into the face array 
+	public int numOfLeafFaces;			// The number of faces for this leaf 
+	public int leafBrush;				// The first index for into the brushes 
+	public int numOfLeafBrushes;        // The number of brushes for this leaf
+	public Leaf(int cluster, int area, Vector3Int bb_Min, Vector3Int bb_Max, int leafFace, int numOfLeafFaces, 
+				int leafBrush, int numOfLeafBrushes)
+	{
+		this.cluster = cluster;
+		this.area = area;
+		this.leafFace = leafFace;
+		this.numOfLeafFaces = numOfLeafFaces;
+		this.leafBrush = leafBrush;
+		this.numOfLeafBrushes = numOfLeafBrushes;
+		this.bb_Min = Vector3.zero;
+		this.bb_Max = Vector3.zero;
+		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
+		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
+	}
+	private Vector3 QuakeToUnityCoordSystem(Vector3Int vect3i)
+	{
+		Vector3 vect3 = new Vector3(-vect3i.x, vect3i.z, -vect3i.y);
+		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		return vect3;
+	}
+};
+public struct VisData
+{
+	public int numOfClusters;			// The number of clusters
+	public int bytesPerCluster;			// The amount of bytes (8 bits) in the cluster's bitset
+	public byte[] bitSets;              // The array of bytes that holds the cluster bitsets
+	public VisData(int numOfClusters, int bytesPerCluster, byte[] bitSets)
+	{
+		this.numOfClusters = numOfClusters;
+		this.bytesPerCluster = bytesPerCluster;
+		this.bitSets = bitSets;
+	}
+};
 public struct Vertex
 {
-	public Vector3 position;
-	public Vector3 normal;
-	public byte[] color;
-
-	// These are texture coords, or UVs
-	public Vector2 texcoord;
-	public Vector2 lmcoord;
+	public Vector3 position;			// (x, y, z) position. 
+	public Vector2 textureCoord;		// (u, v) texture coordinate
+	public Vector2 lightmapCoord;		// (u, v) lightmap coordinate
+	public Vector3 normal;				// (x, y, z) normal vector
+	public byte[] color;				// RGBA color for the vertex 
 
 	public Vertex(Vector3 position, float texX, float texY, float lmX, float lmY, Vector3 normal, byte[] color)
 	{
@@ -34,33 +89,21 @@ public struct Vertex
 		// Invert the texture coords, to account for
 		// the difference in the way Unity and Quake3
 		// handle them.
-		texcoord.x = texX;
-		texcoord.y = -texY;
+		textureCoord.x = texX;
+		textureCoord.y = -texY;
 
-		// Lightmaps aren't used for now, but store the
-		// data for them anyway.  Inverted, same as above.
-		lmcoord.x = lmX;
-		lmcoord.y = lmY;
+		// Lightmaps are created dynamically
+		lightmapCoord.x = lmX;
+		lightmapCoord.y = lmY;
 
 		QuakeToUnityCoordSystem();
 	}
 
 	private void QuakeToUnityCoordSystem()
 	{
-		float tempz = position.z;
-		float tempy = position.y;
-		position.y = tempz;
-		position.z = -tempy;
-		position.x = -position.x;
+		position = new Vector3(-position.x, position.z, -position.y);
+		normal = new Vector3(-normal.x, normal.z, -normal.y);
 
-		tempz = normal.z;
-		tempy = normal.y;
-
-		normal.y = tempz;
-		normal.z = -tempy;
-		normal.x = -normal.x;
-
-		// Quake3 also uses an odd scale where 0.03 units is about 1 meter, so scale it down
 		position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
 	}
 }
@@ -87,7 +130,7 @@ public class LumpType
 	public const short Brushes = 8;
 	public const short BrushSides = 9;
 	public const short Vertexes = 10;
-	public const short MeshVerts = 11;
+	public const short VertIndices = 11;
 	public const short Effects = 12;
 	public const short Faces = 13;
 	public const short LightMaps = 14;
@@ -97,40 +140,52 @@ public class LumpType
 
 public struct Face
 {
-	// The fields in this class are kind of obtuse.  I recommend looking up the Q3 .bsp map spec for full understanding.
+	public int faceId;					// The index of this face
+	public int textureID;				// The index into the texture array 
+	public int effect;					// The index for the effects (or -1 = n/a) 
+	public int type;					// 1=polygon, 2=patch, 3=mesh, 4=billboard 
+	public int startVertIndex;			// The starting index into this face's first vertex 
+	public int numOfVerts;				// The number of vertices for this face 
+	public int startIndex;				// The starting index into the indices array for this face
+	public int numOfIndices;			// The number of indices for this face
+	public int lightMapID;				// The texture index for the lightmap 
+	public int[] lm_Corner;				// The face's lightmap corner in the image 
+	public int[] lm_Size;				// The size of the lightmap section 
+	public Vector3 lm_Origin;			// The 3D origin of lightmap. 
+	public Vector3[] lm_vecs;			// The 3D space for s and t unit vectors. 
+	public Vector3 normal;				// The face normal. 
+	public int[] size;					// The bezier patch dimensions. 
 
-	public int texture;
-	public int effect;
-	public int type;
-	public int vertex;
-	public int n_vertexes;
-	public int meshvert;
-	public int n_meshverts;
-	public int lm_index;
-	public int[] lm_start;
-	public int[] lm_size;
-	public Vector3 lm_origin;
-	public Vector3[] lm_vecs;
-	public Vector3 normal;
-	public int[] size;
-
-	public Face(int texture, int effect, int type, int vertex, int n_vertexes, int meshvert, int n_meshverts,
-		int lm_index, int[] lm_start, int[] lm_size, Vector3 lm_origin, Vector3[] lm_vecs, Vector3 normal,
+	public Face(int faceId, int textureID, int effect, int type, int startVertIndex, int numOfVerts, int startIndex, int numOfIndices,
+		int lightMapID, int[] lm_Corner, int[] lm_Size, Vector3 lm_Origin, Vector3[] lm_vecs, Vector3 normal,
 		int[] size)
 	{
-		this.texture = texture;
+		this.faceId = faceId;
+		this.textureID = textureID;
 		this.effect = effect;
 		this.type = type;
-		this.vertex = vertex;
-		this.n_vertexes = n_vertexes;
-		this.meshvert = meshvert;
-		this.n_meshverts = n_meshverts;
-		this.lm_index = lm_index;
-		this.lm_start = lm_start;
-		this.lm_size = lm_size;
-		this.lm_origin = lm_origin;
+		this.startVertIndex = startVertIndex;
+		this.numOfVerts = numOfVerts;
+		this.startIndex = startIndex;
+		this.numOfIndices = numOfIndices;
+		this.lightMapID = lightMapID;
+		this.lm_Corner = lm_Corner;
+		this.lm_Size = lm_Size;
+		this.lm_Origin = lm_Origin;
 		this.lm_vecs = lm_vecs;
 		this.normal = normal;
 		this.size = size;
+	}
+}
+
+namespace ExtensionMethods
+{
+	public static class PlaneExtensions
+	{
+		public static void QuakeToUnityCoordSystem(this Plane plane)
+		{
+			plane.normal = new Vector3(-plane.normal.x, plane.normal.z, -plane.normal.y);
+			plane.distance *= GameManager.sizeDividor;
+		}
 	}
 }

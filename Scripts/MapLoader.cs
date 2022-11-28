@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
-
+using ExtensionMethods;
 public static class MapLoader
 {
 	public static string CurrentMap;
@@ -22,9 +22,14 @@ public static class MapLoader
 	public static List<Face> faces;
 	public static List<Texture2D> lightMaps;
 	public static List<Vertex> verts;
+	public static List<int> vertIndices;
 	public static List<Plane> planes;
-	public static List<int> meshVerts;
+	public static List<Node> nodes;
+	public static List<Leaf> leafs;
+	public static List<int> leafsFaces;
 	public static List<BSPTexture> mapTextures;
+	public static VisData visData;
+	
 	public static bool IsSkyTexture(string textureName)
 	{
 		if (textureName == "F_SKY1")
@@ -34,7 +39,7 @@ public static class MapLoader
 	public static bool Load(string mapName)
 	{
 
-		string path = Application.streamingAssetsPath + "maps/" + mapName + ".bsp";
+		string path = Application.streamingAssetsPath + "/maps/" + mapName + ".bsp";
 		if (File.Exists(path))
 			BSPMap = new BinaryReader(File.Open(path, FileMode.Open));
 		else if (PakManager.ZipFiles.ContainsKey(path = ("maps/" + mapName + ".bsp").ToUpper()))
@@ -80,7 +85,9 @@ public static class MapLoader
 			planes = new List<Plane>(num);
 			for (int i = 0; i < num; i++)
 			{
-				planes.Add(new Plane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
+				Plane plane = new Plane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle());
+				plane.QuakeToUnityCoordSystem();
+				planes.Add(plane);
 			}
 		}
 
@@ -104,7 +111,7 @@ public static class MapLoader
 			faces = new List<Face>(num);
 			for (int i = 0; i < num; i++)
 			{
-				faces.Add(new Face(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(),
+				faces.Add(new Face(i, BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(),
 					BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new[]
 					{
 						BSPMap.ReadInt32(),
@@ -125,25 +132,69 @@ public static class MapLoader
 			}
 		}
 
-		//mesh vertices
+		//vertex indices
 		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.MeshVerts].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.MeshVerts].Length / 4;
-			meshVerts = new List<int>(num);
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.VertIndices].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.VertIndices].Length / 4;
+			vertIndices = new List<int>(num);
 			for (int i = 0; i < num; i++)
 			{
-				meshVerts.Add(BSPMap.ReadInt32());
+				vertIndices.Add(BSPMap.ReadInt32());
 			}
 		}
 
-		//lightmaps
+		//lightmaps (128x128x3)
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.LightMaps].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.LightMaps].Length / 49152;
 			lightMaps = new List<Texture2D>(num);
 			for (int i = 0; i < num; i++)
 			{
-				lightMaps.Add(TextureLoader.CreateLightMap(BSPMap.ReadBytes(49152)));
+				lightMaps.Add(TextureLoader.CreateLightmapTexture(BSPMap.ReadBytes(49152)));
+			}
+		}
+
+		//nodes
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Nodes].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Nodes].Length / 36;
+			nodes = new List<Node>(num);
+			for (int i = 0; i < num; i++)
+			{
+				nodes.Add(new Node(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32())));
+			}
+		}
+
+		//leafs
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Leafs].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Leafs].Length / 48;
+			leafs = new List<Leaf>(num);
+			for (int i = 0; i<num; i++)
+			{
+				leafs.Add(new Leaf(BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+			}
+		}
+
+		//leafs faces
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafFaces].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.LeafFaces].Length / 4;
+			leafsFaces = new List<int>(num);
+			for (int i = 0; i < num; i++)
+			{
+				leafsFaces.Add(BSPMap.ReadInt32());
+			}
+		}
+		
+		//vis data
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.VisData].Offset, SeekOrigin.Begin);
+			if (header.Directory[LumpType.VisData].Length > 0)
+			{
+				visData.numOfClusters = BSPMap.ReadInt32();
+				visData.bytesPerCluster = BSPMap.ReadInt32();
+				visData.bitSets = BSPMap.ReadBytes(visData.numOfClusters * visData.bytesPerCluster);
 			}
 		}
 
@@ -170,14 +221,14 @@ public static class MapLoader
 
 
 		// Each face group is its own gameobject
-		var groups = faces.GroupBy(x => new { x.type, x.texture, x.lm_index });
+		var groups = faces.GroupBy(x => new { x.type, x.textureID, x.lightMapID });
 		foreach (var group in groups)
 		{
 			Face[] faces = group.ToArray();
 			if (faces.Length == 0)
 				continue;
 
-			Material mat = MaterialManager.GetMaterials(mapTextures[faces[0].texture].Name, faces[0].lm_index);
+			Material mat = MaterialManager.GetMaterials(mapTextures[faces[0].textureID].Name, faces[0].lightMapID);
 
 			switch (group.Key.type)
 			{
@@ -209,9 +260,9 @@ public static class MapLoader
 		int count = 0;
 		foreach (Face face in faces)
 		{
-			blob.AppendLine("Face " + count + "\t Tex: " + face.texture + "\tType: " + face.type + "\tVertIndex: " +
-							face.vertex + "\tNumVerts: " + face.n_vertexes + "\tMeshVertIndex: " + face.meshvert +
-							"\tMeshVerts: " + face.n_meshverts + "\r\n");
+			blob.AppendLine("Face " + count + "\t Tex: " + face.textureID + "\tType: " + face.type + "\tVertIndex: " +
+							face.startVertIndex + "\tNumVerts: " + face.numOfVerts + "\tMeshVertIndex: " + face.startIndex +
+							"\tMeshVerts: " + face.numOfIndices + "\r\n");
 			count++;
 		}
 

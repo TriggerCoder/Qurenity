@@ -123,6 +123,59 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &253155313 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_PrefabInstance: {fileID: 2071567870}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &253155317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253155313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04fee26d1557ba04594e2da723e9f94c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioSource: {fileID: 0}
+  Instance: {fileID: 0}
+  playerCamera: {fileID: 0}
+  centerHeight: 0.88
+  viewDirection: {x: 0, y: 0}
+  lastPosition: {x: 0, y: 0, z: 0}
+  impulseVector: {x: 0, y: 0, z: 0}
+  impulseDampening: 4
+  controller: {fileID: 0}
+  gravity: 20
+  friction: 6
+  moveSpeed: 7
+  runAcceleration: 14
+  runDeacceleration: 10
+  airAcceleration: 2
+  airDecceleration: 2
+  airControl: 0.3
+  sideStrafeAcceleration: 50
+  sideStrafeSpeed: 1
+  jumpSpeed: 8
+  holdJumpToBhop: 0
+  gravityAccumulator: 0
+--- !u!114 &253155318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253155313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d8788ea9cd780645b7c555a53342b58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
 --- !u!1 &300009275
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,6 +188,7 @@ GameObject:
   - component: {fileID: 300009278}
   - component: {fileID: 300009279}
   - component: {fileID: 300009280}
+  - component: {fileID: 300009281}
   m_Layer: 0
   m_Name: Qurenity
   m_TagString: Untagged
@@ -172,6 +226,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoloadMap: q3dm1
   tessellations: 5
+  gamma: 1
+  paused: 1
 --- !u!114 &300009279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,6 +258,19 @@ MonoBehaviour:
   defaultMaterialLightMap: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
   applyLightmaps: 1
   lightMapProperty: _LightMap
+--- !u!114 &300009281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300009275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc96fcf9527032e43894819a274378f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groups: -1
 --- !u!1 &562347576
 GameObject:
   m_ObjectHideFlags: 0
@@ -218,7 +287,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &562347577
 Light:
   m_ObjectHideFlags: 0
@@ -389,6 +458,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1465456017 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1916806255274296, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_PrefabInstance: {fileID: 2071567870}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2028868020
 GameObject:
   m_ObjectHideFlags: 0
@@ -475,5 +549,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 20005099399120604, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 2147532811
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+--- !u!1 &2100344967 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1746486306332202, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_PrefabInstance: {fileID: 2071567870}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2100344969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100344967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c6c45f1aca653b49b5332d1b3643824, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Instance: {fileID: 0}
+  Camera: {fileID: 1465456017}
+  SkyboxCamera: {fileID: 0}
+  SkyholeCamera: {fileID: 0}
+  MainCamera: {fileID: 0}
+  UICamera: {fileID: 0}
+  playerControls: {fileID: 0}

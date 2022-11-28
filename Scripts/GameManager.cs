@@ -7,8 +7,10 @@ public class GameManager : MonoBehaviour
 	public string autoloadMap = "";
 
 	public int tessellations = 5;
+	public float gamma = 1f;
 	public static GameManager Instance;
 
+	// Quake3 also uses an odd scale where 0.03 units is about 1 meter, so it need to be scaled down
 	public const float sizeDividor = 3f / 100f;
 	public const short DefaultLayer = 0;
 	public const short TransparentFXLayer = 1;
@@ -38,6 +40,9 @@ public class GameManager : MonoBehaviour
 
 	public const short NavMeshWalkableTag = 0;
 	public const short NavMeshNotWalkableTag = 1;
+
+	public bool paused = true;
+	public static bool Paused { get { return Instance.paused; } }
 	void Awake()
 	{
 		Instance = this;
@@ -48,11 +53,25 @@ public class GameManager : MonoBehaviour
     {
 		if (MapLoader.Load(autoloadMap))
 		{
+			ClusterPVSManager.Instance.ResetClusterList();
 			MapLoader.GenerateFaces();
+			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
+		paused = false;
 	}
+	void OnApplicationFocus(bool hasFocus)
+	{
 
+		if (hasFocus)
+		{
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+			paused = false;
+		}
+		else
+			paused = true;
+	}
 	void Update()
     {
         
