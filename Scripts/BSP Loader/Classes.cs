@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Node
+public class Node
 {
 	public int plane;					// The index into the planes array 
 	public int front;					// The child index for the front node 
@@ -27,7 +27,28 @@ public struct Node
 		return vect3;
 	}
 }
-public struct Leaf
+public class Plane
+{
+	public Vector3 normal;              // Plane normal. 
+	public float distance;              // The plane distance from origin 
+	public Plane(Vector3 normal, float distance)
+	{
+		this.normal = normal;
+		this.distance = distance;
+		QuakeToUnityCoordSystem();
+	}
+	private void QuakeToUnityCoordSystem()
+	{
+		normal = new Vector3(-normal.x, normal.z, -normal.y);
+		distance *= GameManager.sizeDividor;
+	}
+	public bool GetSide(Vector3 check)
+	{
+		float d = Vector3.Dot(normal, check) - distance;
+		return (d >= 0);
+	}
+}
+public class Leaf
 {
 	public int cluster;					// The visibility cluster 
 	public int area;					// The area portal 
@@ -58,19 +79,19 @@ public struct Leaf
 		return vect3;
 	}
 };
-public struct VisData
+public class VisData
 {
 	public int numOfClusters;			// The number of clusters
 	public int bytesPerCluster;			// The amount of bytes (8 bits) in the cluster's bitset
 	public byte[] bitSets;              // The array of bytes that holds the cluster bitsets
-	public VisData(int numOfClusters, int bytesPerCluster, byte[] bitSets)
+
+	public VisData(int numOfClusters, int bytesPerCluster)
 	{
 		this.numOfClusters = numOfClusters;
 		this.bytesPerCluster = bytesPerCluster;
-		this.bitSets = bitSets;
 	}
 };
-public struct Vertex
+public class Vertex
 {
 	public Vector3 position;			// (x, y, z) position. 
 	public Vector2 textureCoord;		// (u, v) texture coordinate
@@ -138,7 +159,7 @@ public class LumpType
 	public const short VisData = 16;
 }
 
-public struct Face
+public class Face
 {
 	public int faceId;					// The index of this face
 	public int textureID;				// The index into the texture array 
@@ -175,17 +196,5 @@ public struct Face
 		this.lm_vecs = lm_vecs;
 		this.normal = normal;
 		this.size = size;
-	}
-}
-
-namespace ExtensionMethods
-{
-	public static class PlaneExtensions
-	{
-		public static void QuakeToUnityCoordSystem(this Plane plane)
-		{
-			plane.normal = new Vector3(-plane.normal.x, plane.normal.z, -plane.normal.y);
-			plane.distance *= GameManager.sizeDividor;
-		}
 	}
 }

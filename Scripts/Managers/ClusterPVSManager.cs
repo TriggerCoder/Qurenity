@@ -76,17 +76,14 @@ public class ClusterPVSManager : MonoBehaviour
 		}
 		AllClusters.Add(cluster);
 	}
-
-	public void ActivateClusters(List<int> facesToActivate)
+	public void ActivateClusterByFace(int face)
 	{
-		foreach (int face in facesToActivate)
+		if (FacesToCluster.ContainsKey(face))
 		{
-			if (FacesToCluster.ContainsKey(face))
+			List<ClusterPVSController> culsters = FacesToCluster[face];
+			for (int i = 0; i < culsters.Count; i++)
 			{
-				foreach (ClusterPVSController cluster in FacesToCluster[face])
-				{
-					cluster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
-				}
+				culsters[i].ActivateCluster(GameManager.MapMeshesPlayer1Layer);
 			}
 		}
 	}

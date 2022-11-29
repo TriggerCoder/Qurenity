@@ -5,7 +5,6 @@ using System.Text;
 using System.Linq;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
-using ExtensionMethods;
 public static class MapLoader
 {
 	public static string CurrentMap;
@@ -27,6 +26,7 @@ public static class MapLoader
 	public static List<Node> nodes;
 	public static List<Leaf> leafs;
 	public static List<int> leafsFaces;
+	public static int[] leafRenderFrame;
 	public static List<BSPTexture> mapTextures;
 	public static VisData visData;
 	
@@ -85,9 +85,7 @@ public static class MapLoader
 			planes = new List<Plane>(num);
 			for (int i = 0; i < num; i++)
 			{
-				Plane plane = new Plane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle());
-				plane.QuakeToUnityCoordSystem();
-				planes.Add(plane);
+				planes.Add(new Plane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
 			}
 		}
 
@@ -181,6 +179,7 @@ public static class MapLoader
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafFaces].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.LeafFaces].Length / 4;
 			leafsFaces = new List<int>(num);
+			leafRenderFrame = new int[num];
 			for (int i = 0; i < num; i++)
 			{
 				leafsFaces.Add(BSPMap.ReadInt32());
@@ -192,8 +191,7 @@ public static class MapLoader
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.VisData].Offset, SeekOrigin.Begin);
 			if (header.Directory[LumpType.VisData].Length > 0)
 			{
-				visData.numOfClusters = BSPMap.ReadInt32();
-				visData.bytesPerCluster = BSPMap.ReadInt32();
+				visData = new VisData(BSPMap.ReadInt32(), BSPMap.ReadInt32());
 				visData.bitSets = BSPMap.ReadBytes(visData.numOfClusters * visData.bytesPerCluster);
 			}
 		}

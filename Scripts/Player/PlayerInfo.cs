@@ -8,8 +8,7 @@ public class PlayerInfo : MonoBehaviour
 	public PlayerControls playerControls;
 	[HideInInspector]
 	public PlayerCamera playerCamera;
-
-	List<int> facesToActivate = new List<int>();
+	const int checkUpdateRate = 4;
 	void Awake()
 	{
 		playerControls = GetComponent<PlayerControls>();
@@ -18,19 +17,17 @@ public class PlayerInfo : MonoBehaviour
 
 	void Update()
     {
+		int currentFrame = Time.frameCount;
 		if (GameManager.Paused)
 			return;
-
-		facesToActivate.Clear();
-		CheckPVS();
-		ClusterPVSManager.Instance.ActivateClusters(facesToActivate);
-
+		if ((currentFrame & checkUpdateRate) == 0)
+			CheckPVS(currentFrame);
 	}
 
 	private int FindCurrentLeaf()
 	{
 		int i = 0;
-
+		Vector3 currentPos = transform.position;
 		// This function takes in our camera position, then goes and walks
 		// through the BSP nodes, starting at the root node, finding the leaf node
 		// that our camera resides in.  This is done by checking to see if
@@ -54,8 +51,15 @@ public class PlayerInfo : MonoBehaviour
 			Node node = MapLoader.nodes[i];
 			Plane slitPlane = MapLoader.planes[node.plane];
 
-			// If the camera is in front of the plane
-			if (slitPlane.GetSide(transform.position))
+/*			GameObject SlitPlane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+			SlitPlane.name = "Node "+ i + " Plane " + node.plane;
+			SlitPlane.transform.forward = slitPlane.normal;
+			SlitPlane.transform.position = slitPlane.normal * slitPlane.distance;
+			SlitPlane.AddComponent<DestroyAfterTime>();
+*/			// If the camera is in front of the plane
+//			float distance = Vector3.Dot(slitPlane.normal, currentPos) - slitPlane.distance;
+//			if (distance >= 0)
+			if (slitPlane.GetSide(currentPos))
 			{
 				// Assign the current node to the node in front of itself
 				i = node.front;
@@ -100,7 +104,7 @@ public class PlayerInfo : MonoBehaviour
 		// Return the result ( either 1 (visible) or 0 (not visible) )
 		return result;
 	}
-	private void CheckPVS()
+	private void CheckPVS(int currentFrame)
 	{
 		// Grab the leaf index that our camera is in
 		int leafIndex = FindCurrentLeaf();
@@ -120,12 +124,12 @@ public class PlayerInfo : MonoBehaviour
 			if (!IsClusterVisible(cluster, leaf.cluster))
 				continue;
 
-			Plane forwardPlane = new Plane(transform.forward, transform.position);
+/*			Plane forwardPlane = new Plane(transform.forward, transform.position);
 
 			// If the current leaf is not in the camera's frustum, go to the next leaf
 			if ((!forwardPlane.GetSide(leaf.bb_Min)) && (!forwardPlane.GetSide(leaf.bb_Max)))
 				continue;
-
+*/
 			// If we get here, the leaf we are testing must be visible in our camera's view.
 			// Get the number of faces that this leaf is in charge of.
 			int faceCount = leaf.numOfLeafFaces;
@@ -134,9 +138,12 @@ public class PlayerInfo : MonoBehaviour
 			while (faceCount-- != 0)
 			{
 				// Grab the current face index from our leaf faces array
-				int faceIndex = MapLoader.leafsFaces[leaf.leafFace + faceCount];
-				if (!facesToActivate.Contains(faceIndex))
-					facesToActivate.Add(faceIndex);
+				int faceId = MapLoader.leafsFaces[leaf.leafFace + faceCount];
+				if (MapLoader.leafRenderFrame[faceId] == currentFrame)
+					continue;
+
+				MapLoader.leafRenderFrame[faceId] = currentFrame;
+				ClusterPVSManager.Instance.ActivateClusterByFace(faceId);
 			}
 		}
 	}
