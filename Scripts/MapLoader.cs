@@ -27,6 +27,9 @@ public static class MapLoader
 	public static List<Leaf> leafs;
 	public static List<int> leafsFaces;
 	public static int[] leafRenderFrame;
+	public static List<Brush> brushes;
+	public static List<int> leafsBrushes;
+	public static List<BrushSide> brushSides;
 	public static List<BSPTexture> mapTextures;
 	public static VisData visData;
 	
@@ -89,6 +92,73 @@ public static class MapLoader
 			}
 		}
 
+		//nodes
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Nodes].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Nodes].Length / 36;
+			nodes = new List<Node>(num);
+			for (int i = 0; i < num; i++)
+			{
+				nodes.Add(new Node(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32())));
+			}
+		}
+
+		//leafs
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Leafs].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Leafs].Length / 48;
+			leafs = new List<Leaf>(num);
+			for (int i = 0; i < num; i++)
+			{
+				leafs.Add(new Leaf(BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+			}
+		}
+
+		//leafs faces
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafFaces].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.LeafFaces].Length / 4;
+			leafsFaces = new List<int>(num);
+			leafRenderFrame = new int[num];
+			for (int i = 0; i < num; i++)
+			{
+				leafsFaces.Add(BSPMap.ReadInt32());
+			}
+		}
+
+		//leafs brushes
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafBrushes].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.LeafBrushes].Length / 4;
+			leafsBrushes = new List<int>(num);
+			for (int i = 0; i < num; i++)
+			{
+				leafsBrushes.Add(BSPMap.ReadInt32());
+			}
+		}
+
+		//brushes
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Brushes].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Brushes].Length / 12;
+			brushes = new List<Brush>(num);
+			for (int i = 0; i < num; i++)
+			{
+				brushes.Add(new Brush(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+			}
+		}
+
+		//brush sides
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.BrushSides].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.BrushSides].Length / 8;
+			brushSides = new List<BrushSide>(num);
+			for (int i = 0; i < num; i++)
+			{
+				brushSides.Add(new BrushSide(BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+			}
+		}
+
 		//vertices
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Vertexes].Offset, SeekOrigin.Begin);
@@ -99,6 +169,17 @@ public static class MapLoader
 				verts.Add(new Vertex(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()),
 													BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(),
 													new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadBytes(4)));
+			}
+		}
+
+		//vertex indices
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.VertIndices].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.VertIndices].Length / 4;
+			vertIndices = new List<int>(num);
+			for (int i = 0; i < num; i++)
+			{
+				vertIndices.Add(BSPMap.ReadInt32());
 			}
 		}
 
@@ -130,17 +211,6 @@ public static class MapLoader
 			}
 		}
 
-		//vertex indices
-		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.VertIndices].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.VertIndices].Length / 4;
-			vertIndices = new List<int>(num);
-			for (int i = 0; i < num; i++)
-			{
-				vertIndices.Add(BSPMap.ReadInt32());
-			}
-		}
-
 		//lightmaps (128x128x3)
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.LightMaps].Offset, SeekOrigin.Begin);
@@ -152,40 +222,6 @@ public static class MapLoader
 			}
 		}
 
-		//nodes
-		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.Nodes].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.Nodes].Length / 36;
-			nodes = new List<Node>(num);
-			for (int i = 0; i < num; i++)
-			{
-				nodes.Add(new Node(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32())));
-			}
-		}
-
-		//leafs
-		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.Leafs].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.Leafs].Length / 48;
-			leafs = new List<Leaf>(num);
-			for (int i = 0; i<num; i++)
-			{
-				leafs.Add(new Leaf(BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
-			}
-		}
-
-		//leafs faces
-		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafFaces].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.LeafFaces].Length / 4;
-			leafsFaces = new List<int>(num);
-			leafRenderFrame = new int[num];
-			for (int i = 0; i < num; i++)
-			{
-				leafsFaces.Add(BSPMap.ReadInt32());
-			}
-		}
-		
 		//vis data
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.VisData].Offset, SeekOrigin.Begin);
@@ -200,6 +236,17 @@ public static class MapLoader
 		BSPMap.Close();
 
 		return true;
+	}
+
+	public static void GenerateMapCollider()
+	{
+		foreach (Brush brush in brushes)
+		{
+			if (brush.numOfBrushSides == 6)
+				Mesher.GenerateColliderBox(brush);
+			else
+				Debug.Log("Brush side: " + brush.numOfBrushSides);
+		}
 	}
 
 	public static void GetMapTextures()
@@ -220,11 +267,14 @@ public static class MapLoader
 
 		// Each face group is its own gameobject
 		var groups = faces.GroupBy(x => new { x.type, x.textureID, x.lightMapID });
+		int groupId = 0;
 		foreach (var group in groups)
 		{
 			Face[] faces = group.ToArray();
 			if (faces.Length == 0)
 				continue;
+			
+				groupId++;
 
 			Material mat = MaterialManager.GetMaterials(mapTextures[faces[0].textureID].Name, faces[0].lightMapID);
 
@@ -232,14 +282,14 @@ public static class MapLoader
 			{
 				case FaceType.Patch:
 					{
-						Mesher.GenerateBezObject(mat, faces);
+						Mesher.GenerateBezObject(mat, groupId, faces);
 						break;
 					}
 
 				case FaceType.Polygon:
 				case FaceType.Mesh:
 					{
-						Mesher.GeneratePolygonObject(mat, faces);
+						Mesher.GeneratePolygonObject(mat, groupId, faces);
 						break;
 					}
 

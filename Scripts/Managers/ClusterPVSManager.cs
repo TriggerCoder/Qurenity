@@ -6,7 +6,7 @@ public class ClusterPVSManager : MonoBehaviour
 {
 	public static ClusterPVSManager Instance;
 	private List<ClusterPVSController> AllClusters = new List<ClusterPVSController>();
-	private Dictionary<int, List<ClusterPVSController>> FacesToCluster = new Dictionary<int, List<ClusterPVSController>>();
+	private ClusterPVSController[] FaceToCluster;
 	public int groups = -1;
 	public const int maxGroupSize = 100;
 	int currentGroup = 0;
@@ -59,32 +59,20 @@ public class ClusterPVSManager : MonoBehaviour
 	public void ResetClusterList()
 	{
 		AllClusters = new List<ClusterPVSController>();
-		FacesToCluster = new Dictionary<int, List<ClusterPVSController>>();
+		FaceToCluster = new ClusterPVSController[MapLoader.faces.Count];
 	}
-	public void Register(ClusterPVSController cluster, List<int> facesIndices)
+
+	public void Register(ClusterPVSController cluster, params Face[] faces)
 	{
-		foreach (int index in facesIndices)
+		for (int i = 0; i < faces.Length; i++)
 		{
-			if (!FacesToCluster.ContainsKey(index))
-			{
-				List<ClusterPVSController> listCluster = new List<ClusterPVSController>();
-				listCluster.Add(cluster);
-				FacesToCluster.Add(index, listCluster);
-			}
-			else if (!FacesToCluster[index].Contains(cluster))
-				FacesToCluster[index].Add(cluster);
+			FaceToCluster[faces[i].faceId] = cluster;
 		}
 		AllClusters.Add(cluster);
 	}
 	public void ActivateClusterByFace(int face)
 	{
-		if (FacesToCluster.ContainsKey(face))
-		{
-			List<ClusterPVSController> culsters = FacesToCluster[face];
-			for (int i = 0; i < culsters.Count; i++)
-			{
-				culsters[i].ActivateCluster(GameManager.MapMeshesPlayer1Layer);
-			}
-		}
+		ClusterPVSController culster = FaceToCluster[face];
+		culster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
 	}
 }

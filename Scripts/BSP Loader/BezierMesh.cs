@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 
 public class BezierMesh
@@ -42,11 +41,11 @@ public class BezierMesh
     }
 
     // Where the magic happens.
-    public BezierMesh(int level, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s)
+    public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s)
 	{
 		// The mesh we're building
 		Mesh patchMesh = new Mesh();
-		patchMesh.name = "BSPmesh (bez)";
+		patchMesh.name = "Bezier_Patch_" + patchNumber;
 
 		// We'll use these two to hold our verts, tris, and uvs
 		int capacity = level * level + (2 * level);

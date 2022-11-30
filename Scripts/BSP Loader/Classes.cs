@@ -79,6 +79,31 @@ public class Leaf
 		return vect3;
 	}
 };
+
+public class Brush
+{
+	public int brushSide;              // The starting brush side for the brush 
+	public int numOfBrushSides;        // Number of brush sides for the brush
+	public int textureID;              // The texture index for the brush
+	public Brush(int brushSide, int numOfBrushSides, int textureID)
+	{
+		this.brushSide = brushSide;
+		this.numOfBrushSides = numOfBrushSides;
+		this.textureID = textureID;
+	}
+};
+
+public class BrushSide
+{
+	public int plane;                  // The plane index
+	public int textureID;              // The texture index
+	public BrushSide(int plane, int textureID)
+	{
+		this.plane = plane;
+		this.textureID = textureID;
+	}
+};
+
 public class VisData
 {
 	public int numOfClusters;			// The number of clusters
@@ -128,54 +153,23 @@ public class Vertex
 		position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
 	}
 }
-
-public class FaceType
-{
-	public const short None = 0;
-	public const short Polygon = 1;
-	public const short Patch = 2;
-	public const short Mesh = 3;
-	public const short Billboard = 4;
-}
-
-public class LumpType
-{
-	public const short Entities = 0;
-	public const short Textures = 1;
-	public const short Planes = 2;
-	public const short Nodes = 3;
-	public const short Leafs = 4;
-	public const short LeafFaces = 5;
-	public const short LeafBushes = 6;
-	public const short Models = 7;
-	public const short Brushes = 8;
-	public const short BrushSides = 9;
-	public const short Vertexes = 10;
-	public const short VertIndices = 11;
-	public const short Effects = 12;
-	public const short Faces = 13;
-	public const short LightMaps = 14;
-	public const short LightVols = 15;
-	public const short VisData = 16;
-}
-
 public class Face
 {
-	public int faceId;					// The index of this face
-	public int textureID;				// The index into the texture array 
-	public int effect;					// The index for the effects (or -1 = n/a) 
-	public int type;					// 1=polygon, 2=patch, 3=mesh, 4=billboard 
-	public int startVertIndex;			// The starting index into this face's first vertex 
-	public int numOfVerts;				// The number of vertices for this face 
-	public int startIndex;				// The starting index into the indices array for this face
-	public int numOfIndices;			// The number of indices for this face
-	public int lightMapID;				// The texture index for the lightmap 
-	public int[] lm_Corner;				// The face's lightmap corner in the image 
-	public int[] lm_Size;				// The size of the lightmap section 
-	public Vector3 lm_Origin;			// The 3D origin of lightmap. 
-	public Vector3[] lm_vecs;			// The 3D space for s and t unit vectors. 
-	public Vector3 normal;				// The face normal. 
-	public int[] size;					// The bezier patch dimensions. 
+	public int faceId;                  // The index of this face
+	public int textureID;               // The index into the texture array 
+	public int effect;                  // The index for the effects (or -1 = n/a) 
+	public int type;                    // 1=polygon, 2=patch, 3=mesh, 4=billboard 
+	public int startVertIndex;          // The starting index into this face's first vertex 
+	public int numOfVerts;              // The number of vertices for this face 
+	public int startIndex;              // The starting index into the indices array for this face
+	public int numOfIndices;            // The number of indices for this face
+	public int lightMapID;              // The texture index for the lightmap 
+	public int[] lm_Corner;             // The face's lightmap corner in the image 
+	public int[] lm_Size;               // The size of the lightmap section 
+	public Vector3 lm_Origin;           // The 3D origin of lightmap. 
+	public Vector3[] lm_vecs;           // The 3D space for s and t unit vectors. 
+	public Vector3 normal;              // The face normal. 
+	public int[] size;                  // The bezier patch dimensions. 
 
 	public Face(int faceId, int textureID, int effect, int type, int startVertIndex, int numOfVerts, int startIndex, int numOfIndices,
 		int lightMapID, int[] lm_Corner, int[] lm_Size, Vector3 lm_Origin, Vector3[] lm_vecs, Vector3 normal,
@@ -197,4 +191,33 @@ public class Face
 		this.normal = normal;
 		this.size = size;
 	}
+}
+public class FaceType
+{
+	public const short None = 0;
+	public const short Polygon = 1;
+	public const short Patch = 2;
+	public const short Mesh = 3;
+	public const short Billboard = 4;
+}
+
+public class LumpType
+{
+	public const short Entities = 0;
+	public const short Textures = 1;
+	public const short Planes = 2;
+	public const short Nodes = 3;
+	public const short Leafs = 4;
+	public const short LeafFaces = 5;
+	public const short LeafBrushes = 6;
+	public const short Models = 7;
+	public const short Brushes = 8;
+	public const short BrushSides = 9;
+	public const short Vertexes = 10;
+	public const short VertIndices = 11;
+	public const short Effects = 12;
+	public const short Faces = 13;
+	public const short LightMaps = 14;
+	public const short LightVols = 15;
+	public const short VisData = 16;
 }

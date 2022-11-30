@@ -21,11 +21,12 @@ public static class Mesher
 		indiciesCache = new List<int>();
 		BezierMesh.ClearCaches();
 	}
-	public static void GenerateBezObject(Material material, params Face[] faces)
+	public static void GenerateBezObject(Material material, int indexId, params Face[] faces)
 	{
 		if (faces == null || faces.Length == 0)
 			return;
 
+		string Name = "Bezier_Faces";
 		int[] numPatches = new int[faces.Length];
 		int totalPatches = 0;
 		for (int i = 0; i < faces.Length; i++)
@@ -33,6 +34,7 @@ public static class Mesher
 			int patches = (faces[i].size[0] - 1) / 2 * ((faces[i].size[1] - 1) / 2);
 			numPatches[i] = patches;
 			totalPatches += patches;
+			Name += "_" + faces[i].faceId;
 		}
 
 		CombineInstance[] combine = new CombineInstance[totalPatches];
@@ -55,12 +57,13 @@ public static class Mesher
 
 
 		Mesh mesh = new Mesh();
+		mesh.name = Name;
 		mesh.CombineMeshes(combine, true, false, false);
 		//            mesh.CombineMeshes(c, true, false, false);
 
 		GameObject bezObj = new GameObject();
 		bezObj.layer = GameManager.MapMeshesLayer;
-		bezObj.name = "Bezier";
+		bezObj.name = "Bezier_" + indexId;
 		bezObj.transform.SetParent(MapMeshes);
 
 		//PVS
@@ -75,10 +78,6 @@ public static class Mesher
 		mc.sharedMesh = mesh;
 
 		meshRenderer.sharedMaterial = material;
-#if UNITY_EDITOR
-		if (!Application.isPlaying)
-			bezObj.isStatic = true;
-#endif
 	}
 
 	public static Mesh GenerateBezMesh(Face face, int patchNumber)
@@ -192,13 +191,11 @@ public static class Mesher
 		uv2.Add(vertGrid[vi + 2, vj + 2].lightmapCoord);
 
 		//Now that we have our control grid, it's business as usual
-		Mesh bezMesh = new Mesh();
-		bezMesh.name = "BSPfacemesh (bez)";
-		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, bverts, uv, uv2);
+		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2);
 		return bezPatch.Mesh;
 	}
 
-	public static void GeneratePolygonObject(Material material, params Face[] faces)
+	public static void GeneratePolygonObject(Material material, int indexId, params Face[] faces)
 	{
 		if (faces == null || faces.Length == 0)
 		{
@@ -206,21 +203,27 @@ public static class Mesher
 			return;
 		}
 
+		string Name = "Mesh_Faces_";
+
+		// Our GeneratePolygonMesh will optimze and add the UVs for us
+		CombineInstance[] combine = new CombineInstance[faces.Length];
+		for (var i = 0; i < combine.Length; i++)
+		{
+			combine[i].mesh = GeneratePolygonMesh(faces[i]);
+			Name += "_" + faces[i].faceId;
+		}
+
 		GameObject obj = new GameObject();
 		obj.layer = GameManager.MapMeshesLayer;
-		obj.name = "Mesh";
+		obj.name = "Mesh_"+indexId;
 		obj.transform.SetParent(MapMeshes);
 
 		//PVS
 		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
 		cluster.RegisterClusterAndFaces(faces);
 
-		// Our GeneratePolygonMesh will optimze and add the UVs for us
-		CombineInstance[] combine = new CombineInstance[faces.Length];
-		for (var i = 0; i < combine.Length; i++)
-			combine[i].mesh = GeneratePolygonMesh(faces[i]);
-
 		var mesh = new Mesh();
+		mesh.name = Name;
 		mesh.CombineMeshes(combine, true, false, false);
 
 		
@@ -233,11 +236,6 @@ public static class Mesher
 		mc.sharedMesh = mesh;
 
 		mr.sharedMaterial = material;
-#if UNITY_EDITOR
-		if (!Application.isPlaying)
-			obj.isStatic = true;
-		obj.hideFlags = HideFlags.DontSave;
-#endif
 	}
 
 	public static Mesh GeneratePolygonMesh(Face face)
@@ -299,5 +297,32 @@ public static class Mesher
 		//            mesh.Optimize();
 
 		return mesh;
+	}
+
+	public static void GenerateColliderBox(Brush brush)
+	{
+		GameObject mc = new GameObject(brush.brushSide + "_collider");
+		mc.transform.SetParent(MapMeshes);
+
+		Vector3 center = Vector3.zero;
+		Vector3 normal = Vector3.zero;
+		for (int i = 0; i < brush.numOfBrushSides; i++)
+		{
+			int planeIndex = MapLoader.brushSides[brush.brushSide + i].plane;
+			Plane side = MapLoader.planes[planeIndex];
+			if (i == 0)
+				normal = side.normal;
+			center += (side.normal * side.distance);
+		}
+
+		mc.transform.position = center / 6f;
+		mc.transform.forward = normal;
+		BoxCollider bc = mc.AddComponent<BoxCollider>();
+		bc.center = Vector3.zero;
+//		bc.size = new Vector3((s.Line.start.Position - s.Line.end.Position).magnitude, (max - min), .01f);
+		Rigidbody rb = mc.AddComponent<Rigidbody>();
+		rb.isKinematic = true;
+		rb.useGravity = false;
+		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 	}
 }

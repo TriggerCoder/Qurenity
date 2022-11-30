@@ -67,7 +67,7 @@ public class BSPHeader
 		Directory[LumpType.Nodes].Name = "Nodes";
 		Directory[LumpType.Leafs].Name = "Leafs";
 		Directory[LumpType.LeafFaces].Name = "Leaf Faces";
-		Directory[LumpType.LeafBushes].Name = "Leaf brushes";
+		Directory[LumpType.LeafBrushes].Name = "Leaf Brushes";
 		Directory[LumpType.Models].Name = "Models";
 		Directory[LumpType.Brushes].Name = "Brushes";
 		Directory[LumpType.BrushSides].Name = "Brush Sides";

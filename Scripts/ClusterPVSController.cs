@@ -9,11 +9,7 @@ public class ClusterPVSController : MonoBehaviour
 	int lastlayer = GameManager.MapMeshesLayer;
 	public void RegisterClusterAndFaces(params Face[] faces)
 	{
-		List<int> facesIndices = new List<int>(faces.Length);
-		foreach (Face face in faces)
-			facesIndices.Add(face.faceId);
-
-		ClusterPVSManager.Instance.Register(this, facesIndices);
+		ClusterPVSManager.Instance.Register(this, faces);
 	}
 	public void DectivateCluster()
 	{
