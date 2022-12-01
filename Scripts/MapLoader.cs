@@ -22,7 +22,7 @@ public static class MapLoader
 	public static List<Texture2D> lightMaps;
 	public static List<Vertex> verts;
 	public static List<int> vertIndices;
-	public static List<Plane> planes;
+	public static List<Plane3D> planes;
 	public static List<Node> nodes;
 	public static List<Leaf> leafs;
 	public static List<int> leafsFaces;
@@ -85,10 +85,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Planes].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Planes].Length / 16;
-			planes = new List<Plane>(num);
+			planes = new List<Plane3D>(num);
 			for (int i = 0; i < num; i++)
 			{
-				planes.Add(new Plane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
+				planes.Add(new Plane3D(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
 			}
 		}
 
@@ -240,10 +240,16 @@ public static class MapLoader
 
 	public static void GenerateMapCollider()
 	{
+		GameObject MapMesh = new GameObject("MapColliders");
+		MapMesh.layer = GameManager.MapMeshesLayer;
+		Transform holder = MapMesh.transform;
+
 		foreach (Brush brush in brushes)
 		{
-			if (brush.numOfBrushSides == 6)
-				Mesher.GenerateColliderBox(brush);
+			if (brush.numOfBrushSides == 7)
+			{
+				Mesher.GenerateColliderBox(brush,holder);
+			}
 			else
 				Debug.Log("Brush side: " + brush.numOfBrushSides);
 		}

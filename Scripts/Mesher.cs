@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class Mesher
@@ -12,6 +13,7 @@ public static class Mesher
 	private static List<Vector3> normalsCache = new List<Vector3>();
 	private static List<int> indiciesCache = new List<int>();
 
+	public const float EPSILON = 0.00001f;
 	public static void ClearMesherCache()
 	{
 		vertsCache = new List<Vector3>();
@@ -299,23 +301,96 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static void GenerateColliderBox(Brush brush)
+	public static void GenerateColliderBox(Brush brush, Transform holder)
 	{
-		GameObject mc = new GameObject(brush.brushSide + "_collider");
-		mc.transform.SetParent(MapMeshes);
+//		GameObject mc = new GameObject(brush.brushSide + "_collider");
+//		mc.transform.SetParent(holder);
 
 		Vector3 center = Vector3.zero;
 		Vector3 normal = Vector3.zero;
+		List<Vector3> possibleIntersectPoint = new List<Vector3>();
+		List<Vector3> intersectPoint = new List<Vector3>();
 		for (int i = 0; i < brush.numOfBrushSides; i++)
 		{
 			int planeIndex = MapLoader.brushSides[brush.brushSide + i].plane;
-			Plane side = MapLoader.planes[planeIndex];
-			if (i == 0)
-				normal = side.normal;
-			center += (side.normal * side.distance);
+			Plane3D p1 = MapLoader.planes[planeIndex];
+/*
+			{
+				GameObject planeObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
+				planeObj.name = "Plane_" + planeIndex;
+				planeObj.transform.position = p1.normal * p1.distance;
+				planeObj.transform.up = p1.normal;
+				planeObj.transform.localScale = new Vector3(10f, 10f, 10f);
+
+				planeObj.transform.SetParent(holder);
+			}
+*/
+			for (int j = i + 1; j < brush.numOfBrushSides; j++)
+			{
+				planeIndex = MapLoader.brushSides[brush.brushSide + j].plane;
+				Plane3D p2 = MapLoader.planes[planeIndex];
+				for (int k = j + 1; k < brush.numOfBrushSides; k++)
+				{
+					planeIndex = MapLoader.brushSides[brush.brushSide + k].plane;
+					Plane3D p3 = MapLoader.planes[planeIndex];
+					List<float> intersect = p1.IntersectPlanes(p2, p3);
+					if (intersect != null)
+						possibleIntersectPoint.Add(new Vector3(intersect[0], intersect[1], intersect[2]));
+				}
+			}
 		}
 
-		mc.transform.position = center / 6f;
+		for (int i = 0; i < possibleIntersectPoint.Count; i++)
+		{
+			bool inside = true;
+			for (int j = 0; j < brush.numOfBrushSides; j++)
+			{
+				int planeIndex = MapLoader.brushSides[brush.brushSide + j].plane;
+				Plane3D plane = MapLoader.planes[planeIndex];
+				if (plane.GetSide(possibleIntersectPoint[i], Plane3D.CheckPointPlane.IsFront))
+				{
+					inside = false;
+					j = brush.numOfBrushSides;
+				}
+			}
+			if (inside)
+			{
+				if (!intersectPoint.Contains(possibleIntersectPoint[i]))			
+					intersectPoint.Add(possibleIntersectPoint[i]);
+			}
+		}
+		
+		{
+			possibleIntersectPoint = intersectPoint.ToArray().ToList();
+			intersectPoint.Clear();
+			for (int i = 0; i < possibleIntersectPoint.Count; i++)
+			{
+				bool isUnique = true;
+				for (int j = i + 1; j < possibleIntersectPoint.Count; j++)
+				{
+					if (FloatAprox(possibleIntersectPoint[i].x, possibleIntersectPoint[j].x))
+						if (FloatAprox(possibleIntersectPoint[i].y, possibleIntersectPoint[j].y))
+							if (FloatAprox(possibleIntersectPoint[i].z, possibleIntersectPoint[j].z))
+								isUnique = false;
+				}
+				if (isUnique)
+					intersectPoint.Add(new Vector3(RoundUp4Decimals(possibleIntersectPoint[i].x), RoundUp4Decimals(possibleIntersectPoint[i].y), RoundUp4Decimals(possibleIntersectPoint[i].z)));
+			}
+		}
+
+
+		for (int i = 0; i < intersectPoint.Count; i++)
+		{
+			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			sphere.name = "Spere_" + brush.brushSide + "_collider" + i;
+			sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+			sphere.transform.position = intersectPoint[i];
+			sphere.transform.SetParent(holder);
+		}
+		if ((intersectPoint.Count & 1) != 0)
+			Debug.LogWarning("brushSide: " + brush.brushSide + " intersectPoint " + intersectPoint.Count);		
+/*
+		mc.transform.position = center / 2f;
 		mc.transform.forward = normal;
 		BoxCollider bc = mc.AddComponent<BoxCollider>();
 		bc.center = Vector3.zero;
@@ -324,5 +399,23 @@ public static class Mesher
 		rb.isKinematic = true;
 		rb.useGravity = false;
 		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+*/	}
+
+	public static bool FloatAprox(float f1, float f2)
+	{
+		float d = f1 - f2;
+
+//		return Mathf.Approximately(f1, f2);
+
+		if (Mathf.Abs(d) > EPSILON)
+			return false;
+		return true;
 	}
+
+	public static float RoundUp4Decimals(float f)
+	{
+		float d = Mathf.CeilToInt(f * 10000) / 10000.0f;
+		return d;
+	}
+
 }

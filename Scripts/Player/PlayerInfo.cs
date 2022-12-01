@@ -32,7 +32,7 @@ public class PlayerInfo : MonoBehaviour
 		while (i >= 0)
 		{
 			Node node = MapLoader.nodes[i];
-			Plane slitPlane = MapLoader.planes[node.plane];
+			Plane3D slitPlane = MapLoader.planes[node.plane];
 
 			if (slitPlane.GetSide(currentPos))
 			{

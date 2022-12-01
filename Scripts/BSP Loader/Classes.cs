@@ -27,11 +27,13 @@ public class Node
 		return vect3;
 	}
 }
-public class Plane
+public class Plane3D
 {
+	public const float EPSILON = 0.00001f;
+
 	public Vector3 normal;              // Plane normal. 
-	public float distance;              // The plane distance from origin 
-	public Plane(Vector3 normal, float distance)
+	public float distance;              // The plane distance from origin
+	public Plane3D(Vector3 normal, float distance)
 	{
 		this.normal = normal;
 		this.distance = distance;
@@ -42,10 +44,52 @@ public class Plane
 		normal = new Vector3(-normal.x, normal.z, -normal.y);
 		distance *= GameManager.sizeDividor;
 	}
-	public bool GetSide(Vector3 check)
+	public bool GetSide(Vector3 vect, CheckPointPlane check = CheckPointPlane.IsOnOrFront)
 	{
-		float d = Vector3.Dot(normal, check) - distance;
-		return (d >= 0);
+		float d = Vector3.Dot(normal, vect) - distance;
+		switch(check)
+		{
+			default:
+			case CheckPointPlane.IsOnOrFront:
+				return (d >= 0);
+			break;
+			case CheckPointPlane.IsFront:
+				return (d > EPSILON);
+			break;
+			case CheckPointPlane.IsOn:
+				return (d == 0);
+			break;
+		}
+	}
+
+	public List<float> IntersectPlanes(Plane3D p2, Plane3D p3)
+	{
+		Vector3 m1 = new Vector3(normal.x, p2.normal.x, p3.normal.x);
+		Vector3 m2 = new Vector3(normal.y, p2.normal.y, p3.normal.y);
+		Vector3 m3 = new Vector3(normal.z, p2.normal.z, p3.normal.z);
+		Vector3 d = new Vector3(distance, p2.distance, p3.distance);
+
+		Vector3 u = Vector3.Cross(m2, m3);
+		Vector3 v = Vector3.Cross(m1, d);
+
+		float denom = Vector3.Dot(m1, u);
+		// Planes don't actually intersect in a point
+		if (Mathf.Abs(denom) < Mathf.Epsilon)
+			return null;
+
+		List<float> intersectPoint = new List<float>(3);
+		intersectPoint.Add((Vector3.Dot(d, u) / denom));
+		intersectPoint.Add((Vector3.Dot(m3, v) / denom));
+		intersectPoint.Add((-Vector3.Dot(m2, v) / denom));
+
+		return intersectPoint;
+	}
+
+	public enum CheckPointPlane
+	{		
+		IsOnOrFront,
+		IsFront,
+		IsOn
 	}
 }
 public class Leaf

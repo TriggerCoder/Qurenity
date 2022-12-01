@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
 		{
 			ClusterPVSManager.Instance.ResetClusterList();
 			MapLoader.GenerateFaces();
-//			MapLoader.GenerateMapCollider();
+			MapLoader.GenerateMapCollider();
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
