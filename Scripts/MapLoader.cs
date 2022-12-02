@@ -246,15 +246,14 @@ public static class MapLoader
 
 		foreach (Brush brush in brushes)
 		{
-			if (brush.numOfBrushSides == 7)
-			{
+//			if (brush.numOfBrushSides == 10)
+//			{
 				Mesher.GenerateColliderBox(brush,holder);
-			}
-			else
-				Debug.Log("Brush side: " + brush.numOfBrushSides);
+//			}
+//			else
+//				Debug.Log("Brush side: " + brush.numOfBrushSides);
 		}
 	}
-
 	public static void GetMapTextures()
 	{
 		TextureLoader.LoadJPGTextures(mapTextures);

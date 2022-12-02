@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using Habrador_Computational_Geometry;
 public static class Mesher
 {
 	public static Transform MapMeshes;
@@ -13,7 +13,7 @@ public static class Mesher
 	private static List<Vector3> normalsCache = new List<Vector3>();
 	private static List<int> indiciesCache = new List<int>();
 
-	public const float EPSILON = 0.00001f;
+	public const float APROX_ERROR = 0.001f;
 	public static void ClearMesherCache()
 	{
 		vertsCache = new List<Vector3>();
@@ -303,8 +303,8 @@ public static class Mesher
 
 	public static void GenerateColliderBox(Brush brush, Transform holder)
 	{
-//		GameObject mc = new GameObject(brush.brushSide + "_collider");
-//		mc.transform.SetParent(holder);
+		GameObject objCollider = new GameObject(brush.brushSide + "_collider");
+		objCollider.transform.SetParent(holder);
 
 		Vector3 center = Vector3.zero;
 		Vector3 normal = Vector3.zero;
@@ -359,59 +359,72 @@ public static class Mesher
 					intersectPoint.Add(possibleIntersectPoint[i]);
 			}
 		}
-		
-		{
-			possibleIntersectPoint = intersectPoint.ToArray().ToList();
-			intersectPoint.Clear();
-			for (int i = 0; i < possibleIntersectPoint.Count; i++)
-			{
-				bool isUnique = true;
-				for (int j = i + 1; j < possibleIntersectPoint.Count; j++)
-				{
-					if (FloatAprox(possibleIntersectPoint[i].x, possibleIntersectPoint[j].x))
-						if (FloatAprox(possibleIntersectPoint[i].y, possibleIntersectPoint[j].y))
-							if (FloatAprox(possibleIntersectPoint[i].z, possibleIntersectPoint[j].z))
-								isUnique = false;
-				}
-				if (isUnique)
-					intersectPoint.Add(new Vector3(RoundUp4Decimals(possibleIntersectPoint[i].x), RoundUp4Decimals(possibleIntersectPoint[i].y), RoundUp4Decimals(possibleIntersectPoint[i].z)));
-			}
-		}
 
+		intersectPoint = RemoveDuplicatedVectors(intersectPoint);
 
+		HashSet<MyVector3> points = new HashSet<MyVector3>(intersectPoint.Count);
 		for (int i = 0; i < intersectPoint.Count; i++)
 		{
-			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			points.Add(new MyVector3(intersectPoint[i].x, intersectPoint[i].y, intersectPoint[i].z));
+/*			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			sphere.name = "Spere_" + brush.brushSide + "_collider" + i;
 			sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 			sphere.transform.position = intersectPoint[i];
 			sphere.transform.SetParent(holder);
-		}
+*/		}
 		if ((intersectPoint.Count & 1) != 0)
-			Debug.LogWarning("brushSide: " + brush.brushSide + " intersectPoint " + intersectPoint.Count);		
-/*
-		mc.transform.position = center / 2f;
-		mc.transform.forward = normal;
-		BoxCollider bc = mc.AddComponent<BoxCollider>();
-		bc.center = Vector3.zero;
-//		bc.size = new Vector3((s.Line.start.Position - s.Line.end.Position).magnitude, (max - min), .01f);
-		Rigidbody rb = mc.AddComponent<Rigidbody>();
-		rb.isKinematic = true;
-		rb.useGravity = false;
-		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-*/	}
+			Debug.LogWarning("brushSide: " + brush.brushSide + " intersectPoint " + intersectPoint.Count);
 
+		HalfEdgeData3 convexHull = _ConvexHull.Iterative_3D(points);
+
+		MyMesh myMesh = convexHull.ConvertToMyMesh("brushSide: " + brush.brushSide, MyMesh.MeshStyle.HardEdges);
+		Mesh mesh = myMesh.ConvertToUnityMesh(false, "brushSide: " + brush.brushSide);
+		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
+		mc.sharedMesh = mesh;
+		mc.convex = true;
+
+
+		/*
+				mc.transform.position = center / 2f;
+				mc.transform.forward = normal;
+				BoxCollider bc = mc.AddComponent<BoxCollider>();
+				bc.center = Vector3.zero;
+		//		bc.size = new Vector3((s.Line.start.Position - s.Line.end.Position).magnitude, (max - min), .01f);
+				Rigidbody rb = mc.AddComponent<Rigidbody>();
+				rb.isKinematic = true;
+				rb.useGravity = false;
+				rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+		*/
+	}
+
+	public static List<Vector3> RemoveDuplicatedVectors(List<Vector3> test)
+	{
+		List<Vector3> uniqueVector = new List<Vector3>();
+		for (int i = 0; i < test.Count; i++)
+		{
+			bool isUnique = true;
+			for (int j = i + 1; j < test.Count; j++)
+			{
+				if (FloatAprox(test[i].x, test[j].x))
+					if (FloatAprox(test[i].y, test[j].y))
+						if (FloatAprox(test[i].z, test[j].z))
+							isUnique = false;
+			}
+			if (isUnique)
+				uniqueVector.Add(new Vector3(RoundUp4Decimals(test[i].x), RoundUp4Decimals(test[i].y), RoundUp4Decimals(test[i].z)));
+		}
+		return uniqueVector;
+	}
 	public static bool FloatAprox(float f1, float f2)
 	{
 		float d = f1 - f2;
 
 //		return Mathf.Approximately(f1, f2);
 
-		if (Mathf.Abs(d) > EPSILON)
+		if (Mathf.Abs(d) > APROX_ERROR)
 			return false;
 		return true;
 	}
-
 	public static float RoundUp4Decimals(float f)
 	{
 		float d = Mathf.CeilToInt(f * 10000) / 10000.0f;

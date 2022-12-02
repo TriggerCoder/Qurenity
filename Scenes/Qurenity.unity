@@ -227,6 +227,8 @@ MonoBehaviour:
   autoloadMap: q3dm1
   tessellations: 5
   gamma: 1
+  TemporaryObjectsHolder: {fileID: 0}
+  BaseThingsHolder: {fileID: 0}
   paused: 1
 --- !u!114 &300009279
 MonoBehaviour:
