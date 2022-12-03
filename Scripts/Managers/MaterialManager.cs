@@ -7,6 +7,7 @@ public class MaterialManager : MonoBehaviour
 	public static MaterialManager Instance;
 
 	public Material illegal;
+	public Material skyHole;
 	public Material defaultMaterial;
 	public Material defaultMaterialLightMap;
 
@@ -22,7 +23,9 @@ public class MaterialManager : MonoBehaviour
 
 	public static Material GetMaterials(string textureName, int lm_index)
 	{
-		// Load the primary texture for the face from the texture lump
+		if (MapLoader.IsSkyTexture(textureName))
+			return Instance.skyHole;
+		// Load the primary texture for the surface from the texture lump
 		// The texture lump itself will have already looked over all
 		// available .pk3 files and compiled a dictionary of textures for us.
 		Texture tex = TextureLoader.Instance.GetTexture(textureName);
@@ -34,7 +37,7 @@ public class MaterialManager : MonoBehaviour
 			if (Materials.ContainsKey(textureName + lm_index.ToString()))
 				return Materials[textureName + lm_index.ToString()];
 
-			// LM experiment
+			// Lightmapping
 			Texture2D lmap = MapLoader.lightMaps[lm_index];
 			lmap.Compress(true);
 			lmap.Apply();

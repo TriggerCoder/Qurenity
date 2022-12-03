@@ -6,7 +6,7 @@ public class ClusterPVSManager : MonoBehaviour
 {
 	public static ClusterPVSManager Instance;
 	private List<ClusterPVSController> AllClusters = new List<ClusterPVSController>();
-	private ClusterPVSController[] FaceToCluster;
+	private ClusterPVSController[] SurfaceToCluster;
 	public int groups = -1;
 	public const int maxGroupSize = 100;
 	int currentGroup = 0;
@@ -59,20 +59,20 @@ public class ClusterPVSManager : MonoBehaviour
 	public void ResetClusterList()
 	{
 		AllClusters = new List<ClusterPVSController>();
-		FaceToCluster = new ClusterPVSController[MapLoader.faces.Count];
+		SurfaceToCluster = new ClusterPVSController[MapLoader.surfaces.Count];
 	}
 
-	public void Register(ClusterPVSController cluster, params Face[] faces)
+	public void Register(ClusterPVSController cluster, params QSurface[] surfaces)
 	{
-		for (int i = 0; i < faces.Length; i++)
+		for (int i = 0; i < surfaces.Length; i++)
 		{
-			FaceToCluster[faces[i].faceId] = cluster;
+			SurfaceToCluster[surfaces[i].surfaceId] = cluster;
 		}
 		AllClusters.Add(cluster);
 	}
-	public void ActivateClusterByFace(int face)
+	public void ActivateClusterBySurface(int surface)
 	{
-		ClusterPVSController culster = FaceToCluster[face];
+		ClusterPVSController culster = SurfaceToCluster[surface];
 		culster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
 	}
 }

@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
 	public Transform BaseThingsHolder;
 
 	// Quake3 also uses an odd scale where 0.03 units is about 1 meter, so it need to be scaled down
-	public const float sizeDividor = 1f / 32f;
+	public const float sizeDividor = 3f / 100f;
 	public const short DefaultLayer = 0;
 	public const short TransparentFXLayer = 1;
 	public const short MapMeshesLayer = 8;
@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
 		if (MapLoader.Load(autoloadMap))
 		{
 			ClusterPVSManager.Instance.ResetClusterList();
-			MapLoader.GenerateFaces();
+			MapLoader.GenerateSurfaces();
 			MapLoader.GenerateMapCollider();
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();

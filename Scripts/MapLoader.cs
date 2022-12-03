@@ -18,24 +18,24 @@ public static class MapLoader
 
 	private static Transform DynamicMeshes;
 
-	public static List<Face> faces;
+	public static List<QSurface> surfaces;
 	public static List<Texture2D> lightMaps;
-	public static List<Vertex> verts;
+	public static List<QVertex> verts;
 	public static List<int> vertIndices;
-	public static List<Plane3D> planes;
-	public static List<Node> nodes;
-	public static List<Leaf> leafs;
-	public static List<int> leafsFaces;
+	public static List<QPlane> planes;
+	public static List<QNode> nodes;
+	public static List<QLeaf> leafs;
+	public static List<int> leafsSurfaces;
 	public static int[] leafRenderFrame;
-	public static List<Brush> brushes;
+	public static List<QBrush> brushes;
 	public static List<int> leafsBrushes;
-	public static List<BrushSide> brushSides;
-	public static List<BSPTexture> mapTextures;
-	public static VisData visData;
+	public static List<QBrushSide> brushSides;
+	public static List<QShader> mapTextures;
+	public static QVisData visData;
 	
 	public static bool IsSkyTexture(string textureName)
 	{
-		if (textureName == "F_SKY1")
+		if (textureName.ToUpper().Contains("/SKIES/"))
 			return true;
 		return false;
 	}
@@ -70,14 +70,14 @@ public static class MapLoader
 			Debug.Log(entityLump.ToString());
 		}
 
-		//textures
+		//shaders (textures)
 		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.Textures].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.Textures].Length / 72;
-			mapTextures = new List<BSPTexture>(num);
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Shaders].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Shaders].Length / 72;
+			mapTextures = new List<QShader>(num);
 			for (int i = 0; i < num; i++)
 			{
-				mapTextures.Add(new BSPTexture(new string(BSPMap.ReadChars(64)), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+				mapTextures.Add(new QShader(new string(BSPMap.ReadChars(64)), BSPMap.ReadUInt32(), BSPMap.ReadUInt32()));
 			}
 		}
 
@@ -85,10 +85,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Planes].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Planes].Length / 16;
-			planes = new List<Plane3D>(num);
+			planes = new List<QPlane>(num);
 			for (int i = 0; i < num; i++)
 			{
-				planes.Add(new Plane3D(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
+				planes.Add(new QPlane(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadSingle()));
 			}
 		}
 
@@ -96,10 +96,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Nodes].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Nodes].Length / 36;
-			nodes = new List<Node>(num);
+			nodes = new List<QNode>(num);
 			for (int i = 0; i < num; i++)
 			{
-				nodes.Add(new Node(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32())));
+				nodes.Add(new QNode(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32())));
 			}
 		}
 
@@ -107,22 +107,22 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Leafs].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Leafs].Length / 48;
-			leafs = new List<Leaf>(num);
+			leafs = new List<QLeaf>(num);
 			for (int i = 0; i < num; i++)
 			{
-				leafs.Add(new Leaf(BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+				leafs.Add(new QLeaf(BSPMap.ReadInt32(), BSPMap.ReadInt32(), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), new Vector3Int(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
 			}
 		}
 
 		//leafs faces
 		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafFaces].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.LeafFaces].Length / 4;
-			leafsFaces = new List<int>(num);
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.LeafSurfaces].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.LeafSurfaces].Length / 4;
+			leafsSurfaces = new List<int>(num);
 			leafRenderFrame = new int[num];
 			for (int i = 0; i < num; i++)
 			{
-				leafsFaces.Add(BSPMap.ReadInt32());
+				leafsSurfaces.Add(BSPMap.ReadInt32());
 			}
 		}
 
@@ -141,10 +141,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Brushes].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Brushes].Length / 12;
-			brushes = new List<Brush>(num);
+			brushes = new List<QBrush>(num);
 			for (int i = 0; i < num; i++)
 			{
-				brushes.Add(new Brush(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+				brushes.Add(new QBrush(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
 			}
 		}
 
@@ -152,10 +152,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.BrushSides].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.BrushSides].Length / 8;
-			brushSides = new List<BrushSide>(num);
+			brushSides = new List<QBrushSide>(num);
 			for (int i = 0; i < num; i++)
 			{
-				brushSides.Add(new BrushSide(BSPMap.ReadInt32(), BSPMap.ReadInt32()));
+				brushSides.Add(new QBrushSide(BSPMap.ReadInt32(), BSPMap.ReadInt32()));
 			}
 		}
 
@@ -163,10 +163,10 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Vertexes].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Vertexes].Length / 44;
-			verts = new List<Vertex>(num);
+			verts = new List<QVertex>(num);
 			for (int i = 0; i < num; i++)
 			{
-				verts.Add(new Vertex(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()),
+				verts.Add(new QVertex(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()),
 													BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(),
 													new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadBytes(4)));
 			}
@@ -183,14 +183,14 @@ public static class MapLoader
 			}
 		}
 
-		//faces
+		//surfaces
 		{
-			BSPMap.BaseStream.Seek(header.Directory[LumpType.Faces].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.Faces].Length / 104;
-			faces = new List<Face>(num);
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Surfaces].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Surfaces].Length / 104;
+			surfaces = new List<QSurface>(num);
 			for (int i = 0; i < num; i++)
 			{
-				faces.Add(new Face(i, BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(),
+				surfaces.Add(new QSurface(i, BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(),
 					BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), new[]
 					{
 						BSPMap.ReadInt32(),
@@ -227,7 +227,7 @@ public static class MapLoader
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.VisData].Offset, SeekOrigin.Begin);
 			if (header.Directory[LumpType.VisData].Length > 0)
 			{
-				visData = new VisData(BSPMap.ReadInt32(), BSPMap.ReadInt32());
+				visData = new QVisData(BSPMap.ReadInt32(), BSPMap.ReadInt32());
 				visData.bitSets = BSPMap.ReadBytes(visData.numOfClusters * visData.bytesPerCluster);
 			}
 		}
@@ -237,21 +237,16 @@ public static class MapLoader
 
 		return true;
 	}
-
 	public static void GenerateMapCollider()
 	{
-		GameObject MapMesh = new GameObject("MapColliders");
-		MapMesh.layer = GameManager.MapMeshesLayer;
-		Transform holder = MapMesh.transform;
+		GameObject MapColliders = new GameObject("MapColliders");
+		MapColliders.layer = GameManager.ColliderLayer;
+		Transform holder = MapColliders.transform;
+		holder.transform.SetParent(GameManager.Instance.transform);
 
-		foreach (Brush brush in brushes)
+		foreach (QBrush brush in brushes)
 		{
-//			if (brush.numOfBrushSides == 10)
-//			{
-				Mesher.GenerateColliderBox(brush,holder);
-//			}
-//			else
-//				Debug.Log("Brush side: " + brush.numOfBrushSides);
+			Mesher.GenerateBrushCollider(brush,holder);
 		}
 	}
 	public static void GetMapTextures()
@@ -260,7 +255,7 @@ public static class MapLoader
 		TextureLoader.LoadTGATextures(mapTextures);
 	}
 
-	public static void GenerateFaces()
+	public static void GenerateSurfaces()
 	{
 		GameObject MapMesh = new GameObject("MapMeshes");
 		MapMesh.layer = GameManager.MapMeshesLayer;
@@ -270,36 +265,35 @@ public static class MapLoader
 		holder.transform.SetParent(GameManager.Instance.transform);
 
 
-		// Each face group is its own gameobject
-		var groups = faces.GroupBy(x => new { x.type, x.textureID, x.lightMapID });
+		// Each surface group is its own gameobject
+		var groups = surfaces.GroupBy(x => new { x.type, x.shaderId, x.lightMapID });
 		int groupId = 0;
 		foreach (var group in groups)
 		{
-			Face[] faces = group.ToArray();
-			if (faces.Length == 0)
+			QSurface[] groupSurfaces = group.ToArray();
+			if (groupSurfaces.Length == 0)
 				continue;
 			
 				groupId++;
 
-			Material mat = MaterialManager.GetMaterials(mapTextures[faces[0].textureID].Name, faces[0].lightMapID);
+			Material mat = MaterialManager.GetMaterials(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID);
 
 			switch (group.Key.type)
 			{
-				case FaceType.Patch:
+				case QSurfaceType.Patch:
 					{
-						Mesher.GenerateBezObject(mat, groupId, faces);
+						Mesher.GenerateBezObject(mat, groupId, groupSurfaces);
 						break;
 					}
-
-				case FaceType.Polygon:
-				case FaceType.Mesh:
+				case QSurfaceType.Polygon:
+				case QSurfaceType.Mesh:
 					{
-						Mesher.GeneratePolygonObject(mat, groupId, faces);
+						Mesher.GeneratePolygonObject(mat, groupId, groupSurfaces);
 						break;
 					}
 
 				default:
-					Debug.Log($"Skipped face because it was not a polygon, mesh, or bez patch ({group.Key.type}).");
+					Debug.LogWarning("Group "+ groupId + "Skipped surface because it was not a polygon, mesh, or bez patch ("+group.Key.type+").");
 					break;
 			}
 		}
@@ -311,11 +305,11 @@ public static class MapLoader
 	{
 		StringBuilder blob = new StringBuilder();
 		int count = 0;
-		foreach (Face face in faces)
+		foreach (QSurface surface in surfaces)
 		{
-			blob.AppendLine("Face " + count + "\t Tex: " + face.textureID + "\tType: " + face.type + "\tVertIndex: " +
-							face.startVertIndex + "\tNumVerts: " + face.numOfVerts + "\tMeshVertIndex: " + face.startIndex +
-							"\tMeshVerts: " + face.numOfIndices + "\r\n");
+			blob.AppendLine("Surface " + count + "\t Tex: " + surface.shaderId + "\tType: " + surface.type + "\tVertIndex: " +
+							surface.startVertIndex + "\tNumVerts: " + surface.numOfVerts + "\tMeshVertIndex: " + surface.startIndex +
+							"\tMeshVerts: " + surface.numOfIndices + "\r\n");
 			count++;
 		}
 

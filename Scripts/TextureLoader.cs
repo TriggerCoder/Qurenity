@@ -35,11 +35,11 @@ public class TextureLoader : MonoBehaviour
 		return illegal;
 	}
 
-	public static void LoadJPGTextures(List<BSPTexture> mapTextures)
+	public static void LoadJPGTextures(List<QShader> mapTextures)
 	{
-		foreach (BSPTexture tex in mapTextures)
+		foreach (QShader tex in mapTextures)
 		{
-			string path = tex.Name.ToUpper() + ".JPG";
+			string path = tex.name.ToUpper() + ".JPG";
 			if (PakManager.ZipFiles.ContainsKey(path))
 			{
 				string FileName = PakManager.ZipFiles[path];
@@ -52,26 +52,26 @@ public class TextureLoader : MonoBehaviour
 				Texture2D readyTex = new Texture2D(4, 4);
 				readyTex.LoadImage(jpgBytes);
 
-				readyTex.name = tex.Name;
+				readyTex.name = tex.name;
 				readyTex.filterMode = FilterMode.Trilinear;
 				CompressTextureNearestPowerOfTwo(ref readyTex);
 
-				if (Textures.ContainsKey(tex.Name))
+				if (Textures.ContainsKey(tex.name))
 				{
-					Debug.Log("Updating texture with name " + tex.Name + ".jpg");
-					Textures[tex.Name] = readyTex;
+					Debug.Log("Updating texture with name " + tex.name + ".jpg");
+					Textures[tex.name] = readyTex;
 				}
 				else
-					Textures.Add(tex.Name, readyTex);
+					Textures.Add(tex.name, readyTex);
 			}
 		}
 	}
 
-	public static void LoadTGATextures(List<BSPTexture> mapTextures)
+	public static void LoadTGATextures(List<QShader> mapTextures)
 	{
-		foreach (BSPTexture tex in mapTextures)
+		foreach (QShader tex in mapTextures)
 		{
-			string path = tex.Name.ToUpper() + ".TGA";
+			string path = tex.name.ToUpper() + ".TGA";
 			if (PakManager.ZipFiles.ContainsKey(path))
 			{
 				string FileName = PakManager.ZipFiles[path];
@@ -83,17 +83,17 @@ public class TextureLoader : MonoBehaviour
 
 				Texture2D readyTex = LoadTGA(tgaBytes);
 
-				readyTex.name = tex.Name;
+				readyTex.name = tex.name;
 				readyTex.filterMode = FilterMode.Trilinear;
 				readyTex.Compress(true);
 
-				if (Textures.ContainsKey(tex.Name))
+				if (Textures.ContainsKey(tex.name))
 				{
-					Debug.Log("Updating texture with name " + tex.Name + ".tga");
-					Textures[tex.Name] = readyTex;
+					Debug.Log("Updating texture with name " + tex.name + ".tga");
+					Textures[tex.name] = readyTex;
 				}
 				else
-					Textures.Add(tex.Name, readyTex);
+					Textures.Add(tex.name, readyTex);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ public class TextureLoader : MonoBehaviour
 	}
 	public static byte ChangeGamma(byte color)
 	{
-		float scale = 1.0f, temp = 0.0f;
+		float scale = 1.0f, temp;
 		float icolor = color *  GameManager.Instance.gamma / 255f;
 
 		if (icolor > 1.0f && (temp = (1.0f / icolor)) < scale) 

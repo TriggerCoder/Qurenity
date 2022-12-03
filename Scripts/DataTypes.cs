@@ -62,11 +62,11 @@ public class BSPHeader
 			Directory[i] = new BSPDirectoryEntry(BSP.ReadInt32(), BSP.ReadInt32());
 
 		Directory[LumpType.Entities].Name = "Entities";
-		Directory[LumpType.Textures].Name = "Textures";
+		Directory[LumpType.Shaders].Name = "Shaders";
 		Directory[LumpType.Planes].Name = "Planes";
 		Directory[LumpType.Nodes].Name = "Nodes";
 		Directory[LumpType.Leafs].Name = "Leafs";
-		Directory[LumpType.LeafFaces].Name = "Leaf Faces";
+		Directory[LumpType.LeafSurfaces].Name = "Leaf Surfaces";
 		Directory[LumpType.LeafBrushes].Name = "Leaf Brushes";
 		Directory[LumpType.Models].Name = "Models";
 		Directory[LumpType.Brushes].Name = "Brushes";
@@ -74,9 +74,9 @@ public class BSPHeader
 		Directory[LumpType.Vertexes].Name = "Vertexes";
 		Directory[LumpType.VertIndices].Name = "Vertexes Indices";
 		Directory[LumpType.Effects].Name = "Effects";
-		Directory[LumpType.Faces].Name = "Faces";
+		Directory[LumpType.Surfaces].Name = "Surfaces";
 		Directory[LumpType.LightMaps].Name = "Light Maps";
-		Directory[LumpType.LightVols].Name = "Light volumes";
+		Directory[LumpType.LightGrid].Name = "Light Grid";
 		Directory[LumpType.VisData].Name = "Vis data";
 	}
 
@@ -112,29 +112,4 @@ public class BSPDirectoryEntry
 			return true;
 		return false;
 	}
-}
-public class BSPTexture
-{
-	public BSPTexture(string rawName, int flags, int contents)
-	{
-		//The string is read as 64 characters, which includes a bunch of null bytes.  We strip them to avoid oddness when printing and using the texture names.
-		Name = rawName.Replace("\0", string.Empty);
-		Flags = flags;
-		Contents = contents;
-
-		// Remove some common shader modifiers to get normal
-		// textures instead. This is kind of a hack, and could
-		// bit you if a texture just happens to have any of these
-		// in its name but isn't actually a shader texture.
-		Name = Name.Replace("_hell", string.Empty);
-		Name = Name.Replace("_trans", string.Empty);
-		Name = Name.Replace("flat_400", string.Empty);
-		Name = Name.Replace("_750", string.Empty);
-	}
-
-	public string Name { get; }
-
-	public int Flags { get; }
-
-	public int Contents { get; }
 }

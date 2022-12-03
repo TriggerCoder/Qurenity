@@ -7,9 +7,9 @@ public class ClusterPVSController : MonoBehaviour
 	public float visibleTime = 0.0f;
 	bool isVisible = false;
 	int lastlayer = GameManager.MapMeshesLayer;
-	public void RegisterClusterAndFaces(params Face[] faces)
+	public void RegisterClusterAndSurfaces(params QSurface[] surfaces)
 	{
-		ClusterPVSManager.Instance.Register(this, faces);
+		ClusterPVSManager.Instance.Register(this, surfaces);
 	}
 	public void DectivateCluster()
 	{

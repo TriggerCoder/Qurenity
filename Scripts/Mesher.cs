@@ -14,6 +14,13 @@ public static class Mesher
 	private static List<int> indiciesCache = new List<int>();
 
 	public const float APROX_ERROR = 0.001f;
+	public const uint MaskSolid = ContentFlags.Solid;
+	public const uint MaskPlayerSolid = ContentFlags.Solid | ContentFlags.PlayerClip | ContentFlags.Body;
+	public const uint MaskDeadSolid = ContentFlags.Solid | ContentFlags.PlayerClip;
+	public const uint MaskWater = ContentFlags.Water | ContentFlags.Lava | ContentFlags.Slime;
+	public const uint MaskOpaque = ContentFlags.Solid | ContentFlags.Lava | ContentFlags.Slime;
+	public const uint MaskShot = ContentFlags.Solid | ContentFlags.Body | ContentFlags.Corpse;
+
 	public static void ClearMesherCache()
 	{
 		vertsCache = new List<Vector3>();
@@ -23,45 +30,45 @@ public static class Mesher
 		indiciesCache = new List<int>();
 		BezierMesh.ClearCaches();
 	}
-	public static void GenerateBezObject(Material material, int indexId, params Face[] faces)
+	public static void GenerateBezObject(Material material, int indexId, params QSurface[] surfaces)
 	{
-		if (faces == null || faces.Length == 0)
+		if (surfaces == null || surfaces.Length == 0)
 			return;
 
-		string Name = "Bezier_Faces";
-		int[] numPatches = new int[faces.Length];
+		string Name = "Bezier_Surfaces";
+		int[] numPatches = new int[surfaces.Length];
 		int totalPatches = 0;
-		for (int i = 0; i < faces.Length; i++)
+		for (int i = 0; i < surfaces.Length; i++)
 		{
-			int patches = (faces[i].size[0] - 1) / 2 * ((faces[i].size[1] - 1) / 2);
+			int patches = (surfaces[i].size[0] - 1) / 2 * ((surfaces[i].size[1] - 1) / 2);
 			numPatches[i] = patches;
 			totalPatches += patches;
-			Name += "_" + faces[i].faceId;
+			Name += "_" + surfaces[i].surfaceId;
 		}
 
 		CombineInstance[] combine = new CombineInstance[totalPatches];
 		int index = 0;
-		for (int i = 0; i < faces.Length; i++)
+		for (int i = 0; i < surfaces.Length; i++)
 		{
 			for (int n = 0; n < numPatches[i]; n++)
 			{
-				combine[index].mesh = GenerateBezMesh(faces[i], n);
+				combine[index].mesh = GenerateBezMesh(surfaces[i], n);
 				index++;
 			}
 		}
 
-		int p = (faces[0].size[0] - 1) / 2 * ((faces[0].size[1] - 1) / 2);
+		int p = (surfaces[0].size[0] - 1) / 2 * ((surfaces[0].size[1] - 1) / 2);
 		CombineInstance[] c = new CombineInstance[p];
 		for (int i = 0; i < p; i++)
 		{
-			c[i].mesh = GenerateBezMesh(faces[0], i);
+			c[i].mesh = GenerateBezMesh(surfaces[0], i);
 		}
 
 
 		Mesh mesh = new Mesh();
 		mesh.name = Name;
 		mesh.CombineMeshes(combine, true, false, false);
-		//            mesh.CombineMeshes(c, true, false, false);
+//		mesh.CombineMeshes(c, true, false, false);
 
 		GameObject bezObj = new GameObject();
 		bezObj.layer = GameManager.MapMeshesLayer;
@@ -70,27 +77,23 @@ public static class Mesher
 
 		//PVS
 		ClusterPVSController cluster = bezObj.AddComponent<ClusterPVSController>();
-		cluster.RegisterClusterAndFaces(faces);
+		cluster.RegisterClusterAndSurfaces(surfaces);
 
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
 
-//Don't use meshColliders		
-		MeshCollider mc = bezObj.AddComponent<MeshCollider>();
-		mc.sharedMesh = mesh;
-
 		meshRenderer.sharedMaterial = material;
 	}
 
-	public static Mesh GenerateBezMesh(Face face, int patchNumber)
+	public static Mesh GenerateBezMesh(QSurface surface, int patchNumber)
 	{
 		//Calculate how many patches there are using size[]
 		//There are n_patchesX by n_patchesY patches in the grid, each of those
 		//starts at a vert (i,j) in the overall grid
 		//We don't actually need to know how many are on the Y length
 		//but the forumla is here for historical/academic purposes
-		int n_patchesX = (face.size[0] - 1) / 2;
-		//int n_patchesY = ((face.size[1]) - 1) / 2;
+		int n_patchesX = (surface.size[0] - 1) / 2;
+		//int n_patchesY = ((surface.size[1]) - 1) / 2;
 
 
 		//Calculate what [n,m] patch we want by using an index
@@ -110,21 +113,21 @@ public static class Mesher
 		}
 
 		//Create an array the size of the grid, which is given by
-		//size[] on the face object.
-		Vertex[,] vertGrid = new Vertex[face.size[0], face.size[1]];
+		//size[] on the surface object.
+		QVertex[,] vertGrid = new QVertex[surface.size[0], surface.size[1]];
 
-		//Read the verts for this face into the grid, making sure
+		//Read the verts for this surface into the grid, making sure
 		//that the final shape of the grid matches the size[] of
-		//the face.
+		//the surface.
 		int gridXstep = 0;
 		int gridYstep = 0;
-		int vertStep = face.startVertIndex;
-		for (int i = 0; i < face.numOfVerts; i++)
+		int vertStep = surface.startVertIndex;
+		for (int i = 0; i < surface.numOfVerts; i++)
 		{
 			vertGrid[gridXstep, gridYstep] = MapLoader.verts[vertStep];
 			vertStep++;
 			gridXstep++;
-			if (gridXstep == face.size[0])
+			if (gridXstep == surface.size[0])
 			{
 				gridXstep = 0;
 				gridYstep++;
@@ -197,22 +200,22 @@ public static class Mesher
 		return bezPatch.Mesh;
 	}
 
-	public static void GeneratePolygonObject(Material material, int indexId, params Face[] faces)
+	public static void GeneratePolygonObject(Material material, int indexId, params QSurface[] surfaces)
 	{
-		if (faces == null || faces.Length == 0)
+		if (surfaces == null || surfaces.Length == 0)
 		{
-			Debug.LogWarning("Failed to create polygon object because there are no faces");
+			Debug.LogWarning("Failed to create polygon object because there are no surfaces");
 			return;
 		}
 
-		string Name = "Mesh_Faces_";
+		string Name = "Mesh_Surfaces_";
 
 		// Our GeneratePolygonMesh will optimze and add the UVs for us
-		CombineInstance[] combine = new CombineInstance[faces.Length];
+		CombineInstance[] combine = new CombineInstance[surfaces.Length];
 		for (var i = 0; i < combine.Length; i++)
 		{
-			combine[i].mesh = GeneratePolygonMesh(faces[i]);
-			Name += "_" + faces[i].faceId;
+			combine[i].mesh = GeneratePolygonMesh(surfaces[i]);
+			Name += "_" + surfaces[i].surfaceId;
 		}
 
 		GameObject obj = new GameObject();
@@ -222,7 +225,7 @@ public static class Mesher
 
 		//PVS
 		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
-		cluster.RegisterClusterAndFaces(faces);
+		cluster.RegisterClusterAndSurfaces(surfaces);
 
 		var mesh = new Mesh();
 		mesh.name = Name;
@@ -233,20 +236,16 @@ public static class Mesher
 		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
 		meshFilter.mesh = mesh;
 
-		//Don't use meshColliders		
-		MeshCollider mc = obj.AddComponent<MeshCollider>();
-		mc.sharedMesh = mesh;
-
 		mr.sharedMaterial = material;
 	}
 
-	public static Mesh GeneratePolygonMesh(Face face)
+	public static Mesh GeneratePolygonMesh(QSurface surface)
 	{
 		Mesh mesh = new Mesh();
 		mesh.name = "BSPface (poly/mesh)";
 
 		// Rip verts, uvs, and normals
-		int vertexCount = face.numOfVerts;
+		int vertexCount = surface.numOfVerts;
 		if (vertsCache.Capacity < vertexCount)
 		{
 			vertsCache.Capacity = vertexCount;
@@ -255,8 +254,8 @@ public static class Mesher
 			normalsCache.Capacity = vertexCount;
 		}
 
-		if (indiciesCache.Capacity < face.numOfIndices)
-			indiciesCache.Capacity = face.numOfIndices;
+		if (indiciesCache.Capacity < surface.numOfIndices)
+			indiciesCache.Capacity = surface.numOfIndices;
 
 		vertsCache.Clear();
 		uvCache.Clear();
@@ -264,8 +263,8 @@ public static class Mesher
 		normalsCache.Clear();
 		indiciesCache.Clear();
 
-		int vstep = face.startVertIndex;
-		for (int n = 0; n < face.numOfVerts; n++)
+		int vstep = surface.startVertIndex;
+		for (int n = 0; n < surface.numOfVerts; n++)
 		{
 			vertsCache.Add(MapLoader.verts[vstep].position);
 			uvCache.Add(MapLoader.verts[vstep].textureCoord);
@@ -275,8 +274,8 @@ public static class Mesher
 		}
 
 		// Rip meshverts / triangles
-		int mstep = face.startIndex;
-		for (int n = 0; n < face.numOfIndices; n++)
+		int mstep = surface.startIndex;
+		for (int n = 0; n < surface.numOfIndices; n++)
 		{
 			indiciesCache.Add(MapLoader.vertIndices[mstep]);
 			mstep++;
@@ -286,7 +285,7 @@ public static class Mesher
 		mesh.SetVertices(vertsCache);
 		mesh.SetNormals(normalsCache);
 
-		// Add the texture co-ords (or UVs) to the face/mesh
+		// Add the texture co-ords (or UVs) to the surface/mesh
 		mesh.SetUVs(0, uvCache);
 		mesh.SetUVs(1, uv2Cache);
 
@@ -301,38 +300,36 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static void GenerateColliderBox(Brush brush, Transform holder)
+	public static void GenerateBrushCollider(QBrush brush, Transform holder)
 	{
+		//Remove brushed used for BSP Generations and for Details
+		uint type = MapLoader.mapTextures[brush.shaderId].contentsFlags;
+
+		if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
+		{
+			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
+			return;
+		}
+
 		GameObject objCollider = new GameObject(brush.brushSide + "_collider");
+		objCollider.layer = GameManager.ColliderLayer;
 		objCollider.transform.SetParent(holder);
 
-		Vector3 center = Vector3.zero;
-		Vector3 normal = Vector3.zero;
 		List<Vector3> possibleIntersectPoint = new List<Vector3>();
 		List<Vector3> intersectPoint = new List<Vector3>();
 		for (int i = 0; i < brush.numOfBrushSides; i++)
 		{
 			int planeIndex = MapLoader.brushSides[brush.brushSide + i].plane;
-			Plane3D p1 = MapLoader.planes[planeIndex];
-/*
-			{
-				GameObject planeObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
-				planeObj.name = "Plane_" + planeIndex;
-				planeObj.transform.position = p1.normal * p1.distance;
-				planeObj.transform.up = p1.normal;
-				planeObj.transform.localScale = new Vector3(10f, 10f, 10f);
+			QPlane p1 = MapLoader.planes[planeIndex];
 
-				planeObj.transform.SetParent(holder);
-			}
-*/
 			for (int j = i + 1; j < brush.numOfBrushSides; j++)
 			{
 				planeIndex = MapLoader.brushSides[brush.brushSide + j].plane;
-				Plane3D p2 = MapLoader.planes[planeIndex];
+				QPlane p2 = MapLoader.planes[planeIndex];
 				for (int k = j + 1; k < brush.numOfBrushSides; k++)
 				{
 					planeIndex = MapLoader.brushSides[brush.brushSide + k].plane;
-					Plane3D p3 = MapLoader.planes[planeIndex];
+					QPlane p3 = MapLoader.planes[planeIndex];
 					List<float> intersect = p1.IntersectPlanes(p2, p3);
 					if (intersect != null)
 						possibleIntersectPoint.Add(new Vector3(intersect[0], intersect[1], intersect[2]));
@@ -346,8 +343,8 @@ public static class Mesher
 			for (int j = 0; j < brush.numOfBrushSides; j++)
 			{
 				int planeIndex = MapLoader.brushSides[brush.brushSide + j].plane;
-				Plane3D plane = MapLoader.planes[planeIndex];
-				if (plane.GetSide(possibleIntersectPoint[i], Plane3D.CheckPointPlane.IsFront))
+				QPlane plane = MapLoader.planes[planeIndex];
+				if (plane.GetSide(possibleIntersectPoint[i], QPlane.CheckPointPlane.IsFront))
 				{
 					inside = false;
 					j = brush.numOfBrushSides;
@@ -366,12 +363,8 @@ public static class Mesher
 		for (int i = 0; i < intersectPoint.Count; i++)
 		{
 			points.Add(new MyVector3(intersectPoint[i].x, intersectPoint[i].y, intersectPoint[i].z));
-/*			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			sphere.name = "Spere_" + brush.brushSide + "_collider" + i;
-			sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-			sphere.transform.position = intersectPoint[i];
-			sphere.transform.SetParent(holder);
-*/		}
+		}
+
 		if ((intersectPoint.Count & 1) != 0)
 			Debug.LogWarning("brushSide: " + brush.brushSide + " intersectPoint " + intersectPoint.Count);
 
@@ -382,19 +375,27 @@ public static class Mesher
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
+		Rigidbody rb = objCollider.AddComponent<Rigidbody>();
+		rb.isKinematic = true;
+		rb.useGravity = false;
+		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+		ContentType contentType = objCollider.AddComponent<ContentType>();
+		contentType.Init(type);
+
+		if ((contentType.value & MaskPlayerSolid) == 0)
+			mc.isTrigger = true;
+
+		if ((contentType.value & ContentFlags.PlayerClip) == 0)
+			objCollider.layer = GameManager.InvisibleBlockerLayer;
+
+		type = MapLoader.mapTextures[brush.shaderId].surfaceFlags;
+		SurfaceType surfaceType = objCollider.AddComponent<SurfaceType>();
+		surfaceType.Init(type);
+//		if ((type & SurfaceFlags.NonSolid) != 0)
+//			Debug.Log("brushSide: " + brush.brushSide + " Surface Type is: " + type);
 
 
-		/*
-				mc.transform.position = center / 2f;
-				mc.transform.forward = normal;
-				BoxCollider bc = mc.AddComponent<BoxCollider>();
-				bc.center = Vector3.zero;
-		//		bc.size = new Vector3((s.Line.start.Position - s.Line.end.Position).magnitude, (max - min), .01f);
-				Rigidbody rb = mc.AddComponent<Rigidbody>();
-				rb.isKinematic = true;
-				rb.useGravity = false;
-				rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-		*/
 	}
 
 	public static List<Vector3> RemoveDuplicatedVectors(List<Vector3> test)
@@ -418,8 +419,6 @@ public static class Mesher
 	public static bool FloatAprox(float f1, float f2)
 	{
 		float d = f1 - f2;
-
-//		return Mathf.Approximately(f1, f2);
 
 		if (Mathf.Abs(d) > APROX_ERROR)
 			return false;

@@ -31,8 +31,8 @@ public class PlayerInfo : MonoBehaviour
 	
 		while (i >= 0)
 		{
-			Node node = MapLoader.nodes[i];
-			Plane3D slitPlane = MapLoader.planes[node.plane];
+			QNode node = MapLoader.nodes[i];
+			QPlane slitPlane = MapLoader.planes[node.plane];
 
 			if (slitPlane.GetSide(currentPos))
 			{
@@ -73,26 +73,21 @@ public class PlayerInfo : MonoBehaviour
 
 		while (i-- != 0)
 		{
-			Leaf leaf = MapLoader.leafs[i];
+			QLeaf leaf = MapLoader.leafs[i];
 
 			if (!IsClusterVisible(cluster, leaf.cluster))
 				continue;
 
-/*			Plane forwardPlane = new Plane(transform.forward, transform.position);
+			int surfaceCount = leaf.numOfLeafFaces;
 
-			if ((!forwardPlane.GetSide(leaf.bb_Min)) && (!forwardPlane.GetSide(leaf.bb_Max)))
-				continue;
-*/
-			int faceCount = leaf.numOfLeafFaces;
-
-			while (faceCount-- != 0)
+			while (surfaceCount-- != 0)
 			{
-				int faceId = MapLoader.leafsFaces[leaf.leafFace + faceCount];
-				if (MapLoader.leafRenderFrame[faceId] == currentFrame)
+				int surfaceId = MapLoader.leafsSurfaces[leaf.leafSurface + surfaceCount];
+				if (MapLoader.leafRenderFrame[surfaceId] == currentFrame)
 					continue;
 
-				MapLoader.leafRenderFrame[faceId] = currentFrame;
-				ClusterPVSManager.Instance.ActivateClusterByFace(faceId);
+				MapLoader.leafRenderFrame[surfaceId] = currentFrame;
+				ClusterPVSManager.Instance.ActivateClusterBySurface(surfaceId);
 			}
 		}
 	}
