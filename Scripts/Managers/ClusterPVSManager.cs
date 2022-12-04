@@ -72,7 +72,12 @@ public class ClusterPVSManager : MonoBehaviour
 	}
 	public void ActivateClusterBySurface(int surface)
 	{
-		ClusterPVSController culster = SurfaceToCluster[surface];
-		culster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
+		ClusterPVSController cluster = SurfaceToCluster[surface];
+		if (cluster == null)
+		{
+			Debug.LogWarning("Cluster not found for surface: " + surface);
+			return;
+		}
+		cluster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
 	}
 }

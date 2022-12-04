@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
 	public Transform TemporaryObjectsHolder;
 	public Transform BaseThingsHolder;
 
-	// Quake3 also uses an odd scale where 0.03 units is about 1 meter, so it need to be scaled down
-	public const float sizeDividor = 3f / 100f;
+	// Quake3 also uses Doom and Wolf3d scaling down
+	public const float sizeDividor = 1f / 32f;
 	public const short DefaultLayer = 0;
 	public const short TransparentFXLayer = 1;
 	public const short MapMeshesLayer = 8;

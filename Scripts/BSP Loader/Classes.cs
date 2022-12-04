@@ -257,6 +257,15 @@ public class QSurface
 		this.lm_vecs = lm_vecs;
 		this.normal = normal;
 		this.size = size;
+
+		QuakeToUnityCoordSystem();
+	}
+	private void QuakeToUnityCoordSystem()
+	{
+		lm_Origin = new Vector3(-lm_Origin.x, lm_Origin.z, -lm_Origin.y);
+		normal = new Vector3(-normal.x, normal.z, -normal.y);
+
+		lm_Origin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
 	}
 }
 public class QSurfaceType

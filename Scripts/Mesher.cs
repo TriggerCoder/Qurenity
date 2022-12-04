@@ -239,6 +239,38 @@ public static class Mesher
 		mr.sharedMaterial = material;
 	}
 
+	public static void GenerateBillBoardObject(Material material, int indexId, params QSurface[] surfaces)
+	{
+		if (surfaces == null || surfaces.Length == 0)
+		{
+			Debug.LogWarning("Failed to create billboard object because there are no surfaces");
+			return;
+		}
+		
+		GameObject obj = new GameObject();
+		obj.layer = GameManager.MapMeshesLayer;
+		obj.name = "Billboard_" + indexId;
+		Transform holder = obj.transform;
+		holder.SetParent(MapMeshes);
+
+		for (var i = 0; i < surfaces.Length; i++)
+		{
+			GameObject billboard = new GameObject();
+			billboard.layer = GameManager.MapMeshesLayer;
+			billboard.name = "Billboard_Surface" + surfaces[i].surfaceId;
+			billboard.transform.SetParent(holder);
+
+			Mesh mesh = GeneratePolygonMesh(surfaces[i]);
+			MeshRenderer mr = billboard.AddComponent<MeshRenderer>();
+			MeshFilter meshFilter = billboard.AddComponent<MeshFilter>();
+			meshFilter.mesh = mesh;
+			mr.sharedMaterial = material;
+		}
+
+		//PVS
+		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
+		cluster.RegisterClusterAndSurfaces(surfaces);
+	}
 	public static Mesh GeneratePolygonMesh(QSurface surface)
 	{
 		Mesh mesh = new Mesh();

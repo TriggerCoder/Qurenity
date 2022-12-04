@@ -281,16 +281,16 @@ public static class MapLoader
 			switch (group.Key.type)
 			{
 				case QSurfaceType.Patch:
-					{
 						Mesher.GenerateBezObject(mat, groupId, groupSurfaces);
 						break;
-					}
 				case QSurfaceType.Polygon:
 				case QSurfaceType.Mesh:
-					{
 						Mesher.GeneratePolygonObject(mat, groupId, groupSurfaces);
 						break;
-					}
+				case QSurfaceType.Billboard:
+						Mesher.GenerateBillBoardObject(mat, groupId, groupSurfaces);
+					break;
+					
 
 				default:
 					Debug.LogWarning("Group "+ groupId + "Skipped surface because it was not a polygon, mesh, or bez patch ("+group.Key.type+").");
