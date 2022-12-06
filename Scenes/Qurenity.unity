@@ -258,6 +258,83 @@ MonoBehaviour:
   skyHole: {fileID: 2100000, guid: a2196f5cd0c659f4d97144b608742690, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
   defaultMaterialLightMap: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
+  _OverrideMaterials:
+  - overrideName: textures/sfx/flame1
+    material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
+    animation:
+    - textureFrames:
+      - textures/sfx/flameball
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+    - textureFrames:
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      - textures/sfx/flame1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+    - textureFrames:
+      - textures/sfx/flame1
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+  - overrideName: textures/sfx/flame2
+    material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
+    animation:
+    - textureFrames:
+      - textures/sfx/flameball
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+    - textureFrames:
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      - textures/sfx/flame1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+    - textureFrames:
+      - textures/sfx/flame1
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
   applyLightmaps: 1
   lightMapProperty: _LightMap
 --- !u!114 &300009281

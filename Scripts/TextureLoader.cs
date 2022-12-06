@@ -35,7 +35,7 @@ public class TextureLoader : MonoBehaviour
 		return illegal;
 	}
 
-	public static void LoadJPGTextures(List<QShader> mapTextures)
+	public static void LoadJPGTextures(List<QShader> mapTextures, bool forceTransparency = false)
 	{
 		foreach (QShader tex in mapTextures)
 		{
@@ -51,7 +51,20 @@ public class TextureLoader : MonoBehaviour
 
 				Texture2D readyTex = new Texture2D(4, 4);
 				readyTex.LoadImage(jpgBytes);
-
+				if (forceTransparency)
+				{
+					Color32[] pulledColors = readyTex.GetPixels32();
+					for (int i = 0; i < pulledColors.GetLength(0); i++)
+					{
+						int gray = (pulledColors[i].r + pulledColors[i].g + pulledColors[i].b) / 2;
+						gray = Mathf.Clamp(gray, 0, 255);
+						pulledColors[i].a = (byte)gray;
+					}
+					readyTex = new Texture2D(readyTex.width, readyTex.height, TextureFormat.RGBA32, false);
+					readyTex.SetPixels32(pulledColors);
+					readyTex.alphaIsTransparency = true;
+					readyTex.Apply();
+				}
 				readyTex.name = tex.name;
 				readyTex.filterMode = FilterMode.Trilinear;
 				CompressTextureNearestPowerOfTwo(ref readyTex);
@@ -67,7 +80,7 @@ public class TextureLoader : MonoBehaviour
 		}
 	}
 
-	public static void LoadTGATextures(List<QShader> mapTextures)
+	public static void LoadTGATextures(List<QShader> mapTextures, bool forceTransparency = false)
 	{
 		foreach (QShader tex in mapTextures)
 		{
@@ -81,7 +94,7 @@ public class TextureLoader : MonoBehaviour
 				byte[] tgaBytes = PakManager.ZipToByteArray(path, ref zip);
 				stream.Close();
 
-				Texture2D readyTex = LoadTGA(tgaBytes);
+				Texture2D readyTex = LoadTGA(tgaBytes, forceTransparency);
 
 				readyTex.name = tex.name;
 				readyTex.filterMode = FilterMode.Trilinear;
@@ -97,7 +110,7 @@ public class TextureLoader : MonoBehaviour
 			}
 		}
 	}
-	public static Texture2D LoadTGA(byte[] TGABytes)
+	public static Texture2D LoadTGA(byte[] TGABytes, bool forceTransparency)
 	{
 		// Skip some header info we don't care about.
 		// Even if we did care, we have to move the stream seek point to the beginning,
@@ -121,7 +134,11 @@ public class TextureLoader : MonoBehaviour
 				byte red = TGABytes[p++];
 				byte green = TGABytes[p++];
 				byte blue = TGABytes[p++];
-				byte alpha = TGABytes[p++];
+				byte alpha;
+				if (forceTransparency)
+					alpha = 128;
+				else
+					alpha = TGABytes[p++];
 
 				pulledColors[i] = new Color32(blue, green, red, alpha);
 			}
@@ -139,7 +156,7 @@ public class TextureLoader : MonoBehaviour
 		}
 		else
 			throw new Exception("TGA texture had non 32/24 bit depth.");
-
+		tex.alphaIsTransparency = true;
 		tex.SetPixels32(pulledColors);
 		tex.Apply();
 		return tex;

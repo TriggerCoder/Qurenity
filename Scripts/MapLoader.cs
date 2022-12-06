@@ -276,19 +276,17 @@ public static class MapLoader
 			
 				groupId++;
 
-			Material mat = MaterialManager.GetMaterials(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID);
-
 			switch (group.Key.type)
 			{
 				case QSurfaceType.Patch:
-						Mesher.GenerateBezObject(mat, groupId, groupSurfaces);
+						Mesher.GenerateBezObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
 						break;
 				case QSurfaceType.Polygon:
 				case QSurfaceType.Mesh:
-						Mesher.GeneratePolygonObject(mat, groupId, groupSurfaces);
+						Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
 						break;
 				case QSurfaceType.Billboard:
-						Mesher.GenerateBillBoardObject(mat, groupId, groupSurfaces);
+						Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
 					break;
 					
 

@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour
     {
 		if (MapLoader.Load(autoloadMap))
 		{
+			MaterialManager.GetShaderAnimationsTextures();
 			ClusterPVSManager.Instance.ResetClusterList();
 			MapLoader.GenerateSurfaces();
 			MapLoader.GenerateMapCollider();

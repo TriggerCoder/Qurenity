@@ -30,7 +30,7 @@ public static class Mesher
 		indiciesCache = new List<int>();
 		BezierMesh.ClearCaches();
 	}
-	public static void GenerateBezObject(Material material, int indexId, params QSurface[] surfaces)
+	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 			return;
@@ -82,6 +82,7 @@ public static class Mesher
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
 
+		Material material = MaterialManager.GetMaterials(textureName, lmIndex);
 		meshRenderer.sharedMaterial = material;
 	}
 
@@ -200,7 +201,7 @@ public static class Mesher
 		return bezPatch.Mesh;
 	}
 
-	public static void GeneratePolygonObject(Material material, int indexId, params QSurface[] surfaces)
+	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 		{
@@ -236,10 +237,18 @@ public static class Mesher
 		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
 		meshFilter.mesh = mesh;
 
+		Material material = null;
+		if (MaterialManager.GetOverrideMaterials(textureName, ref material, ref obj))
+		{
+			Debug.LogWarning("Found Material");
+		}
+		else
+			material = MaterialManager.GetMaterials(textureName, lmIndex);
+
 		mr.sharedMaterial = material;
 	}
 
-	public static void GenerateBillBoardObject(Material material, int indexId, params QSurface[] surfaces)
+	public static void GenerateBillBoardObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 		{
@@ -264,6 +273,7 @@ public static class Mesher
 			MeshRenderer mr = billboard.AddComponent<MeshRenderer>();
 			MeshFilter meshFilter = billboard.AddComponent<MeshFilter>();
 			meshFilter.mesh = mesh;
+			Material material = MaterialManager.GetMaterials(textureName, lmIndex);
 			mr.sharedMaterial = material;
 		}
 
