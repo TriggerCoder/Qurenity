@@ -11,6 +11,7 @@ public static class Mesher
 	private static List<Vector2> uvCache = new List<Vector2>();
 	private static List<Vector2> uv2Cache = new List<Vector2>();
 	private static List<Vector3> normalsCache = new List<Vector3>();
+	private static List<Color32> vertsColor = new List<Color32>();
 	private static List<int> indiciesCache = new List<int>();
 
 	public const float APROX_ERROR = 0.001f;
@@ -28,6 +29,7 @@ public static class Mesher
 		uv2Cache = new List<Vector2>();
 		normalsCache = new List<Vector3>();
 		indiciesCache = new List<int>();
+		vertsColor = new List<Color32>();
 		BezierMesh.ClearCaches();
 	}
 	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
@@ -156,6 +158,7 @@ public static class Mesher
 		//they will be tessellated as well.
 		List<Vector2> uv = new List<Vector2>(capacity);
 		List<Vector2> uv2 = new List<Vector2>(capacity);
+		List<Color32> color = new List<Color32>(capacity);
 
 		//Top row
 		bverts.Add(vertGrid[vi, vj].position);
@@ -170,6 +173,10 @@ public static class Mesher
 		uv2.Add(vertGrid[vi + 1, vj].lightmapCoord);
 		uv2.Add(vertGrid[vi + 2, vj].lightmapCoord);
 
+		color.Add(vertGrid[vi, vj].color);
+		color.Add(vertGrid[vi + 1, vj].color);
+		color.Add(vertGrid[vi + 2, vj].color);
+
 		//Middle row
 		bverts.Add(vertGrid[vi, vj + 1].position);
 		bverts.Add(vertGrid[vi + 1, vj + 1].position);
@@ -182,6 +189,10 @@ public static class Mesher
 		uv2.Add(vertGrid[vi, vj + 1].lightmapCoord);
 		uv2.Add(vertGrid[vi + 1, vj + 1].lightmapCoord);
 		uv2.Add(vertGrid[vi + 2, vj + 1].lightmapCoord);
+
+		color.Add(vertGrid[vi, vj + 1].color);
+		color.Add(vertGrid[vi + 1, vj + 1].color);
+		color.Add(vertGrid[vi + 2, vj + 1].color);
 
 		//Bottom row
 		bverts.Add(vertGrid[vi, vj + 2].position);
@@ -196,8 +207,12 @@ public static class Mesher
 		uv2.Add(vertGrid[vi + 1, vj + 2].lightmapCoord);
 		uv2.Add(vertGrid[vi + 2, vj + 2].lightmapCoord);
 
+		color.Add(vertGrid[vi, vj + 2].color);
+		color.Add(vertGrid[vi + 1, vj + 2].color);
+		color.Add(vertGrid[vi + 2, vj + 2].color);
+
 		//Now that we have our control grid, it's business as usual
-		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2);
+		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
 		return bezPatch.Mesh;
 	}
 
@@ -294,6 +309,7 @@ public static class Mesher
 			uvCache.Capacity = vertexCount;
 			uv2Cache.Capacity = vertexCount;
 			normalsCache.Capacity = vertexCount;
+			vertsColor.Capacity = vertexCount;
 		}
 
 		if (indiciesCache.Capacity < surface.numOfIndices)
@@ -304,6 +320,7 @@ public static class Mesher
 		uv2Cache.Clear();
 		normalsCache.Clear();
 		indiciesCache.Clear();
+		vertsColor.Clear();
 
 		int vstep = surface.startVertIndex;
 		for (int n = 0; n < surface.numOfVerts; n++)
@@ -312,6 +329,7 @@ public static class Mesher
 			uvCache.Add(MapLoader.verts[vstep].textureCoord);
 			uv2Cache.Add(MapLoader.verts[vstep].lightmapCoord);
 			normalsCache.Add(MapLoader.verts[vstep].normal);
+			vertsColor.Add(MapLoader.verts[vstep].color);
 			vstep++;
 		}
 
@@ -330,6 +348,9 @@ public static class Mesher
 		// Add the texture co-ords (or UVs) to the surface/mesh
 		mesh.SetUVs(0, uvCache);
 		mesh.SetUVs(1, uv2Cache);
+
+		// Add the vertex color
+		mesh.SetColors(vertsColor);
 
 		// add the meshverts to the object being built
 		mesh.SetTriangles(indiciesCache, 0);

@@ -60,13 +60,13 @@ public class TextureLoader : MonoBehaviour
 						gray = Mathf.Clamp(gray, 0, 255);
 						pulledColors[i].a = (byte)gray;
 					}
-					readyTex = new Texture2D(readyTex.width, readyTex.height, TextureFormat.RGBA32, false);
+					readyTex.Reinitialize(readyTex.width, readyTex.height, TextureFormat.RGBA32, false);
 					readyTex.SetPixels32(pulledColors);
 					readyTex.alphaIsTransparency = true;
 					readyTex.Apply();
 				}
 				readyTex.name = tex.name;
-				readyTex.filterMode = FilterMode.Trilinear;
+				readyTex.filterMode = FilterMode.Bilinear;
 				CompressTextureNearestPowerOfTwo(ref readyTex);
 
 				if (Textures.ContainsKey(tex.name))
@@ -97,7 +97,7 @@ public class TextureLoader : MonoBehaviour
 				Texture2D readyTex = LoadTGA(tgaBytes, forceTransparency);
 
 				readyTex.name = tex.name;
-				readyTex.filterMode = FilterMode.Trilinear;
+				readyTex.filterMode = FilterMode.Bilinear;
 				readyTex.Compress(true);
 
 				if (Textures.ContainsKey(tex.name))
@@ -124,7 +124,13 @@ public class TextureLoader : MonoBehaviour
 		// Skip a byte of header information we don't care about.
 		p++;
 
-		Texture2D tex = new Texture2D(width, height);
+		Texture2D tex;
+
+		if ((forceTransparency) || (bitDepth == 32))
+			tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+		else
+			tex = new Texture2D(width, height);
+
 		Color32[] pulledColors = new Color32[width * height];
 
 		if (bitDepth == 32)
@@ -134,11 +140,7 @@ public class TextureLoader : MonoBehaviour
 				byte red = TGABytes[p++];
 				byte green = TGABytes[p++];
 				byte blue = TGABytes[p++];
-				byte alpha;
-				if (forceTransparency)
-					alpha = 128;
-				else
-					alpha = TGABytes[p++];
+				byte alpha = TGABytes[p++];
 
 				pulledColors[i] = new Color32(blue, green, red, alpha);
 			}
@@ -150,12 +152,18 @@ public class TextureLoader : MonoBehaviour
 				byte red = TGABytes[p++];
 				byte green = TGABytes[p++];
 				byte blue = TGABytes[p++];
-
-				pulledColors[i] = new Color32(blue, green, red, 1);
+				byte alpha = 1;
+				if (forceTransparency)
+				{
+					int gray = (red + green + blue) / 2;
+					gray = Mathf.Clamp(gray, 0, 255);
+					alpha = (byte)gray;
+				}
+				pulledColors[i] = new Color32(blue, green, red, alpha);
 			}
 		}
 		else
-			throw new Exception("TGA texture had non 32/24 bit depth.");
+			Debug.LogError("TGA texture had non 32/24 bit depth.");
 		tex.alphaIsTransparency = true;
 		tex.SetPixels32(pulledColors);
 		tex.Apply();
@@ -183,7 +191,7 @@ public class TextureLoader : MonoBehaviour
 		
 		scale *= 255f;
 		icolor *= scale;
-
+		Mathf.Clamp(icolor, 0, 255);
 		return (byte)icolor;
 	}
 	public static void CompressTextureNearestPowerOfTwo(ref Texture2D texture)
@@ -202,7 +210,7 @@ public class TextureLoader : MonoBehaviour
 
 		if ((xWidth == texture.width) && (xHeight == texture.height))
 		{
-			texture.Compress(false);
+			texture.Compress(true);
 			return;
 		}
 
@@ -286,7 +294,7 @@ public class TextureLoader : MonoBehaviour
 
 		texture.SetPixels(aColor);
 		texture.Apply();
-		texture.Compress(false);
+		texture.Compress(true);
 
 		return;
 	}

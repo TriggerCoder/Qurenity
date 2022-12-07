@@ -189,15 +189,14 @@ public class QVertex
 	public Vector2 textureCoord;		// (u, v) texture coordinate
 	public Vector2 lightmapCoord;		// (u, v) lightmap coordinate
 	public Vector3 normal;				// (x, y, z) normal vector
-	public byte[] color;				// RGBA color for the vertex 
+	public Color32 color;				// RGBA color for the vertex 
 
 	public QVertex(Vector3 position, float texX, float texY, float lmX, float lmY, Vector3 normal, byte[] color)
 	{
 		this.position = position;
 		this.normal = normal;
 
-		// Color data doesn't get used
-		this.color = color;
+		this.color = new Color32(color[0], color[1], color[2], color[3]); ;
 
 		// Invert the texture coords, to account for
 		// the difference in the way Unity and Quake3
