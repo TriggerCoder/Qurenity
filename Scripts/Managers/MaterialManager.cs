@@ -10,6 +10,7 @@ public class MaterialManager : MonoBehaviour
 	public Material skyHole;
 	public Material defaultMaterial;
 	public Material defaultMaterialLightMap;
+	public Material debug;
 
 	public MaterialOverride[] _OverrideMaterials = new MaterialOverride[0];
 

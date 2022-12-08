@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoloadMap: q3dm1
-  tessellations: 5
+  tessellations: 6
   gamma: 1
   TemporaryObjectsHolder: {fileID: 0}
   BaseThingsHolder: {fileID: 0}
@@ -258,6 +258,7 @@ MonoBehaviour:
   skyHole: {fileID: 2100000, guid: a2196f5cd0c659f4d97144b608742690, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
   defaultMaterialLightMap: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
+  debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
   _OverrideMaterials:
   - overrideName: textures/sfx/flame1
     material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}

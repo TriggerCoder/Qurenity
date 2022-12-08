@@ -166,7 +166,7 @@ public static class MapLoader
 			verts = new List<QVertex>(num);
 			for (int i = 0; i < num; i++)
 			{
-				verts.Add(new QVertex(new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()),
+				verts.Add(new QVertex(i, new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()),
 													BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle(),
 													new Vector3(BSPMap.ReadSingle(), BSPMap.ReadSingle(), BSPMap.ReadSingle()), BSPMap.ReadBytes(4)));
 			}
@@ -231,12 +231,78 @@ public static class MapLoader
 				visData.bitSets = BSPMap.ReadBytes(visData.numOfClusters * visData.bytesPerCluster);
 			}
 		}
-
+		
+		LerpColorOnRepeatedVertex();
 		GetMapTextures();
 		BSPMap.Close();
 
 		return true;
 	}
+
+	public static void LerpColorOnRepeatedVertex()
+	{
+		var sGroups = surfaces.GroupBy(s => new { s.type });
+
+		foreach (var sGroup in sGroups)
+		{
+			QSurface[] groupsurfaces = sGroup.ToArray();
+
+			if (groupsurfaces.Length == 0)
+				continue;
+
+			if (sGroup.Key.type != QSurfaceType.Patch)
+				continue;
+
+			List<QVertex> surfVerts = new List<QVertex>();
+			List<QVertex> testVerts = new List<QVertex>();
+
+			for (int i = 0; i < groupsurfaces.Length; i++)
+			{
+				testVerts.Clear();
+				int vertStep = groupsurfaces[i].startVertIndex;
+				for (int j = 0; j < groupsurfaces[i].numOfVerts; j++)
+				{
+					testVerts.Add(verts[vertStep]);
+					vertStep++;
+				}
+				var tGroups = testVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
+
+				bool unique = true;
+				foreach (var tGroup in tGroups)
+				{
+					QVertex[] testVerteces = tGroup.ToArray();
+					if (testVerteces.Length == 0)
+						continue;
+
+					if (testVerteces.Length != 1)
+						unique = false;
+				}
+				if (unique)
+					surfVerts.AddRange(testVerts);
+			}
+
+			var vGroups = surfVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
+
+			foreach (var vGroup in vGroups)
+			{
+				QVertex[] groupVerteces = vGroup.ToArray();
+
+				if (groupVerteces.Length == 0)
+					continue;
+
+				Color color = groupVerteces[0].color;
+				for (int i = 1; i < groupVerteces.Length; i++)
+					color = Color.Lerp(color, groupVerteces[i].color, 0.5f);
+
+				for (int i = 0; i < groupVerteces.Length; i++)
+				{
+					int index = groupVerteces[i].vertId;
+					verts[index].color = color;
+				}
+			}
+		}
+	}
+
 	public static void GenerateMapCollider()
 	{
 		GameObject MapColliders = new GameObject("MapColliders");

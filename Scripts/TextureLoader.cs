@@ -430,6 +430,32 @@ public class TextureLoader : MonoBehaviour
 		return width;
 	}
 
+	public static Color LerpHSV(Color a, Color b, float t)
+	{
+		// Hue interpolation
+		float h = 0;
+		float d = b.r - a.r;
+		if (a.r > b.r)
+		{
+			// Swap (a.r, b.r)
+			var h3 = b.r;
+			b.r = a.r;
+			a.r = h3;
+			d = -d;
+			t = 1 - t;
+		}
+		if (d > 0.5) // 180deg
+		{
+			a.r = a.r + 1; // 360deg
+			h = (a.r + t * (b.r - a.r)) % 1; // 360deg
+		}
+		if (d <= 0.5) // 180deg
+		{
+			h = a.r + t * d;
+	
+		}
+		return new Color(h, a.g + t * (b.g - a.g), a.b + t * (b.b - a.b), a.a + t * (b.a - a.a));
+	}
 	public static Color RGBToHSL(Color color)
 	{
 		float r = color.r, g = color.g, b = color.b;

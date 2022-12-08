@@ -185,18 +185,20 @@ public class QVisData
 };
 public class QVertex
 {
+	public int vertId;					// The index of this vertex
 	public Vector3 position;			// (x, y, z) position. 
 	public Vector2 textureCoord;		// (u, v) texture coordinate
 	public Vector2 lightmapCoord;		// (u, v) lightmap coordinate
 	public Vector3 normal;				// (x, y, z) normal vector
-	public Color32 color;				// RGBA color for the vertex 
+	public Color color;				// RGBA color for the vertex 
 
-	public QVertex(Vector3 position, float texX, float texY, float lmX, float lmY, Vector3 normal, byte[] color)
+	public QVertex(int vertId, Vector3 position, float texX, float texY, float lmX, float lmY, Vector3 normal, byte[] color)
 	{
+		this.vertId = vertId;
 		this.position = position;
 		this.normal = normal;
 
-		this.color = new Color32(color[0], color[1], color[2], color[3]); ;
+		this.color = new Color32(color[0], color[1], color[2], color[3]);
 
 		// Invert the texture coords, to account for
 		// the difference in the way Unity and Quake3

@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
 {
 	public string autoloadMap = "";
 
-	public int tessellations = 5;
+	public int tessellations = 6;
 	public float gamma = 1f;
 	public static GameManager Instance;
 
