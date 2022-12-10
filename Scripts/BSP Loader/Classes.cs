@@ -7,14 +7,15 @@ public class QShader
 
 	public string name;					// The name of the texture w/o the extension 
 	public uint surfaceFlags;            // The surface flags
-	public uint contentsFlags;			// The content flags
-	public QShader(string name, uint surfaceFlags, uint contentsFlags)
+	public uint contentsFlags;          // The content flags
+	public bool addAlpha;				// Shader add Alpha 
+	public QShader(string name, uint surfaceFlags, uint contentsFlags, bool addAlpha)
 	{
 		//The string is read as 64 characters, which includes a bunch of null bytes.  We strip them to avoid oddness when printing and using the texture names.
 		this.name = name.Replace("\0", string.Empty);
 		this.surfaceFlags = surfaceFlags;
 		this.contentsFlags = contentsFlags;
-
+		this.addAlpha = addAlpha;
 		// Remove some common shader modifiers to get normal
 		// textures instead. This is kind of a hack, and could
 		// bit you if a texture just happens to have any of these

@@ -224,240 +224,9 @@ public static class Mesher
 			mr.sharedMaterial = mat;
 		}
 */
-//		GenerateBezierMesh(patchNumber, surface.size[0], surface.size[1], ref vertGrid);
-
 		//Now that we have our control grid, it's business as usual
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
 		return bezPatch.Mesh;
-	}
-
-	private static void GenerateBezierMesh(int patchNumber, int width, int height, ref QVertex[,] vertGrid)
-	{
-		float[,] errorTable = new float[2,65];
-		QVertex prev, next, mid;
-		prev = vertGrid[0, 0];
-		next = vertGrid[0, 0];
-		mid = vertGrid[0, 0];
-		int t;
-
-		for (int dir = 0; dir < 2; dir++)
-		{
-			for (int j = 0; j < 65; j++)
-			{
-				errorTable[dir,j] = 0;
-			}
-
-			// horizontal subdivisions
-			for (int j = 0; j + 2 < width; j += 2)
-			{
-				float maxLen = 0;
-				for (int i = 0; i < height; i++)
-				{
-					Vector3 midxyz = Vector3.zero;
-					Vector3 midxyz2;
-					Vector3 Dir;
-					Vector3 projected;
-					float d;
-
-					// calculate the point on the curve
-					for (int l = 0; l < 3; l++)
-					{
-						midxyz[l] = (vertGrid[i,j].position[l] + vertGrid[i,j + 1].position[l] * 2
-								+ vertGrid[i,j + 2].position[l]) * 0.25f;
-						midxyz -= vertGrid[i, j].position;
-						Dir = (vertGrid[i,j + 2].position - vertGrid[i,j].position).normalized;
-						d = Vector3.Dot(midxyz, Dir);
-						projected = Dir * d;
-						midxyz2 = midxyz - projected;
-						float len = midxyz2.sqrMagnitude;
-						if (len > maxLen)
-						{
-							maxLen = len;
-						}
-					}
-				}
-				maxLen = Mathf.Sqrt(maxLen);
-
-				// if all the points are on the lines, remove the entire columns
-				if (maxLen < 0.1f)
-				{
-					errorTable[dir,j + 1] = 999;
-					continue;
-				}
-
-				// see if we want to insert subdivided columns
-				if (width + 2 > 65)
-				{
-					errorTable[dir,j + 1] = 1.0f / maxLen;
-					continue;   // can't subdivide any more
-				}
-
-				if (maxLen <= GameManager.Instance.tessellations)
-				{
-					errorTable[dir,j + 1] = 1.0f / maxLen;
-					continue;   // didn't need subdivision
-				}
-
-				errorTable[dir,j + 2] = 1.0f / maxLen;
-
-				// insert two columns and replace the peak
-				width += 2;
-				for (int i = 0; i < height; i++)
-				{
-					LerpDrawVert(vertGrid[i,j], vertGrid[i,j + 1], ref prev);
-					LerpDrawVert(vertGrid[i,j + 1], vertGrid[i,j + 2], ref next);
-					LerpDrawVert(prev, next, ref mid);
-
-					for (int k = width - 1; k > j + 3; k--)
-					{
-						vertGrid[i,k] = vertGrid[i,k - 2];
-					}
-					vertGrid[i,j + 1] = prev;
-					vertGrid[i,j + 2] = mid;
-					vertGrid[i,j + 3] = next;
-				}
-
-				// back up and recheck this set again, it may need more subdivision
-				j -= 2;
-			}
-
-			Transpose(width, height, ref vertGrid);
-			t = width;
-			width = height;
-			height = t;
-		}
-
-		// put all the aproximating points on the curve
-		PutPointsOnCurve(ref vertGrid, width, height);
-
-		// cull out any rows or columns that are colinear
-		for (int i = 1; i < width - 1; i++)
-		{
-			if (errorTable[0,i] != 999)
-			{
-				continue;
-			}
-			for (int j = i + 1; j < width; j++)
-			{
-				for (int k = 0; k < height; k++)
-				{
-					vertGrid[k,j - 1] = vertGrid[k,j];
-				}
-				errorTable[0,j - 1] = errorTable[0,j];
-			}
-			width--;
-		}
-
-		for (int i = 1; i < height - 1; i++)
-		{
-			if (errorTable[1,i] != 999)
-			{
-				continue;
-			}
-			for (int j = i + 1; j < height; j++)
-			{
-				for (int k = 0; k < width; k++)
-				{
-					vertGrid[j - 1,k] = vertGrid[j,k];
-				}
-				errorTable[1,j - 1] = errorTable[1,j];
-			}
-			height--;
-		}
-	}
-	public static void LerpDrawVert(QVertex a, QVertex b, ref QVertex ret )
-	{
-		ret.position[0] = 0.5f * (a.position[0] + b.position[0]);
-		ret.position[1] = 0.5f * (a.position[1] + b.position[1]);
-		ret.position[2] = 0.5f * (a.position[2] + b.position[2]);
-
-		ret.textureCoord[0] = 0.5f * (a.textureCoord[0] + b.textureCoord[0]);
-		ret.textureCoord[1] = 0.5f * (a.textureCoord[1] + b.textureCoord[1]);
-
-		ret.lightmapCoord[0] = 0.5f * (a.lightmapCoord[0] + b.lightmapCoord[0]);
-		ret.lightmapCoord[1] = 0.5f * (a.lightmapCoord[1] + b.lightmapCoord[1]);
-
-/*		ret.color[0] = (byte)((a.color[0] + b.color[0]) >> 1);
-		ret.color[1] = (byte)((a.color[1] + b.color[1]) >> 1);
-		ret.color[2] = (byte)((a.color[2] + b.color[2]) >> 1);
-		ret.color[3] = (byte)((a.color[3] + b.color[3]) >> 1);
-*/	}
-
-	public static void Transpose(int width, int height, ref QVertex[,] ctrl)
-	{
-		int i, j;
-		QVertex temp = ctrl[0,0];
-
-		if (width > height)
-		{
-			for (i = 0; i < height; i++)
-			{
-				for (j = i + 1; j < width; j++)
-				{
-					if (j < height)
-					{
-						// swap the value
-						temp = ctrl[j,i];
-						ctrl[j,i] = ctrl[i,j];
-						ctrl[i,j] = temp;
-					}
-					else
-					{
-						ctrl[j,i] = ctrl[i,j];
-					}
-				}
-			}
-		}
-		else
-		{
-			for (i = 0; i < width; i++)
-			{
-				for (j = i + 1; j < height; j++)
-				{
-					if (j < width)
-					{
-						// swap the value
-						temp = ctrl[i,j];
-						ctrl[i,j] = ctrl[j,i];
-						ctrl[j,i] = temp;
-					}
-					else
-					{
-						// just copy
-						ctrl[i,j] = ctrl[j,i];
-					}
-				}
-			}
-		}
-	}
-
-	public static void PutPointsOnCurve(ref QVertex[,] ctrl, int width, int height)
-	{
-		int i, j;
-		QVertex prev, next;
-		prev = ctrl[0, 0];
-		next = ctrl[0, 0];
-
-		for (i = 0; i < width; i++)
-		{
-			for (j = 1; j < height; j += 2)
-			{
-				LerpDrawVert(ctrl[j,i], ctrl[j + 1,i], ref prev);
-				LerpDrawVert(ctrl[j,i], ctrl[j - 1,i], ref next);
-				LerpDrawVert(prev, next, ref ctrl[j,i]);
-			}
-		}
-
-
-		for (j = 0; j < height; j++)
-		{
-			for (i = 1; i < width; i += 2)
-			{
-				LerpDrawVert(ctrl[j,i], ctrl[j,i + 1], ref prev);
-				LerpDrawVert(ctrl[j,i], ctrl[j,i - 1], ref next);
-				LerpDrawVert(prev, next, ref ctrl[j,i]);
-			}
-		}
 	}
 	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
 	{
@@ -496,7 +265,7 @@ public static class Mesher
 		meshFilter.mesh = mesh;
 
 		Material material = null;
-		if (MaterialManager.GetOverrideMaterials(textureName, ref material, ref obj))
+		if (MaterialManager.GetOverrideMaterials(textureName, lmIndex, ref material, ref obj))
 		{
 			Debug.LogWarning("Found Material");
 		}
@@ -613,7 +382,7 @@ public static class Mesher
 
 		if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
 		{
-			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
+//			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
 			return;
 		}
 

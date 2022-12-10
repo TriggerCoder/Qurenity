@@ -1,4 +1,4 @@
-Shader "Qurenity/DefaultLightmapped"
+Shader "Qurenity/DefaultLightmappedTransparent"
 {
 	Properties
 	{
@@ -9,6 +9,8 @@ Shader "Qurenity/DefaultLightmapped"
 	SubShader
 	{
 		Tags { "RenderType" = "Opaque" }
+
+		Cull Off
 		CGPROGRAM
 		#pragma surface surf Lambert vertex:vert nodynlightmap
 		struct Input
@@ -30,6 +32,7 @@ Shader "Qurenity/DefaultLightmapped"
 		{
 			half4 tex = tex2D(_MainTex, IN.uv_MainTex);
 			half4 lm = tex2D(_LightMap, IN.uv2_LightMap);
+			clip(tex.a - 0.5);
 
 //			o.Albedo = IN.vertColor.rgb;
 			o.Albedo = tex.rgb * IN.vertColor.rgb;

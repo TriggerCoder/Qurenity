@@ -77,7 +77,7 @@ public static class MapLoader
 			mapTextures = new List<QShader>(num);
 			for (int i = 0; i < num; i++)
 			{
-				mapTextures.Add(new QShader(new string(BSPMap.ReadChars(64)), BSPMap.ReadUInt32(), BSPMap.ReadUInt32()));
+				mapTextures.Add(new QShader(new string(BSPMap.ReadChars(64)), BSPMap.ReadUInt32(), BSPMap.ReadUInt32(), false));
 			}
 		}
 

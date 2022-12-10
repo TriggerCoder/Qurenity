@@ -9,20 +9,20 @@ public class BezierMesh
 	private static List<Color> colorCache = new List<Color>();
 	private static List<int> indiciesCache = new List<int>();
 
-    static private List<Vector3> p0sCache = new List<Vector3>();
-    static private List<Vector2> p0suvCache = new List<Vector2>();
-    static private List<Vector2> p0suv2Cache = new List<Vector2>();
-	static private List<Color> p0scolorCache = new List<Color>();
+    private static List<Vector3> p0sCache = new List<Vector3>();
+    private static List<Vector2> p0suvCache = new List<Vector2>();
+    private static List<Vector2> p0suv2Cache = new List<Vector2>();
+	private static List<Color> p0scolorCache = new List<Color>();
 
-	static private List<Vector3> p1sCache = new List<Vector3>();
-    static private List<Vector2> p1suvCache = new List<Vector2>();
-    static private List<Vector2> p1suv2Cache = new List<Vector2>();
-	static private List<Color> p1scolorCache = new List<Color>();
+	private static List<Vector3> p1sCache = new List<Vector3>();
+    private static List<Vector2> p1suvCache = new List<Vector2>();
+    private static List<Vector2> p1suv2Cache = new List<Vector2>();
+	private static List<Color> p1scolorCache = new List<Color>();
 
-	static private List<Vector3> p2sCache = new List<Vector3>();
-    static private List<Vector2> p2suvCache = new List<Vector2>();
-    static private List<Vector2> p2suv2Cache = new List<Vector2>();
-	static private List<Color> p2scolorCache = new List<Color>();
+	private static List<Vector3> p2sCache = new List<Vector3>();
+    private static List<Vector2> p2suvCache = new List<Vector2>();
+    private static List<Vector2> p2suv2Cache = new List<Vector2>();
+	private static List<Color> p2scolorCache = new List<Color>();
 
 	public static void ClearCaches()
     {
@@ -47,8 +47,6 @@ public class BezierMesh
         p2suv2Cache = new List<Vector2>();
 		p2scolorCache = new List<Color>();
 	}
-
-    // Where the magic happens.
     public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
 	{
 		// The mesh we're building
@@ -60,8 +58,8 @@ public class BezierMesh
 		if (vertexCache.Capacity < capacity)
 		{
 			vertexCache.Capacity = capacity;
-			uv2Cache.Capacity = capacity;
 			uvCache.Capacity = capacity;
+			uv2Cache.Capacity = capacity;
 			indiciesCache.Capacity = capacity;
 			colorCache.Capacity = capacity;
 		}
@@ -116,7 +114,6 @@ public class BezierMesh
 
 		// Tessellate all those new sets of control points and pack
 		// all the results into our vertex array, which we'll return.
-		// Make our uvs list while we're at it.
 		for (int i = 0; i <= level; i++)
 		{
 			Tessellate(level, p0sCache[i], p1sCache[i], p2sCache[i], vertexCache);
@@ -171,15 +168,12 @@ public class BezierMesh
 		patchMesh.SetVertices(vertexCache);
 		patchMesh.SetTriangles(indiciesCache, 0, true);
 		patchMesh.SetUVs(0, uvCache);
-		patchMesh.SetUVs(2, uv2Cache);
+		patchMesh.SetUVs(1, uv2Cache);
 		patchMesh.SetColors(colorCache);
 		
-		// Dunno if these are needed, but why not?
-		// They're actually pretty cheap, considering.
 		patchMesh.RecalculateNormals();
 		patchMesh.Optimize();
 
-		//Return the mesh! Shazam!
 		Mesh = patchMesh;
 	}
 
@@ -189,12 +183,13 @@ public class BezierMesh
     private Vector2 BezCurveUV(float t, Vector2 p0, Vector2 p1, Vector2 p2)
     {
         Vector2 bezPoint = new Vector2();
+		float[] tPoints = new float[2];
 
-        float a = 1f - t;
+		float a = 1f - t;
         float tt = t * t;
 
-        float[] tPoints = new float[2];
-        for (int i = 0; i < 2; i++) tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
+        for (int i = 0; i < 2; i++)
+			tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
 
         bezPoint.Set(tPoints[0], tPoints[1]);
 
@@ -204,13 +199,16 @@ public class BezierMesh
 	// This time for colors
 	private Color BezCurveColor(float t, Color p0, Color p1, Color p2)
 	{
+		float[] tPoints = new float[4];
+
 		float a = 1f - t;
 		float tt = t * t;
 
-		float[] tPoints = new float[4];
-		for (int i = 0; i < 3; i++) tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
+		for (int i = 0; i < 3; i++)
+			tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
 		
 		Color bezPoint = new Color (tPoints[0], tPoints[1], tPoints[2], tPoints[3]);
+
 		return bezPoint; 
 	}
 
@@ -219,12 +217,13 @@ public class BezierMesh
 	private Vector3 BezCurve(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         Vector3 bezPoint = new Vector3();
+		float[] tPoints = new float[3];
 
-        float a = 1f - t;
+		float a = 1f - t;
         float tt = t * t;
 
-        float[] tPoints = new float[3];
-        for (int i = 0; i < 3; i++) tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
+        for (int i = 0; i < 3; i++)
+			tPoints[i] = a * a * p0[i] + 2 * a * (t * p1[i]) + tt * p2[i];
 
         bezPoint.Set(tPoints[0], tPoints[1], tPoints[2]);
 
@@ -249,7 +248,6 @@ public class BezierMesh
             appendList.Add(BezCurve(step, p0, p1, p2));
             step += stepDelta;
         }
-
         appendList.Add(p2);
     }
 
@@ -268,7 +266,6 @@ public class BezierMesh
             appendList.Add(BezCurveUV(step, p0, p1, p2));
             step += stepDelta;
         }
-
         appendList.Add(p2);
     }
 
@@ -287,7 +284,6 @@ public class BezierMesh
 			appendList.Add(BezCurveColor(step, p0, p1, p2));
 			step += stepDelta;
 		}
-
 		appendList.Add(p2);
 	}
 }

@@ -10,7 +10,7 @@ using Pathfinding.Ionic.Zip;
 public class TextureLoader : MonoBehaviour
 {
 	public static TextureLoader Instance;
-	public Texture illegal;
+	public static Texture illegal;
 	public enum ImageFilterMode
 	{
 		Nearest,
@@ -35,7 +35,7 @@ public class TextureLoader : MonoBehaviour
 		return illegal;
 	}
 
-	public static void LoadJPGTextures(List<QShader> mapTextures, bool forceTransparency = false)
+	public static void LoadJPGTextures(List<QShader> mapTextures)
 	{
 		foreach (QShader tex in mapTextures)
 		{
@@ -51,7 +51,7 @@ public class TextureLoader : MonoBehaviour
 
 				Texture2D readyTex = new Texture2D(4, 4);
 				readyTex.LoadImage(jpgBytes);
-				if (forceTransparency)
+				if (tex.addAlpha)
 				{
 					Color32[] pulledColors = readyTex.GetPixels32();
 					for (int i = 0; i < pulledColors.GetLength(0); i++)
@@ -80,7 +80,7 @@ public class TextureLoader : MonoBehaviour
 		}
 	}
 
-	public static void LoadTGATextures(List<QShader> mapTextures, bool forceTransparency = false)
+	public static void LoadTGATextures(List<QShader> mapTextures)
 	{
 		foreach (QShader tex in mapTextures)
 		{
@@ -94,7 +94,7 @@ public class TextureLoader : MonoBehaviour
 				byte[] tgaBytes = PakManager.ZipToByteArray(path, ref zip);
 				stream.Close();
 
-				Texture2D readyTex = LoadTGA(tgaBytes, forceTransparency);
+				Texture2D readyTex = LoadTGA(path, tgaBytes, tex.addAlpha);
 
 				readyTex.name = tex.name;
 				readyTex.filterMode = FilterMode.Bilinear;
@@ -110,65 +110,109 @@ public class TextureLoader : MonoBehaviour
 			}
 		}
 	}
-	public static Texture2D LoadTGA(byte[] TGABytes, bool forceTransparency)
+	public static Texture2D LoadTGA(string FileName, byte[] TGABytes, bool forceTransparency)
 	{
-		// Skip some header info we don't care about.
-		// Even if we did care, we have to move the stream seek point to the beginning,
-		// as the previous method in the workflow left it at the end.
-		int p = 12;
+		// Create a new Texture2D object to hold the parsed TGA data
+		Texture2D texture;
+		int p = 0;
 
-		int width = ByteReader.ReadInt16(TGABytes, ref p);
-		int height = ByteReader.ReadInt16(TGABytes, ref p);
-		int bitDepth = TGABytes[p++];
+		// Read the TGA or TARGA header data
+		byte idLength = TGABytes[p++];
+		byte colorMapType = TGABytes[p++];
+		byte imageType = TGABytes[p++];
+		ushort colorMapFirstEntryIndex = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		ushort colorMapLength = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		byte colorMapEntrySize = TGABytes[p++];
+		ushort xOrigin = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		ushort yOrigin = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		ushort width = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		ushort height = (ushort)ByteReader.ReadShort(TGABytes, ref p);
+		byte pixelDepth = TGABytes[p++];
+		byte imageDescriptor = TGABytes[p++];
 
-		// Skip a byte of header information we don't care about.
-		p++;
+		// Skip the TGA or TARGA ID field
+		p += idLength;
 
-		Texture2D tex;
-
-		if ((forceTransparency) || (bitDepth == 32))
-			tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+		if ((forceTransparency) || (pixelDepth == 32))
+			texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 		else
-			tex = new Texture2D(width, height);
+			texture = new Texture2D(width, height);
 
-		Color32[] pulledColors = new Color32[width * height];
+		Color[] colors = new Color[width * height];
+		int currentPixel = 0;
 
-		if (bitDepth == 32)
+		if (imageType == 10) // RLE compressed
 		{
-			for (int i = 0; i < width * height; i++)
+			while (currentPixel < colors.Length)
 			{
-				byte red = TGABytes[p++];
-				byte green = TGABytes[p++];
-				byte blue = TGABytes[p++];
-				byte alpha = TGABytes[p++];
+				// Get the RLE packet header byte
+				byte header = TGABytes[p++];
 
-				pulledColors[i] = new Color32(blue, green, red, alpha);
-			}
-		}
-		else if (bitDepth == 24)
-		{
-			for (int i = 0; i < width * height; i++)
-			{
-				byte red = TGABytes[p++];
-				byte green = TGABytes[p++];
-				byte blue = TGABytes[p++];
-				byte alpha = 1;
-				if (forceTransparency)
+				int packetLength = header & 0x7F;
+
+				// Check if the RLE packet header is a RLE packet
+				if ((header & 0x80) != 0)
 				{
-					int gray = (red + green + blue) / 2;
-					gray = Mathf.Clamp(gray, 0, 255);
-					alpha = (byte)gray;
+					// Read the repeated color data
+					byte r = TGABytes[p++];
+					byte g = TGABytes[p++];
+					byte b = TGABytes[p++];
+					byte a = (pixelDepth == 32) ? TGABytes[p++] : (byte)0xFF;
+
+					Color color = new Color32(b, g, r, a);
+
+					// Copy the repeated color into the Color array
+					for (int i = 0; i <= packetLength; i++)
+					{
+						colors[currentPixel] = color;
+						currentPixel++;
+					}
 				}
-				pulledColors[i] = new Color32(blue, green, red, alpha);
+				else
+				{
+					for (int i = 0; i <= packetLength; i++, currentPixel++)
+					{
+						// Read the raw color data
+						byte r = TGABytes[p++];
+						byte g = TGABytes[p++];
+						byte b = TGABytes[p++];
+						byte a = (pixelDepth == 32) ? TGABytes[p++] : (byte)0xFF;
+						if ((forceTransparency) && (pixelDepth != 32))
+						{
+							int gray = (r + g + b) / 2;
+							gray = Mathf.Clamp(gray, 0, 255);
+							a = (byte)gray;
+						}
+
+						colors[currentPixel] = new Color32(b, g, r, a);
+					}
+				}
+				
+			}
+		}
+		else if (imageType == 2) //Uncompressed
+		{
+			for (currentPixel = 0; currentPixel < colors.Length; currentPixel++)
+			{
+				// Read the color data
+				byte r = TGABytes[p++];
+				byte g = TGABytes[p++];
+				byte b = TGABytes[p++];
+				byte a = (pixelDepth == 32) ? TGABytes[p++] : (byte)0xFF;
+
+				colors[currentPixel] = new Color32(b, g, r, a);
 			}
 		}
 		else
-			Debug.LogError("TGA texture had non 32/24 bit depth.");
-		tex.alphaIsTransparency = true;
-		tex.SetPixels32(pulledColors);
-		tex.Apply();
-		return tex;
-	}
+			Debug.LogError("TGA texture: " + FileName + " unknown type.");
+
+		texture.alphaIsTransparency = true;
+		texture.SetPixels(colors);
+		texture.Apply();
+
+		return texture;
+    }
+
 	public static Texture2D CreateLightmapTexture(byte[] rgb)
 	{
 		Texture2D tex = new Texture2D(128, 128, TextureFormat.RGBA32, false);

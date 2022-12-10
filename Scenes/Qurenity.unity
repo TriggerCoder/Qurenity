@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
+  m_AmbientSkyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -223,7 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3tourney2
   tessellations: 6
   gamma: 1
   TemporaryObjectsHolder: {fileID: 0}
@@ -241,7 +241,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed58236c5c8702b49bb36542664091b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  illegal: {fileID: 2800000, guid: f6cb5faea35bd5e45a8871ccabdc620c, type: 3}
 --- !u!114 &300009280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261,10 +260,13 @@ MonoBehaviour:
   debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
   _OverrideMaterials:
   - overrideName: textures/sfx/flame1
+    opaque: 0
+    opaqueTextureName: 
     material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
     animation:
     - textureFrames:
       - textures/sfx/flameball
+      addAlpha: 1
       fps: 0
       Base: 0.6
       Amp: 0.2
@@ -279,6 +281,7 @@ MonoBehaviour:
       - textures/sfx/flame7
       - textures/sfx/flame8
       - textures/sfx/flame1
+      addAlpha: 1
       fps: 10
       Base: 0
       Amp: 1
@@ -293,16 +296,20 @@ MonoBehaviour:
       - textures/sfx/flame6
       - textures/sfx/flame7
       - textures/sfx/flame8
+      addAlpha: 1
       fps: 10
       Base: 0
       Amp: 1
       Phase: 0
       Freq: 10
   - overrideName: textures/sfx/flame2
+    opaque: 0
+    opaqueTextureName: 
     material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
     animation:
     - textureFrames:
       - textures/sfx/flameball
+      addAlpha: 1
       fps: 0
       Base: 0.6
       Amp: 0.2
@@ -317,6 +324,7 @@ MonoBehaviour:
       - textures/sfx/flame7
       - textures/sfx/flame8
       - textures/sfx/flame1
+      addAlpha: 1
       fps: 10
       Base: 0
       Amp: 1
@@ -331,13 +339,124 @@ MonoBehaviour:
       - textures/sfx/flame6
       - textures/sfx/flame7
       - textures/sfx/flame8
+      addAlpha: 1
       fps: 10
       Base: 0
       Amp: 1
       Phase: 0
       Freq: 10
+  - overrideName: textures/sfx/flame1side
+    opaque: 0
+    opaqueTextureName: 
+    material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
+    animation:
+    - textureFrames:
+      - textures/sfx/flameball
+      addAlpha: 1
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+    - textureFrames:
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      - textures/sfx/flame1
+      addAlpha: 1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+    - textureFrames:
+      - textures/sfx/flame1
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      addAlpha: 1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+  - overrideName: textures/gothic_light/pentagram_light1_1K
+    opaque: 1
+    opaqueTextureName: textures/gothic_light/pentagram_light1
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/gothic_light/pentagram_light1_blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+  - overrideName: textures/sfx/computer_blocks17
+    opaque: 1
+    opaqueTextureName: textures/sfx/computer_blocks17
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/sfx/computer_blocks17
+      addAlpha: 0
+      fps: 0
+      Base: 0
+      Amp: 0
+      Phase: 0
+      Freq: 1
+    - textureFrames:
+      - textures/sfx/computer_blocks17
+      addAlpha: 0
+      fps: 0
+      Base: 0
+      Amp: 0
+      Phase: 0
+      Freq: 1
+    - textureFrames:
+      - textures/sfx/compscreen/letters1
+      - textures/sfx/compscreen/letters2
+      - textures/sfx/compscreen/letters3
+      - textures/sfx/compscreen/letters5
+      - textures/sfx/compscreen/letters4
+      - textures/sfx/compscreen/letters5
+      - textures/sfx/compscreen/letters5
+      addAlpha: 1
+      fps: 2
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 2
+  - overrideName: textures/liquids/lavahell
+    opaque: 1
+    opaqueTextureName: textures/liquids/lavahell
+    material: {fileID: 2100000, guid: bd3577391ab9ad545b34ddb0d9265c6e, type: 2}
+    animation:
+    - textureFrames:
+      - textures/liquids/lavahell
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.1
+  - overrideName: textures/base_floor/pjgrate2
+    opaque: 1
+    opaqueTextureName: textures/base_floor/pjgrate2
+    material: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
+    animation: []
   applyLightmaps: 1
   lightMapProperty: _LightMap
+  opaqueTexProperty: _MainTex
 --- !u!114 &300009281
 MonoBehaviour:
   m_ObjectHideFlags: 0

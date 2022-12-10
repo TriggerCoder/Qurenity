@@ -16,7 +16,9 @@ public class MaterialManager : MonoBehaviour
 
 	public bool applyLightmaps = true;
 	public static int lightMapPropertyId;
+	public static int opaqueTexPropertyId;
 	public string lightMapProperty = "_LightMap";
+	public string opaqueTexProperty = "_MainTex";
 	public static Dictionary<string, Material> Materials = new Dictionary<string, Material>();
 	public static Dictionary<string, MaterialOverride> OverrideMaterials = new Dictionary<string, MaterialOverride>();
 	public static Dictionary<string, QShader> AnimatedTextures = new Dictionary<string, QShader>();
@@ -30,32 +32,37 @@ public class MaterialManager : MonoBehaviour
 	{
 		Instance = this;
 		lightMapPropertyId = Shader.PropertyToID(lightMapProperty);
+		opaqueTexPropertyId = Shader.PropertyToID(opaqueTexProperty);
 		foreach (MaterialOverride mo in _OverrideMaterials)
 		{
 			OverrideMaterials.Add(mo.overrideName, mo);
-			foreach(MaterialAnimation ma in mo.animation)
+			if (mo.opaque)
+				AddAnimatedTextures(mo.opaqueTextureName);
+			foreach (MaterialAnimation ma in mo.animation)
 			{
 				foreach (string textureName in ma.textureFrames)
-				{
-					QShader shader = new QShader(textureName, 0, 0);
-					if (!AnimatedTextures.ContainsKey(textureName))
-						AnimatedTextures.Add(textureName,shader);
-				}
+					AddAnimatedTextures(textureName, ma.addAlpha);
 			}
 		}
 	}
 
+	void AddAnimatedTextures(string textureName, bool addAlpha = false)
+	{
+		QShader shader = new QShader(textureName, 0, 0, addAlpha);
+		if (!AnimatedTextures.ContainsKey(textureName))
+			AnimatedTextures.Add(textureName, shader);
+	}
 	public static void GetShaderAnimationsTextures()
 	{
 		List<QShader> list = new List<QShader>(AnimatedTextures.Count);
 		foreach (var shader in AnimatedTextures)
 			list.Add(shader.Value);
 
-		TextureLoader.LoadJPGTextures(list,true);
-		TextureLoader.LoadTGATextures(list, true);
+		TextureLoader.LoadJPGTextures(list);
+		TextureLoader.LoadTGATextures(list);
 	}
 
-	public static bool GetOverrideMaterials(string textureName, ref Material mat, ref GameObject go)
+	public static bool GetOverrideMaterials(string textureName, int lm_index, ref Material mat, ref GameObject go)
 	{
 		if (!OverrideMaterials.ContainsKey(textureName))
 			return false;
@@ -68,6 +75,21 @@ public class MaterialManager : MonoBehaviour
 		MaterialPropertyBlock materialParameters = new MaterialPropertyBlock();
 
 		mr.GetPropertyBlock(materialParameters);
+		if (mo.opaque)
+		{
+			// Load the opaque texture for the surface
+			Texture tex = TextureLoader.Instance.GetTexture(mo.opaqueTextureName);
+			materialParameters.SetTexture(opaqueTexPropertyId, tex);
+
+			if (lm_index >= 0 && Instance.applyLightmaps)
+			{
+				// Lightmapping
+				Texture2D lmap = MapLoader.lightMaps[lm_index];
+				lmap.Compress(true);
+				lmap.Apply();
+				materialParameters.SetTexture(lightMapPropertyId, lmap);
+			}
+		}
 		for (int i = 0; i < mo.animation.Length; i++)
 		{
 			TextureAnimation anim = go.AddComponent<TextureAnimation>();
@@ -125,6 +147,8 @@ public class MaterialManager : MonoBehaviour
 	public struct MaterialOverride
 	{
 		public string overrideName;
+		public bool opaque;
+		public string opaqueTextureName;
 		public Material material;
 		public MaterialAnimation[] animation;
 	}
@@ -133,6 +157,7 @@ public class MaterialManager : MonoBehaviour
 	public struct MaterialAnimation
 	{
 		public string[] textureFrames;
+		public bool addAlpha;
 		public int fps;
 		public float Base;
 		public float Amp;
