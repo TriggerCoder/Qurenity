@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Habrador_Computational_Geometry;
 public static class Mesher
 {
 	public static Transform MapMeshes;
@@ -434,19 +433,7 @@ public static class Mesher
 
 		intersectPoint = RemoveDuplicatedVectors(intersectPoint);
 
-		HashSet<MyVector3> points = new HashSet<MyVector3>(intersectPoint.Count);
-		for (int i = 0; i < intersectPoint.Count; i++)
-		{
-			points.Add(new MyVector3(intersectPoint[i].x, intersectPoint[i].y, intersectPoint[i].z));
-		}
-
-		if ((intersectPoint.Count & 1) != 0)
-			Debug.LogWarning("brushSide: " + brush.brushSide + " intersectPoint " + intersectPoint.Count);
-
-		HalfEdgeData3 convexHull = _ConvexHull.Iterative_3D(points);
-
-		MyMesh myMesh = convexHull.ConvertToMyMesh("brushSide: " + brush.brushSide, MyMesh.MeshStyle.HardEdges);
-		Mesh mesh = myMesh.ConvertToUnityMesh(false, "brushSide: " + brush.brushSide);
+		Mesh mesh = ConvexHull.GenerateMeshFromConvexHull("brushSide: " + brush.brushSide,intersectPoint);
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;

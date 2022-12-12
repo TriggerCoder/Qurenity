@@ -10,7 +10,7 @@ using Pathfinding.Ionic.Zip;
 public class TextureLoader : MonoBehaviour
 {
 	public static TextureLoader Instance;
-	public static Texture illegal;
+	public Texture illegal;
 	public enum ImageFilterMode
 	{
 		Nearest,

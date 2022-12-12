@@ -223,7 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3tourney2
+  autoloadMap: q3dm1
   tessellations: 6
   gamma: 1
   TemporaryObjectsHolder: {fileID: 0}
@@ -241,6 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed58236c5c8702b49bb36542664091b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  illegal: {fileID: 2800000, guid: f6cb5faea35bd5e45a8871ccabdc620c, type: 3}
 --- !u!114 &300009280
 MonoBehaviour:
   m_ObjectHideFlags: 0
