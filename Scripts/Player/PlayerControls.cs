@@ -35,7 +35,7 @@ public class PlayerControls : MonoBehaviour
 	public bool holdJumpToBhop = false;           // When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
 
 	private Vector3 moveDirectionNorm = Vector3.zero;
-	private Vector3 playerVelocity = Vector3.zero;
+	public Vector3 playerVelocity = Vector3.zero;
 	private float playerTopVelocity = 0.0f;
 	private float playerFriction = 0.0f;
 	private bool wishJump = false;
@@ -88,8 +88,8 @@ public class PlayerControls : MonoBehaviour
 
 		//restricted up/down looking angle as sprites look really bad when looked at steep angle
 		//also the game doesn't really require such as originally there was no way to rotate camera pitch
-		if (viewDirection.x < -45) viewDirection.x = -45;
-		if (viewDirection.x > 45) viewDirection.x = 45;
+		if (viewDirection.x < -85) viewDirection.x = -85;
+		if (viewDirection.x > 85) viewDirection.x = 85;
 
 		transform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 

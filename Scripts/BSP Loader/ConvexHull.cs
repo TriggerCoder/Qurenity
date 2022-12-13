@@ -29,12 +29,12 @@ public static class ConvexHull
 			}
 
 			//Make sure distance is positive
-			if (distance < 0f) distance *= -1f;
+			if (distance < 0f)
+				distance *= -1f;
 
 			if (distance > bestDistance)
 			{
 				bestDistance = distance;
-
 				bestPoint = p;
 			}
 		}
@@ -546,8 +546,6 @@ public static class ConvexHull
 			this.edges.AddRange(otherMesh.edges);
 		}
 
-
-
 		//
 		// Convert to mesh
 		//
@@ -557,7 +555,7 @@ public static class ConvexHull
 		public Mesh ConvertToMesh(string meshName)
 		{
 			Mesh Mesh = new Mesh();
-
+			Mesh.name = meshName;
 			List<Vector3> Vertexes = new List<Vector3>();
 			Dictionary<Vector3, int> VertstoIndex= new Dictionary<Vector3, int>();
 			//Loop through each triangle

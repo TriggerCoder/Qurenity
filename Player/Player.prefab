@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4911946283159206}
   - component: {fileID: 143113606728799366}
   - component: {fileID: 6906618912183216077}
+  - component: {fileID: 253155317}
+  - component: {fileID: 253155318}
   m_Layer: 10
   m_Name: Player
   m_TagString: Player
@@ -45,7 +47,7 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 1.6
+  m_Height: 2
   m_Radius: 0.5
   m_SlopeLimit: 90
   m_StepOffset: 0.3
@@ -80,6 +82,62 @@ MonoBehaviour:
   _minDistance: 1
   _maxDistance: 500
   OnlyPlayForClosestCamera: 1
+--- !u!114 &253155317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04fee26d1557ba04594e2da723e9f94c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioSource: {fileID: 0}
+  Instance: {fileID: 0}
+  playerCamera: {fileID: 0}
+  centerHeight: 0.88
+  viewDirection: {x: 0, y: 0}
+  lastPosition: {x: 0, y: 0, z: 0}
+  impulseVector: {x: 0, y: 0, z: 0}
+  impulseDampening: 4
+  controller: {fileID: 0}
+  gravity: 20
+  friction: 6
+  moveSpeed: 7
+  runAcceleration: 14
+  runDeacceleration: 10
+  airAcceleration: 2
+  airDecceleration: 2
+  airControl: 0.3
+  sideStrafeAcceleration: 50
+  sideStrafeSpeed: 1
+  jumpSpeed: 8
+  holdJumpToBhop: 0
+  gravityAccumulator: 0
+--- !u!114 &253155318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d8788ea9cd780645b7c555a53342b58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
+  Ammo: 0a00000000000000000000000000000000000000000000000000000000000000
+  Weapon: 010001000000000000
+  MaxAmmo: c8000000c8000000c8000000c8000000c8000000c8000000c8000000c8000000
+  godMode: 0
+  MaxHealth: 100
+  MaxBonusHealth: 200
+  MaxArmor: 100
+  MaxBonusArmor: 200
 --- !u!1 &1351247977468658
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,7 +266,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 120263213280996051}
   m_Father: {fileID: 4530601570485014}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -339,6 +398,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4853754259503296}
+  - component: {fileID: 2100344969}
   m_Layer: 10
   m_Name: Camera
   m_TagString: Untagged
@@ -354,7 +414,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1746486306332202}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -362,6 +422,25 @@ Transform:
   m_Father: {fileID: 4911946283159206}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2100344969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c6c45f1aca653b49b5332d1b3643824, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Instance: {fileID: 0}
+  Camera: {fileID: 1916806255274296}
+  SkyboxCamera: {fileID: 0}
+  SkyholeCamera: {fileID: 0}
+  MainCamera: {fileID: 0}
+  UICamera: {fileID: 0}
+  playerControls: {fileID: 0}
 --- !u!1 &1835987207524526
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,6 +452,7 @@ GameObject:
   - component: {fileID: 4922398115351360}
   - component: {fileID: 20246609441403284}
   - component: {fileID: 45259091200768732}
+  - component: {fileID: 396864669}
   m_Layer: 10
   m_Name: SkyboxCamera
   m_TagString: Untagged
@@ -446,7 +526,20 @@ Skybox:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835987207524526}
   m_Enabled: 1
-  m_CustomSkybox: {fileID: 2100000, guid: cd5b864fa0853ba428097e6f61fc058e, type: 2}
+  m_CustomSkybox: {fileID: 2100000, guid: 19b963e55a26fc544a951767ac229da5, type: 2}
+--- !u!114 &396864669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1835987207524526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcda517cd1d729249abdbe54700d15fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 8400000, guid: eb61674b462f4c847b4db876c103923d, type: 2}
 --- !u!1 &1916806255274296
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,7 +609,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 2147533003
+    m_Bits: 2147532811
   m_RenderingPath: 1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -550,3 +643,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Volume: 1
   Num: 0
+--- !u!1 &2926129904374761625
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 120263213280996051}
+  m_Layer: 0
+  m_Name: WeaponHand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &120263213280996051
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2926129904374761625}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
+  m_LocalPosition: {x: 0.2, y: -0.85, z: 0.19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4965662911938076}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 270, z: 0}

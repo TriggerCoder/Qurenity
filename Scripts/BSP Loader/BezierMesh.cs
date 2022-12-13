@@ -212,7 +212,8 @@ public class BezierMesh
 		return bezPoint; 
 	}
 
-	// Calculate a vector3 at point t on a bezier curve between
+	// Calculate a vector3 at point t on a quadratic Bezier curve between
+	// Using the formula B(t) = (1-t)^2 * p0 + 2 * (1-t) * t * p1 + t^2 * p2
 	// p0 and p2 via p1.  
 	private Vector3 BezCurve(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
