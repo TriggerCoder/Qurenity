@@ -8,10 +8,12 @@ public class PlayerInfo : MonoBehaviour
 	public PlayerControls playerControls;
 	[HideInInspector]
 	public PlayerCamera playerCamera;
+	public Transform WeaponHand;
+
 	const int checkUpdateRate = 4;
 
-	public int[] Ammo = new int[8] { 10, 0, 0, 0, 0, 0, 0, 0 }; //bullets, shells, grenades, rockets, lightning, slugs, cells, bfgammo
-	public bool[] Weapon = new bool[9] { true, false, true, false, false, false, false, false, false }; //gauntlet, machinegun, shotgun, grenade launcher, rocket launcher, lightning gun, railgun, plasma gun, bfg10k
+	public int[] Ammo = new int[8] { 100, 0, 0, 0, 0, 0, 0, 0 }; //bullets, shells, grenades, rockets, lightning, slugs, cells, bfgammo
+	public bool[] Weapon = new bool[9] { false, true, false, false, false, false, false, false, false }; //gauntlet, machinegun, shotgun, grenade launcher, rocket launcher, lightning gun, railgun, plasma gun, bfg10k
 	public int[] MaxAmmo = new int[8] { 200, 200, 200, 200, 200, 200, 200, 200 };
 
 	public bool godMode = false;
@@ -20,7 +22,7 @@ public class PlayerInfo : MonoBehaviour
 	public int MaxArmor = 100;
 	public int MaxBonusArmor = 200;
 
-//	public PlayerWeapon[] WeaponPrefabs = new PlayerWeapon[9];
+	public PlayerWeapon[] WeaponPrefabs = new PlayerWeapon[9];
 
 	void Awake()
 	{

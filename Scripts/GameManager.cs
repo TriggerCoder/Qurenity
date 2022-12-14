@@ -54,8 +54,6 @@ public class GameManager : MonoBehaviour
 
 	void Start()
     {
-		MD3 model = MD3.ImportModel("weapons2/machinegun/machinegun");
-
 		if (MapLoader.Load(autoloadMap))
 		{
 			MaterialManager.GetShaderAnimationsTextures();

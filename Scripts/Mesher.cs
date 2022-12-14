@@ -374,6 +374,55 @@ public static class Mesher
 		return mesh;
 	}
 
+	public static void GenerateModelObject(MD3 md3Model, GameObject obj = null)
+	{
+		if (md3Model == null || md3Model.meshes.Count == 0)
+		{
+			Debug.LogWarning("Failed to create model object because there are no meshes");
+			return;
+		}
+
+		if (obj == null)
+		{
+			obj = new GameObject();
+			obj.layer = GameManager.ThingsLayer;
+			obj.name = "Mesh_" + md3Model.name;
+			obj.transform.SetParent(MapMeshes);
+		}
+
+		Mesh mesh = new Mesh();
+		mesh.name = md3Model.meshes[0].name;
+
+		List<int> Triangles = new List<int>();
+
+		for (int i = 0; i < md3Model.meshes[0].triangles.Count; i++)
+		{
+			Triangles.Add(md3Model.meshes[0].triangles[i].vertex1);
+			Triangles.Add(md3Model.meshes[0].triangles[i].vertex2);
+			Triangles.Add(md3Model.meshes[0].triangles[i].vertex3);
+		}
+
+		// add the verts
+		mesh.SetVertices(md3Model.meshes[0].verts);
+
+		// Add the texture co-ords (or UVs) to the surface/mesh
+		mesh.SetUVs(0, md3Model.meshes[0].texCoords);
+
+		// add the meshverts to the object being built
+		mesh.SetTriangles(Triangles, 0);
+
+		// Let Unity do some heavy lifting for us
+		mesh.RecalculateBounds();
+
+		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
+		meshFilter.mesh = mesh;
+
+		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name);
+
+		mr.sharedMaterial = material;
+	}
+
 	public static void GenerateBrushCollider(QBrush brush, Transform holder)
 	{
 		//Remove brushed used for BSP Generations and for Details

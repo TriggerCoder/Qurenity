@@ -106,7 +106,7 @@ public class MaterialManager : MonoBehaviour
 		return true;
 	}
 
-	public static Material GetMaterials(string textureName, int lm_index)
+	public static Material GetMaterials(string textureName, int lm_index = -1)
 	{
 		if (MapLoader.IsSkyTexture(textureName))
 			return Instance.skyHole;

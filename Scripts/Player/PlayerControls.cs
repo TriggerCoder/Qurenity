@@ -3,8 +3,11 @@ using Assets.MultiAudioListener;
 public class PlayerControls : MonoBehaviour
 {
 	public MultiAudioSource audioSource;
-	public PlayerControls Instance;
-
+	[HideInInspector]
+	public PlayerInfo playerInfo;
+	[HideInInspector]
+	public PlayerWeapon playerWeapon;
+	[HideInInspector]
 	public PlayerCamera playerCamera;
 
 	public float centerHeight = .88f; // character controller height/2 + skin.width
@@ -47,13 +50,16 @@ public class PlayerControls : MonoBehaviour
 	}
 
 	private currentMove cMove;
+
+	public int CurrentWeapon = -1;
+	public int SwapWeapon = -1;
 	void Awake()
 	{
 		controller = GetComponent<CharacterController>();
 		audioSource = GetComponent<MultiAudioSource>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
-
-		Instance = this;
+		playerInfo = GetComponentInChildren<PlayerInfo>();
+		playerWeapon = null;
 	}
 
 	public float gravityAccumulator;
@@ -123,9 +129,24 @@ public class PlayerControls : MonoBehaviour
 		if (playerCamera.Camera.activeSelf)
 		{
 			//use weapon
-
+			if (Input.GetMouseButton(0))
+				playerWeapon.Fire();
 		}
 
+		//swap weapon
+		if (playerWeapon == null)
+		{
+			if (SwapWeapon == -1)
+				SwapToBestWeapon();
+
+			if (SwapWeapon > -1)
+			{
+				CurrentWeapon = SwapWeapon;
+				playerWeapon = Instantiate(playerInfo.WeaponPrefabs[CurrentWeapon]);
+				playerWeapon.Init(playerInfo);
+				SwapWeapon = -1;
+			}
+		}
 	}
 
 	private void SetMovementDir()
@@ -309,6 +330,82 @@ public class PlayerControls : MonoBehaviour
 		playerVelocity.x *= speed;
 		playerVelocity.y = zspeed; // Note this line
 		playerVelocity.z *= speed;
+	}
+
+	public bool TrySwapWeapon(int weapon)
+	{
+		if (CurrentWeapon == weapon || SwapWeapon != -1)
+			return false;
+
+		if (weapon < 0 || weapon >= playerInfo.Weapon.Length)
+			return false;
+
+		if (!playerInfo.Weapon[weapon])
+			return false;
+
+		switch (weapon)
+		{
+			default:
+				return false;
+
+			case 0:
+				break;
+
+			case 1:
+				if (playerInfo.Ammo[0] <= 0)
+					return false;
+				break;
+			case 2:
+				if (playerInfo.Ammo[1] <= 0)
+					return false;
+				break;
+
+			case 3:
+				if (playerInfo.Ammo[2] <= 0)
+					return false;
+				break;
+
+			case 4:
+				if (playerInfo.Ammo[3] <= 0)
+					return false;
+				break;
+
+			case 5:
+				if (playerInfo.Ammo[4] <= 0)
+					return false;
+				break;
+			case 6:
+				if (playerInfo.Ammo[5] <= 0)
+					return false;
+				break;
+			case 7:
+				if (playerInfo.Ammo[6] <= 0)
+					return false;
+				break;
+			case 8:
+				if (playerInfo.Ammo[7] <= 0)
+					return false;
+				break;
+		}
+
+		if (playerWeapon != null)
+			playerWeapon.putAway = true;
+
+		SwapWeapon = weapon;
+		return true;
+	}
+	//gauntlet, machinegun, shotgun, grenade launcher, rocket launcher, lightning gun, railgun, plasma gun, bfg10k
+	public void SwapToBestWeapon()
+	{
+		if (TrySwapWeapon(9)) return; //bfg10k
+		if (TrySwapWeapon(5)) return; //lightning gun
+		if (TrySwapWeapon(8)) return; //plasma gun
+		if (TrySwapWeapon(6)) return; //railgun
+		if (TrySwapWeapon(2)) return; //shotgun
+		if (TrySwapWeapon(1)) return; //machinegun
+		if (TrySwapWeapon(4)) return; //rocketlauncher
+		if (TrySwapWeapon(3)) return; //grenade launcher
+		if (TrySwapWeapon(0)) return; //gauntlet
 	}
 
 }

@@ -26,6 +26,14 @@ public class TextureLoader : MonoBehaviour
 
 	}
 
+	public static void AddNewTexture(string textureName)
+	{
+		List<QShader> list = new List<QShader>();
+		list.Add(new QShader(textureName, 0, 0, false));
+		LoadJPGTextures(list);
+		LoadTGATextures(list);
+	}
+
 	public Texture GetTexture(string textureName)
 	{
 		if (Textures.ContainsKey(textureName))

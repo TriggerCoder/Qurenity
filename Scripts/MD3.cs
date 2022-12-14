@@ -55,9 +55,6 @@ public class MD3
 		}
 
 		MD3 md3Model = new MD3();
-//		GameObject ObjectRoot = new GameObject(nm);
-//		MD3Model model = (MD3Model)ObjectRoot.AddComponent(typeof(MD3Model));
-//		model.setup();
 
 		md3Model.version = Md3ModelFile.ReadInt32();
 
@@ -75,12 +72,37 @@ public class MD3
 		int ofsMeshes = Md3ModelFile.ReadInt32();
 		int fileSize = Md3ModelFile.ReadInt32();
 
-/*
-		List<GameObject> tags = new List<GameObject>();
-		GameObject nodeTag = new GameObject("tags");
-		nodeTag.transform.parent = model.transform;
-		model.maxFrames = numBoneFrames;
-*/
+		
+		md3Model.frames = new List<MD3Frame>();
+		Md3ModelFile.BaseStream.Seek(ofsFrames, SeekOrigin.Begin);
+		for (int i = 0; i < md3Model.numFrames * md3Model.numTags; i++)
+		{
+			MD3Frame frame = new MD3Frame();
+
+			float x = Md3ModelFile.ReadSingle();
+			float y = Md3ModelFile.ReadSingle();
+			float z = Md3ModelFile.ReadSingle();
+			frame.bb_Min = new Vector3(x, y, z);
+
+			x = Md3ModelFile.ReadSingle();
+			y = Md3ModelFile.ReadSingle();
+			z = Md3ModelFile.ReadSingle();
+			frame.bb_Max = new Vector3(x, y, z);
+
+			frame.bs_Radius = Md3ModelFile.ReadSingle();
+
+			x = Md3ModelFile.ReadSingle();
+			y = Md3ModelFile.ReadSingle();
+			z = Md3ModelFile.ReadSingle();
+			frame.locOrigin = new Vector3(x, y, z);
+
+			name = (new string(Md3ModelFile.ReadChars(16))).Split('\0');
+			frame.name = name[0].Replace("\0", string.Empty);
+
+			frame.QuakeToUnityCoordSystem();
+			md3Model.frames.Add(frame);
+		}
+
 		md3Model.tags = new List<MD3Tag>();
 		Md3ModelFile.BaseStream.Seek(ofsTags, SeekOrigin.Begin);
 		for (int i = 0; i < md3Model.numFrames * md3Model.numTags; i++)
@@ -88,70 +110,36 @@ public class MD3
 			MD3Tag tag = new MD3Tag();
 			name = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
 			tag.name = name[0].Replace("\0", string.Empty);
-			//	Debug.LogWarning("Tag :"+tag.name);
 
 			float x = Md3ModelFile.ReadSingle();
-			float z = Md3ModelFile.ReadSingle();
 			float y = Md3ModelFile.ReadSingle();
+			float z = Md3ModelFile.ReadSingle();
 			tag.origin = new Vector3(x, y, z);
 
-			float matrix0 = Md3ModelFile.ReadSingle();
-			float matrix1 = Md3ModelFile.ReadSingle();
-			float matrix2 = Md3ModelFile.ReadSingle();
+			float m00 = Md3ModelFile.ReadSingle();
+			float m01 = Md3ModelFile.ReadSingle();
+			float m02 = Md3ModelFile.ReadSingle();
 
-			float matrix3 = Md3ModelFile.ReadSingle();
-			float matrix4 = Md3ModelFile.ReadSingle();
-			float matrix5 = Md3ModelFile.ReadSingle();
+			float m10 = Md3ModelFile.ReadSingle();
+			float m11 = Md3ModelFile.ReadSingle();
+			float m12 = Md3ModelFile.ReadSingle();
 
-			float ay = Md3ModelFile.ReadSingle();
-			float ax = Md3ModelFile.ReadSingle();
-			float az = Md3ModelFile.ReadSingle();
+			float m20 = Md3ModelFile.ReadSingle();
+			float m21 = Md3ModelFile.ReadSingle();
+			float m22 = Md3ModelFile.ReadSingle();
 
-			Vector4 column0 = new Vector4(matrix0, matrix3, ay, 0);
-			Vector4 column1 = new Vector4(matrix1, matrix4, ax, 0);
-			Vector4 column2 = new Vector4(matrix2, matrix5, az, 0);
+			Vector4 column0 = new Vector4(m00, m10, m20, 0);
+			Vector4 column1 = new Vector4(m01, m11, m21, 0);
+			Vector4 column2 = new Vector4(m02, m12, m22, 0);
 			Vector4 column3 = new Vector4(0, 0, 0, 1);
 
-			tag.orientation = new Matrix4x4(column0, column1, column2, column3);
-			tag.rotation = new Quaternion(ax, 0.0f, -ay, 1 + az);
+			tag.orientation = new Matrix4x4(-1 * column0, column2, -1 * column1, column3);
+			tag.rotation = new Quaternion(m21, 0.0f, -m20, 1 + m22);
 			tag.rotation.Normalize();
-/*
-			GameObject node = new GameObject(name);
-			node.transform.position = position;
-			node.transform.rotation = rotation;
-			node.transform.parent = nodeTag.transform;
-			tags.Add(node);
-			model.tags.Add(node.transform);
-*/		
+
+			tag.QuakeToUnityCoordSystem();
 			md3Model.tags.Add(tag);
 		}
-
-/*
-		//    Debug.LogWarning("create bones frm tags");
-		GameObject nodeBone = new GameObject("Bones");
-		//    GameObject nodeBone = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		nodeBone.transform.parent = model.transform;
-		model.numTags = numTags;
-
-		for (int i = 0; i < numTags; i++)
-		{
-			GameObject tag = tags[0 * numTags + i];
-			GameObject node = new GameObject();
-			// GameObject node = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			node.name = tag.name;
-			node.transform.parent = nodeBone.transform;
-			node.transform.position = tag.transform.position;
-			node.transform.rotation = tag.transform.rotation;
-			model.bones.Add(node);
-		}
-*/
-
-/*
-		//    Debug.LogWarning("read meshes");
-
-		GameObject meshContainer = new GameObject("MeshContainer");
-		meshContainer.transform.parent = ObjectRoot.transform;
-*/
 
 		int offset = ofsMeshes;
 		md3Model.meshes = new List<MD3Mesh>(md3Model.numMeshes);
@@ -160,7 +148,7 @@ public class MD3
 			Md3ModelFile.BaseStream.Seek(offset, SeekOrigin.Begin);
 			MD3Mesh md3Mesh = new MD3Mesh();
 
-			md3Mesh.parseMesh(md3Model.name, Md3ModelFile, offset, md3Model);
+			md3Mesh.parseMesh(md3Model.name, Md3ModelFile, offset);
 			offset += md3Mesh.meshSize;
 			md3Model.meshes.Add(md3Mesh);
 		}
@@ -175,20 +163,43 @@ public class MD3Frame
 	public Vector3 bb_Min;				// The minimum bounds of the frame's bounding box
 	public Vector3 bb_Max;				// The maximum bounds of the frame's bounding box
 	public float bs_Radius;				// The radius of the frame's bounding sphere
-	public Matrix4x4 locCoordSys;		// The local coordinate system of the frame
+	public Vector3 locOrigin;           // The local origin of the frame
+	public void QuakeToUnityCoordSystem()
+	{
+		bb_Min = new Vector3(-bb_Min.x, bb_Min.z, -bb_Min.y);
+		bb_Max = new Vector3(-bb_Max.x, bb_Max.z, -bb_Max.y);
+		locOrigin = new Vector3(-locOrigin.x, locOrigin.z, -locOrigin.y);
+
+		bb_Min.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		bb_Max.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		locOrigin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+
+		bs_Radius *= GameManager.sizeDividor;
+	}
 }
 public class MD3Tag
 {
 	public string name;					// The name of the tag
 	public Vector3 origin;              // The origin of the tag in 3D space
 	public Matrix4x4 orientation;       // The orientation of the tag in 3D space
-	public Quaternion rotation;			// The rotation of the tag in 3D space
+	public Quaternion rotation;         // The rotation of the tag in 3D space
+	public void QuakeToUnityCoordSystem()
+	{
+		origin = new Vector3(-origin.x, origin.z, -origin.y);
+		origin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+	}
 }
 public class MD3Skin
 {
 	public string name;					// The name of the skin
 	public int skinId;					// The index of the skin in the list of skins
-	public Texture2D texture;			// The texture map associated with the skin
+	public Texture2D texture;           // The texture map associated with the skin
+
+	public MD3Skin(int skinId, string name)
+	{
+		this.skinId = skinId;
+		this.name = name;
+	}
 }
 
 public class MD3Mesh
@@ -206,55 +217,53 @@ public class MD3Mesh
 	public List<Vector2> texCoords;		// The texture coordinates of the vertex
 	public int meshSize;				// This stores the total mesh size
 
-	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset, MD3 model)
+	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset)
 	{
+		string[] fullName;
+
 		meshId = Md3ModelFile.ReadInt32();
-		name = new string(Md3ModelFile.ReadChars(68));//68;				// This stores the mesh name (We do care)
-		name = name.Replace("\0", string.Empty);
+		fullName = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
+		name = fullName[0].Replace("\0", string.Empty);
+
 		Debug.LogWarning("read mesh:" + name + "," + meshId);
-/*
-		GameObject obj = new GameObject("Obj_Mesh");
-		obj.transform.parent = meshContainer.transform;
 
-		MD3Body mesh = (MD3Body)obj.AddComponent(typeof(MD3Body));
-		mesh.name = "Mesh_" + model.bodyFrames.Count;
-		mesh.setup();
-
-
-		mesh.meshRenderer.sharedMaterial = new Material(Shader.Find("Diffuse"));
-		mesh.meshRenderer.sharedMaterial.color = Color.white;
-*/
-
+		flags = Md3ModelFile.ReadInt32();
 		numFrames = Md3ModelFile.ReadInt32();              // This stores the mesh aniamtion frame count
 		numSkins = Md3ModelFile.ReadInt32();                    // This stores the mesh skin count
 		numVertices = Md3ModelFile.ReadInt32();                // This stores the mesh vertex count
 		numTriangles = Md3ModelFile.ReadInt32();               // This stores the mesh face count
-		int triStart = Md3ModelFile.ReadInt32();                    // This stores the starting offset for the triangles
-		int headerSize = Md3ModelFile.ReadInt32();                  // This stores the header size for the mesh
-		int TexVectorStart = Md3ModelFile.ReadInt32();                  // This stores the starting offset for the UV coordinates
-		int vertexStart = Md3ModelFile.ReadInt32();             // This stores the starting offset for the vertex indices
+		int ofsTriangles = Md3ModelFile.ReadInt32();                    // This stores the starting offset for the triangles
+		int ofsSkins = Md3ModelFile.ReadInt32();                  // This stores the header size for the mesh
+		int ofsTexCoords = Md3ModelFile.ReadInt32();                  // This stores the starting offset for the UV coordinates
+		int ofsVerts = Md3ModelFile.ReadInt32();             // This stores the starting offset for the vertex indices
 		meshSize = Md3ModelFile.ReadInt32();                   // This stores the total mesh size
 
-		//   Debug.LogWarning("num mesh frames"+ mesh.numMeshFrames);
-		//   Debug.LogWarning("num mesh vertex" + mesh.numVertices);
-		//   Debug.LogWarning("num mesh tris" + mesh.numTriangles);
+		skins = new List<MD3Skin>();
+		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsSkins, SeekOrigin.Begin);
+		for (int i = 0; i < numSkins; i++)
+		{
+			fullName = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
+			string skinName = fullName[0].Replace("\0", string.Empty);
+			//Need to strip extension
+			fullName = skinName.Split('.');
+			TextureLoader.AddNewTexture(fullName[0]);
 
-
-		//   Debug.LogWarning("read triangles");
+			int num = Md3ModelFile.ReadInt32();
+			skins.Add(new MD3Skin(num, fullName[0]));
+		}
 
 		triangles = new List<MD3Triangle>();
-		Md3ModelFile.BaseStream.Seek(MeshOffset + triStart, SeekOrigin.Begin);
+		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsTriangles, SeekOrigin.Begin);
 		for (int i = 0; i < numTriangles; i++)
 		{
 			int f0 = Md3ModelFile.ReadInt32();
 			int f1 = Md3ModelFile.ReadInt32();
 			int f2 = Md3ModelFile.ReadInt32();
-			triangles.Add(new MD3Triangle(f0, f1, f2));
+			triangles.Add(new MD3Triangle(i, f0, f1, f2));
 		}
-		//  Debug.LogWarning("read text coord");
 
 		texCoords = new List<Vector2>();
-		Md3ModelFile.BaseStream.Seek(MeshOffset + TexVectorStart, SeekOrigin.Begin);
+		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsTexCoords, SeekOrigin.Begin);
 		for (int i = 0; i < numVertices; i++)
 		{
 			float u = Md3ModelFile.ReadSingle();
@@ -262,17 +271,19 @@ public class MD3Mesh
 			texCoords.Add(new Vector2(u, 1 * -v));
 		}
 
-		//   Debug.LogWarning("red vertices" + mesh.numVertices * mesh.numMeshFrames);
 		verts = new List<Vector3>();
-		Md3ModelFile.BaseStream.Seek(MeshOffset + vertexStart, SeekOrigin.Begin);
+		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsVerts, SeekOrigin.Begin);
 		for (int i = 0; i < numVertices * numFrames; i++)
 		{
-			float x = Md3ModelFile.ReadInt16() / 64.0f;
-			float z = Md3ModelFile.ReadInt16() / 64.0f;
-			float y = Md3ModelFile.ReadInt16() / 64.0f;
-			float n1 = Md3ModelFile.ReadByte() / 255.0f;
-			float n2 = Md3ModelFile.ReadByte() / 255.0f;
-			verts.Add(new Vector3(x, y, z));
+			float x = Md3ModelFile.ReadInt16() / 64f;
+			float y = Md3ModelFile.ReadInt16() / 64f;
+			float z = Md3ModelFile.ReadInt16() / 64f;
+			float n1 = Md3ModelFile.ReadByte();
+			float n2 = Md3ModelFile.ReadByte();
+
+			Vector3 position = new Vector3(-x, z, -y);
+			position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+			verts.Add(position);
 		}
 
 
@@ -336,11 +347,13 @@ public class MD3Mesh
 // The indexes of the vertexes that make up the triangle
 public class MD3Triangle
 {
+	public int triId;
 	public int vertex1;
 	public int vertex2;
 	public int vertex3;
-	public MD3Triangle(int vertex1, int vertex2, int vertex3)
+	public MD3Triangle(int triId, int vertex1, int vertex2, int vertex3)
 	{
+		this.triId = triId;
 		this.vertex1 = vertex1;
 		this.vertex2 = vertex2;
 		this.vertex3 = vertex3;
