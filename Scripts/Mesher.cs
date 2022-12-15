@@ -374,12 +374,12 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static void GenerateModelObject(MD3 md3Model, GameObject obj = null)
+	public static Mesh GenerateModelObject(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
 	{
 		if (md3Model == null || md3Model.meshes.Count == 0)
 		{
 			Debug.LogWarning("Failed to create model object because there are no meshes");
-			return;
+			return null;
 		}
 
 		if (obj == null)
@@ -403,7 +403,7 @@ public static class Mesher
 		}
 
 		// add the verts
-		mesh.SetVertices(md3Model.meshes[0].verts);
+		mesh.SetVertices(md3Model.meshes[0].verts[0]);
 
 		// Add the texture co-ords (or UVs) to the surface/mesh
 		mesh.SetUVs(0, md3Model.meshes[0].texCoords);
@@ -418,9 +418,11 @@ public static class Mesher
 		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
 		meshFilter.mesh = mesh;
 
-		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name);
+		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1 ,forceSkinAlpha);
 
 		mr.sharedMaterial = material;
+
+		return mesh;
 	}
 
 	public static void GenerateBrushCollider(QBrush brush, Transform holder)

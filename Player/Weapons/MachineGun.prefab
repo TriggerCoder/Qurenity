@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 811466194424367826}
   - component: {fileID: 8461978072835198550}
+  - component: {fileID: 8277455056104441564}
   m_Layer: 0
   m_Name: Point light
   m_TagString: Untagged
@@ -81,7 +82,7 @@ Light:
   m_RenderMode: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2147483415
   m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
@@ -94,6 +95,26 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &8277455056104441564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2711484251956829073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 1
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
 --- !u!1 &7466718358628462794
 GameObject:
   m_ObjectHideFlags: 0
@@ -104,6 +125,7 @@ GameObject:
   m_Component:
   - component: {fileID: 642940428421178241}
   - component: {fileID: 6390070097525064858}
+  - component: {fileID: -5919527084121346426}
   m_Layer: 5
   m_Name: MachineGun
   m_TagString: Untagged
@@ -140,7 +162,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Offset: {x: 0.2, y: -0.2, z: 0.2}
+  MuzzleOffset: {x: -0.5, y: 0, z: 0}
+  muzzleObject: {fileID: 0}
   ModelName: weapons2/machinegun/machinegun_barrel
+  MuzzleModelName: weapons2/machinegun/machinegun_flash
   useCrosshair: 1
   DamageMin: 5
   DamageMax: 15
@@ -148,7 +173,8 @@ MonoBehaviour:
   Sensitivity: {x: 4, y: 3}
   rotateSpeed: 4
   maxTurn: 3
-  _sounds: []
+  _sounds:
+  - weapons/machinegun/machgf1b
   Sounds: []
   Instance: {fileID: 0}
   playerInfo: {fileID: 0}
@@ -162,8 +188,37 @@ MonoBehaviour:
   useCooldown: 0
   muzzleLightTime: 5
   cooldownTime: 0
-  _fireRate: 0.13
+  _fireRate: 0.09
   fireTime: 0
   _muzzleTime: 0.13
   muzzleTimer: 0
   maxRange: 400
+  barrelSpeed: 600
+--- !u!114 &-5919527084121346426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7466718358628462794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac209986762ffc442898707afa18ad2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _audioClip: {fileID: 0}
+  _output: {fileID: 0}
+  _mute: 0
+  _bypassEffects: 1
+  _bypassListenerEffects: 1
+  _bypassReverbZone: 1
+  _playOnAwake: 0
+  _loop: 0
+  _priority: 128
+  _volume: 1
+  _pitch: 1
+  _spread: 0
+  _volumeRolloff: 0
+  _minDistance: 1
+  _maxDistance: 500
+  OnlyPlayForClosestCamera: 1

@@ -13,10 +13,13 @@ public class GameManager : MonoBehaviour
 	public Transform TemporaryObjectsHolder;
 	public Transform BaseThingsHolder;
 
+	public GameObject BulletHit;
+
 	// Quake3 also uses Doom and Wolf3d scaling down
 	public const float sizeDividor = 1f / 32f;
 	public const short DefaultLayer = 0;
 	public const short TransparentFXLayer = 1;
+	public const short UILayer = 5;
 	public const short MapMeshesLayer = 8;
 	public const short InvisibleBlockerLayer = 9;
 	public const short PlayerLayer = 10;
@@ -54,6 +57,12 @@ public class GameManager : MonoBehaviour
 
 	void Start()
     {
+		if (BulletHit != null)
+		{
+			if (!PoolManager.HasObjectPool("BulletHit"))
+				PoolManager.CreateObjectPool("BulletHit", BulletHit, 30);
+		}
+
 		if (MapLoader.Load(autoloadMap))
 		{
 			MaterialManager.GetShaderAnimationsTextures();

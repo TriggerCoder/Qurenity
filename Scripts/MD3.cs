@@ -23,10 +23,9 @@ public class MD3
 	public Vector3 origin;				// The origin of the model
 	public float scale;                 // The scale factor of the model
 
-	public static MD3 ImportModel(string modelName)
+	public static MD3 ImportModel(string modelName, bool forceSkinAlpha)
 	{
 		BinaryReader Md3ModelFile;
-		byte[] modelBytes;
 		string[] name;
 
 		string path = Application.streamingAssetsPath + "/models/" + modelName + ".md3";
@@ -41,7 +40,6 @@ public class MD3
 			MemoryStream ms = new MemoryStream();
 			map.Extract(ms);
 			Md3ModelFile = new BinaryReader(ms);
-			modelBytes = PakManager.ZipToByteArray(path, ref zip);
 		}
 		else
 			return null;
@@ -148,12 +146,10 @@ public class MD3
 			Md3ModelFile.BaseStream.Seek(offset, SeekOrigin.Begin);
 			MD3Mesh md3Mesh = new MD3Mesh();
 
-			md3Mesh.parseMesh(md3Model.name, Md3ModelFile, offset);
+			md3Mesh.parseMesh(md3Model.name, Md3ModelFile, offset, forceSkinAlpha);
 			offset += md3Mesh.meshSize;
 			md3Model.meshes.Add(md3Mesh);
 		}
-
-		Debug.LogWarning("read ok");
 		return md3Model;
 	}
 }
@@ -213,11 +209,11 @@ public class MD3Mesh
 	public int numVertices;				// The number of vertexes in the surface
 	public List<MD3Skin> skins;			// The list of shaders in the surface
 	public List<MD3Triangle> triangles;	// The list of triangles in the surface
-	public List<Vector3> verts;         // The list of vertexes in the surface
+	public List<Vector3>[] verts;         // The list of vertexes in the surface
 	public List<Vector2> texCoords;		// The texture coordinates of the vertex
 	public int meshSize;				// This stores the total mesh size
 
-	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset)
+	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset, bool forceSkinAlpha)
 	{
 		string[] fullName;
 
@@ -225,7 +221,7 @@ public class MD3Mesh
 		fullName = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
 		name = fullName[0].Replace("\0", string.Empty);
 
-		Debug.LogWarning("read mesh:" + name + "," + meshId);
+//		Debug.Log("Loading Mesh: " + name + " , " + meshId);
 
 		flags = Md3ModelFile.ReadInt32();
 		numFrames = Md3ModelFile.ReadInt32();              // This stores the mesh aniamtion frame count
@@ -239,6 +235,8 @@ public class MD3Mesh
 		meshSize = Md3ModelFile.ReadInt32();                   // This stores the total mesh size
 
 		skins = new List<MD3Skin>();
+		List<string> skinList = new List<string>();
+
 		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsSkins, SeekOrigin.Begin);
 		for (int i = 0; i < numSkins; i++)
 		{
@@ -246,10 +244,17 @@ public class MD3Mesh
 			string skinName = fullName[0].Replace("\0", string.Empty);
 			//Need to strip extension
 			fullName = skinName.Split('.');
-			TextureLoader.AddNewTexture(fullName[0]);
 
 			int num = Md3ModelFile.ReadInt32();
+
+			//Some skins are mentioned more than once
+			if (skinList.Contains(fullName[0]))
+				continue;
+			
+			TextureLoader.AddNewTexture(fullName[0], forceSkinAlpha);
+
 			skins.Add(new MD3Skin(num, fullName[0]));
+			skinList.Add(fullName[0]);
 		}
 
 		triangles = new List<MD3Triangle>();
@@ -271,9 +276,12 @@ public class MD3Mesh
 			texCoords.Add(new Vector2(u, 1 * -v));
 		}
 
-		verts = new List<Vector3>();
+		verts = new List<Vector3>[numFrames];
+		for (int i = 0; i < numFrames; i++)
+			verts[i] = new List<Vector3>();
+
 		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsVerts, SeekOrigin.Begin);
-		for (int i = 0; i < numVertices * numFrames; i++)
+		for (int i = 0, j = 0; i < numVertices * numFrames; i++)
 		{
 			float x = Md3ModelFile.ReadInt16() / 64f;
 			float y = Md3ModelFile.ReadInt16() / 64f;
@@ -283,65 +291,13 @@ public class MD3Mesh
 
 			Vector3 position = new Vector3(-x, z, -y);
 			position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-			verts.Add(position);
+			verts[j].Add(position);
+
+			if (((i + 1) % numVertices) == 0)
+				j++;
 		}
-
-
-		//  Debug.LogWarning("build mesh");
-//		mesh.buildFrames();
-		//   Debug.LogWarning("add mesh to body");
-//		model.bodyFrames.Add(mesh);
 	}
-	/*
-	public void buildFrames()
-	{
 
-		int uv_count = texCoords.Count;
-		Surface surf = new Surface("SURFACE");
-
-		try
-		{
-
-
-			//     Debug.LogWarning("faces total:" + Faces.Count);
-			//     Debug.LogWarning("vertex total:" + Vertex.Count);
-
-
-			for (int i = 0; i < Faces.Count; i++)
-			{
-
-				int i1 = Faces[i].v0;
-				int i2 = Faces[i].v1;
-				int i3 = Faces[i].v2;
-
-				Vector3 v1 = Vertex[i1];
-				Vector3 v2 = Vertex[i2];
-				Vector3 v3 = Vertex[i3];
-
-				Vector2 uv1 = TexCoords[0 * uv_count + i1];
-				Vector2 uv2 = TexCoords[0 * uv_count + i2];
-				Vector2 uv3 = TexCoords[0 * uv_count + i3];
-				surf.addFace(v1, v2, v3, uv1, uv2, uv3);
-
-			}
-
-			surf.build();
-			surf.Optimize();
-			surf.RecalculateNormals();
-			surf.CulateTangents();
-			frame = surf.getMesh();
-			meshFilter.sharedMesh = frame;
-
-		}
-		catch (ArgumentOutOfRangeException outOfRange)
-		{
-
-			Debug.LogError("Error mesh build:" + outOfRange.Message);
-		}
-
-
-	}
-	*/
 }
 
 // The indexes of the vertexes that make up the triangle

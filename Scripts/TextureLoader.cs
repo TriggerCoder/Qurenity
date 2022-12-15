@@ -26,12 +26,20 @@ public class TextureLoader : MonoBehaviour
 
 	}
 
-	public static void AddNewTexture(string textureName)
+	public static void AddNewTexture(string textureName, bool forceSkinAlpha)
 	{
 		List<QShader> list = new List<QShader>();
-		list.Add(new QShader(textureName, 0, 0, false));
+		list.Add(new QShader(textureName, 0, 0, forceSkinAlpha));
 		LoadJPGTextures(list);
 		LoadTGATextures(list);
+	}
+
+	public static bool HasTexture(string textureName)
+	{
+		if (Textures.ContainsKey(textureName))
+			return true;
+
+		return false;
 	}
 
 	public Texture GetTexture(string textureName)

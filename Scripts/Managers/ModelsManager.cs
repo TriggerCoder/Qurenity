@@ -12,12 +12,12 @@ public class ModelsManager : MonoBehaviour
 		Instance = this;	
 	}
 
-	public static MD3 GetModel(string modelName)
+	public static MD3 GetModel(string modelName, bool forceSkinAlpha = false)
 	{
 		if (Models.ContainsKey(modelName))
 			return Models[modelName];
 
-		MD3 model = MD3.ImportModel(modelName);
+		MD3 model = MD3.ImportModel(modelName, forceSkinAlpha);
 		if (model == null)
 			return null;
 

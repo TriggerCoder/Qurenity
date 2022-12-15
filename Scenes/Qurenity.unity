@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 300009278}
   - component: {fileID: 300009279}
   - component: {fileID: 300009280}
+  - component: {fileID: 300009283}
   - component: {fileID: 300009282}
   - component: {fileID: 300009281}
   m_Layer: 0
@@ -171,11 +172,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3tourney2
   tessellations: 5
   gamma: 1
-  TemporaryObjectsHolder: {fileID: 0}
-  BaseThingsHolder: {fileID: 0}
+  TemporaryObjectsHolder: {fileID: 1399079443}
+  BaseThingsHolder: {fileID: 2028868021}
+  BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0,
+    type: 3}
   paused: 1
 --- !u!114 &300009279
 MonoBehaviour:
@@ -205,7 +208,12 @@ MonoBehaviour:
   illegal: {fileID: 2100000, guid: f486d59daadfbd54c88aba80eea6b0db, type: 2}
   skyHole: {fileID: 2100000, guid: a2196f5cd0c659f4d97144b608742690, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
-  defaultMaterialLightMap: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
+  defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a,
+    type: 2}
+  defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955,
+    type: 2}
+  defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3,
+    type: 2}
   debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
   _OverrideMaterials:
   - overrideName: textures/sfx/flame1
@@ -431,6 +439,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 366d661345e80e744ba2cd27cb011b21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &300009283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300009275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66cb881aaea89764584d0c8f590dc0b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _OverrideSounds: []
 --- !u!850595691 &1245000655
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -524,11 +545,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &2020551871 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 120263213280996051, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-  m_PrefabInstance: {fileID: 2071567870}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2028868020
 GameObject:
   m_ObjectHideFlags: 0
@@ -567,30 +583,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: WeaponHand
-      value: 
-      objectReference: {fileID: 2020551871}
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[0]
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[0]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[1]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[2]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: WeaponPrefabs.Array.data[1]
-      value: 
-      objectReference: {fileID: 6390070097525064858, guid: 8f6a32473c202a04192d6635aded0bf7, type: 3}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
@@ -638,10 +630,6 @@ PrefabInstance:
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3788721304010299260, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_Layer
-      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0607bb188534d754db77d3cf1a751561, type: 3}

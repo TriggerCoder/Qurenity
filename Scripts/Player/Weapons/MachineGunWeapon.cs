@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MachineGunWeapons : PlayerWeapon
+public class MachineGunWeapon : PlayerWeapon
 {
 	public override float avgDispersion { get { return .017f; } } // tan(2º) / 2
 	public override float maxDispersion { get { return .049f; } } // tan(5.6º) / 2
 
 	public float maxRange = 400f;
+
+	public float barrelSpeed = 400;
 
 	private float currentRotSpeed = 0;
 	protected override void OnUpdate()
@@ -35,6 +37,9 @@ public class MachineGunWeapons : PlayerWeapon
 			{
 				muzzleLight.intensity = 1;
 				muzzleLight.enabled = true;
+				if (muzzleObject != null)
+					if (!muzzleObject.activeSelf)
+						muzzleObject.SetActive(true);
 			}
 
 		//maximum fire rate 20/s, unless you use negative number (please don't)
@@ -53,7 +58,7 @@ public class MachineGunWeapons : PlayerWeapon
 	{
 		if (fireTime > 0f)
 		{
-			currentRotSpeed += 100 * rotateSpeed * Time.deltaTime;
+			currentRotSpeed += barrelSpeed * Time.deltaTime;
 			if (currentRotSpeed < -180)
 				currentRotSpeed += 360;
 			if (currentRotSpeed > 180)

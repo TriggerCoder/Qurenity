@@ -9,7 +9,9 @@ public class MaterialManager : MonoBehaviour
 	public Material illegal;
 	public Material skyHole;
 	public Material defaultMaterial;
-	public Material defaultMaterialLightMap;
+	public Material defaultTransparentMaterial;
+	public Material defaultLightMapMaterial;
+	public Material defaultTransparentLightMapMaterial;
 	public Material debug;
 
 	public MaterialOverride[] _OverrideMaterials = new MaterialOverride[0];
@@ -106,7 +108,7 @@ public class MaterialManager : MonoBehaviour
 		return true;
 	}
 
-	public static Material GetMaterials(string textureName, int lm_index = -1)
+	public static Material GetMaterials(string textureName, int lm_index, bool forceSkinAlpha = false)
 	{
 		if (MapLoader.IsSkyTexture(textureName))
 			return Instance.skyHole;
@@ -127,7 +129,10 @@ public class MaterialManager : MonoBehaviour
 			Texture2D lmap = MapLoader.lightMaps[lm_index];
 			lmap.Compress(true);
 			lmap.Apply();
-			mat = Instantiate(Instance.defaultMaterialLightMap);
+			if (forceSkinAlpha)
+				mat = Instantiate(Instance.defaultTransparentLightMapMaterial);
+			else
+				mat = Instantiate(Instance.defaultLightMapMaterial);
 			mat.mainTexture = tex;
 			mat.SetTexture(lightMapPropertyId, lmap);
 			Materials.Add(textureName + lm_index.ToString(), mat);
@@ -137,7 +142,10 @@ public class MaterialManager : MonoBehaviour
 		if (Materials.ContainsKey(textureName))
 			return Materials[textureName];
 		// Lightmapping is off, so don't.
-		mat = Instantiate(Instance.defaultMaterial);
+		if (forceSkinAlpha)
+			mat = Instantiate(Instance.defaultTransparentMaterial);
+		else
+			mat = Instantiate(Instance.defaultMaterial);
 		mat.mainTexture = tex;
 		Materials.Add(textureName, mat);
 		return mat;

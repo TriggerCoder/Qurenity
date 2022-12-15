@@ -6,9 +6,13 @@ using Assets.MultiAudioListener;
 public class PlayerWeapon : MonoBehaviour
 {
 	public Vector3 Offset = new Vector3(.2f, -.2f, .2f);
+	public Vector3 MuzzleOffset = new Vector3(-0.5f, 0f, 0);
+
+	[HideInInspector]
+	public GameObject muzzleObject = null;
 
 	public string ModelName;
-
+	public string MuzzleModelName;
 	public bool useCrosshair = true;
 	public virtual float avgDispersion { get { return .02f; } } //tan(2.3º) / 2
 	public virtual float maxDispersion { get { return .03f; } } //tan(3.4º) / 2
@@ -76,10 +80,17 @@ public class PlayerWeapon : MonoBehaviour
 		Instance = this;
 
 		muzzleLight = GetComponentInChildren<Light>();
+		audioSource = GetComponent<MultiAudioSource>();
+
+		Sounds = new AudioClip[_sounds.Length];
+		for (int i = 0; i < _sounds.Length; i++)
+			Sounds[i] = SoundLoader.LoadSound(_sounds[i]);
 
 		if (!GameOptions.UseMuzzleLight)
 			if (muzzleLight != null)
+			{
 				muzzleLight.enabled = false;
+			}
 	}
 
 	public void Init(PlayerInfo p)
@@ -90,6 +101,20 @@ public class PlayerWeapon : MonoBehaviour
 		MD3 model = ModelsManager.GetModel(ModelName);
 		if (model != null)
 			Mesher.GenerateModelObject(model,gameObject);
+
+		if (!string.IsNullOrEmpty(MuzzleModelName))
+		{
+			muzzleObject = new GameObject("Muzzle");
+			muzzleObject.layer = GameManager.UILayer;
+			muzzleObject.transform.SetParent(transform);
+			muzzleObject.transform.localPosition = MuzzleOffset;
+			model = ModelsManager.GetModel(MuzzleModelName, true);
+			if (model != null)
+				Mesher.GenerateModelObject(model, muzzleObject, true);
+			muzzleObject.SetActive(false);
+//			DisableAfterTime disableObject = muzzleObject.AddComponent<DisableAfterTime>();
+//			disableObject._lifeTime = _muzzleTime;
+		}
 
 		oldMousePosition.x = Input.GetAxis("Mouse X");
 		oldMousePosition.y = Input.GetAxis("Mouse Y");
@@ -110,6 +135,11 @@ public class PlayerWeapon : MonoBehaviour
 						muzzleLight.intensity = 0;
 						muzzleLight.enabled = false;
 					}
+					else if (muzzleLight.intensity <= 0.8f)
+						if (muzzleObject != null)
+							if (muzzleObject.activeSelf)
+								muzzleObject.SetActive(false);
+
 				}
 			}
 
