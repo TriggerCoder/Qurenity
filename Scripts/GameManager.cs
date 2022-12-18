@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
 	public Transform TemporaryObjectsHolder;
 	public Transform BaseThingsHolder;
 
+	public PlayerInfo[] Player = new PlayerInfo[1];
+
 	public GameObject BulletHit;
 
 	// Quake3 also uses Doom and Wolf3d scaling down
@@ -62,13 +64,16 @@ public class GameManager : MonoBehaviour
 			if (!PoolManager.HasObjectPool("BulletHit"))
 				PoolManager.CreateObjectPool("BulletHit", BulletHit, 30);
 		}
+		if (!PoolManager.HasObjectPool("3DSound"))
+			PoolManager.Create3DSoundPool("3DSound", 10);
 
 		if (MapLoader.Load(autoloadMap))
 		{
 			MaterialManager.GetShaderAnimationsTextures();
 			ClusterPVSManager.Instance.ResetClusterList();
-			MapLoader.GenerateSurfaces();
 			MapLoader.GenerateMapCollider();
+			MapLoader.GenerateSurfaces();
+//			MapLoader.GenerateGeometricCollider();
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}

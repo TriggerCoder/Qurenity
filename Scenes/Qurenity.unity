@@ -172,13 +172,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3tourney2
+  autoloadMap: q3dm1
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
   BaseThingsHolder: {fileID: 2028868021}
-  BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0,
-    type: 3}
+  Player:
+  - {fileID: 0}
+  BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0, type: 3}
   paused: 1
 --- !u!114 &300009279
 MonoBehaviour:
@@ -208,12 +209,9 @@ MonoBehaviour:
   illegal: {fileID: 2100000, guid: f486d59daadfbd54c88aba80eea6b0db, type: 2}
   skyHole: {fileID: 2100000, guid: a2196f5cd0c659f4d97144b608742690, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
-  defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a,
-    type: 2}
-  defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955,
-    type: 2}
-  defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3,
-    type: 2}
+  defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
+  defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
+  defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
   debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
   _OverrideMaterials:
   - overrideName: textures/sfx/flame1
@@ -545,6 +543,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1441192283 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1916806255274296, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_PrefabInstance: {fileID: 2071567870}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2028868020
 GameObject:
   m_ObjectHideFlags: 0
@@ -583,6 +586,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Ammo.Array.data[0]
+      value: 10000
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Ammo.Array.data[3]
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Ammo.Array.data[4]
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Weapon.Array.data[4]
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: WeaponPrefabs.Array.data[4]
+      value: 
+      objectReference: {fileID: 2948330587790430167, guid: 9ead3d799f5b03942ab3b628f35f6b75, type: 3}
+    - target: {fileID: 2100344969, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: MainCamera
+      value: 
+      objectReference: {fileID: 1441192283}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
@@ -629,6 +656,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 120263213280996051, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 120263213280996051, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 120263213280996051, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

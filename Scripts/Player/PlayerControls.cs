@@ -126,7 +126,7 @@ public class PlayerControls : MonoBehaviour
 		}
 
 
-		if (playerCamera.Camera.activeSelf)
+		if (playerCamera.MainCamera.activeSelf)
 		{
 			//use weapon
 			if (Input.GetMouseButton(0))
@@ -147,6 +147,37 @@ public class PlayerControls : MonoBehaviour
 				SwapWeapon = -1;
 			}
 		}
+
+		if (Input.GetKeyDown(KeyCode.Alpha0))
+			TrySwapWeapon(0);
+
+		if (Input.GetKeyDown(KeyCode.Alpha1))
+			TrySwapWeapon(1);
+
+		if (Input.GetKeyDown(KeyCode.Alpha2))
+			TrySwapWeapon(2);
+
+		if (Input.GetKeyDown(KeyCode.Alpha3))
+			TrySwapWeapon(3);
+
+		if (Input.GetKeyDown(KeyCode.Alpha4))
+			TrySwapWeapon(4);
+
+		if (Input.GetKeyDown(KeyCode.Alpha5))
+			TrySwapWeapon(5);
+
+		if (Input.GetKeyDown(KeyCode.Alpha6))
+			TrySwapWeapon(6);
+
+		if (Input.GetKeyDown(KeyCode.Alpha7))
+			TrySwapWeapon(7);
+
+		if (Input.GetKeyDown(KeyCode.Alpha8))
+			TrySwapWeapon(8);
+
+		if (Input.GetKeyDown(KeyCode.Alpha9))
+			TrySwapWeapon(9);
+
 	}
 
 	private void SetMovementDir()

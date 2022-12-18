@@ -47,7 +47,107 @@ public class BezierMesh
         p2suv2Cache = new List<Vector2>();
 		p2scolorCache = new List<Color>();
 	}
-    public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
+
+	public BezierMesh(int level, int surfaceId, int patchNumber, List<Vector3> control)
+	{
+		Transform parent = null;
+
+		// We'll use these two to hold our verts
+		int capacity = control.Count;
+		if (vertexCache.Capacity < capacity)
+			vertexCache.Capacity = capacity;
+
+		for (int i = 0; i < level; i++)
+		{
+			float s = i * (1f / level);
+			float f = (i + 1) * (1f / level);
+			float m = (s + f) / 2f;
+			vertexCache.Clear();
+		
+			//Top row
+			vertexCache.Add(BezCurve(s, control[0], control[1], control[2]));
+			vertexCache.Add(BezCurve(m, control[0], control[1], control[2]));
+			vertexCache.Add(BezCurve(f, control[0], control[1], control[2]));
+
+
+			//Middle row
+			vertexCache.Add(BezCurve(s, control[3], control[4], control[5]));
+			vertexCache.Add(BezCurve(m, control[3], control[4], control[5]));
+			vertexCache.Add(BezCurve(f, control[3], control[4], control[5]));
+
+			//Bottom row
+			vertexCache.Add(BezCurve(s, control[6], control[7], control[8]));
+			vertexCache.Add(BezCurve(m, control[6], control[7], control[8]));
+			vertexCache.Add(BezCurve(f, control[6], control[7], control[8]));
+
+			if (!CanIfCanFormConvexHull(vertexCache))
+			{
+				ColliderObject = null;
+				return;
+			}
+
+			if (i == 0)
+			{
+				ColliderObject = new GameObject("Bezier_Collider_" + surfaceId + "_" + patchNumber);
+				parent = ColliderObject.transform;
+			}
+
+			Mesh patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i, vertexCache);
+			GameObject objCollider = new GameObject(patchMesh.name + "_collider");
+			objCollider.layer = GameManager.ColliderLayer;
+			objCollider.transform.SetParent(parent);
+
+			MeshCollider mc = objCollider.AddComponent<MeshCollider>();
+			mc.sharedMesh = patchMesh;
+			mc.convex = true;
+			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+		}
+	}
+	public bool CanIfCanFormConvexHull(List<Vector3> points)
+	{
+		const float EPSILON = 0.001f;
+
+		Vector3 min = points[0];
+		Vector3 max = points[0];
+
+		if (points.Count == 1)
+			return false;
+
+		for (int i = 1; i < points.Count; i++)
+		{
+			Vector3 p = points[i];
+
+			if (p.x < min.x)
+				min.x = p.x;
+			else if (p.x > max.x)
+				max.x = p.x;
+
+			if (p.y < min.y)
+				min.y = p.y;
+			else if (p.y > max.y)
+				max.y = p.y;
+
+			if (p.z < min.z)
+				min.z = p.z;
+			else if (p.z > max.z)
+				max.z = p.z;
+		}
+
+		float xWidth = Mathf.Abs(max.x - min.x);
+		float yWidth = Mathf.Abs(max.y - min.y);
+		float zWidth = Mathf.Abs(max.z - min.z);
+
+		if (xWidth < EPSILON || yWidth < EPSILON || zWidth < EPSILON)
+		{
+			return false;
+		}
+
+		return true;
+	}
+	public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
 	{
 		// The mesh we're building
 		Mesh patchMesh = new Mesh();
@@ -179,8 +279,10 @@ public class BezierMesh
 
 	public Mesh Mesh { get; }
 
-    // Calculate UVs for our tessellated vertices 
-    private Vector2 BezCurveUV(float t, Vector2 p0, Vector2 p1, Vector2 p2)
+	public GameObject ColliderObject { get; set; }
+
+	// Calculate UVs for our tessellated vertices 
+	private Vector2 BezCurveUV(float t, Vector2 p0, Vector2 p1, Vector2 p2)
     {
         Vector2 bezPoint = new Vector2();
 		float[] tPoints = new float[2];

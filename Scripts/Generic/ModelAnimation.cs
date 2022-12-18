@@ -35,7 +35,7 @@ public class ModelAnimation : MonoBehaviour
 			return;
 		}
 
-		modelMesh = Mesher.GenerateModelObject(md3Model, gameObject);
+		modelMesh = Mesher.GenerateModelObjectGetMesh(md3Model, gameObject);
 		//Check for differens in skin count per mesh
 		numSkins = md3Model.numSkins;
 		_frames = new Texture[numSkins];

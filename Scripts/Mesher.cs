@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 public static class Mesher
 {
@@ -47,29 +46,58 @@ public static class Mesher
 			Name += "_" + surfaces[i].surfaceId;
 		}
 
-		CombineInstance[] combine = new CombineInstance[totalPatches];
+		CombineInstance[] combineDraw = new CombineInstance[totalPatches];
 		int index = 0;
 		for (int i = 0; i < surfaces.Length; i++)
 		{
 			for (int n = 0; n < numPatches[i]; n++)
 			{
-				combine[index].mesh = GenerateBezMesh(surfaces[i], n);
+				BezierMesh BezMesh = GenerateBezMesh(surfaces[i], n);
+				combineDraw[index].mesh = BezMesh.Mesh;
 				index++;
 			}
 		}
 
-		int p = (surfaces[0].size[0] - 1) / 2 * ((surfaces[0].size[1] - 1) / 2);
-		CombineInstance[] c = new CombineInstance[p];
-		for (int i = 0; i < p; i++)
+/*
+		CombineInstance[] combineDraw = new CombineInstance[totalPatches];
+		int index = 0;
+		for (int i = 0; i < surfaces.Length; i++)
 		{
-			c[i].mesh = GenerateBezMesh(surfaces[0], i);
-		}
+			bool hasCollider = false;
+			CombineInstance[] combineCollide = new CombineInstance[numPatches[i]];
+			for (int n = 0; n < numPatches[i]; n++)
+			{
+				BezierMesh BezMesh = GenerateBezMesh(surfaces[i], n);
+				combineDraw[index].mesh = BezMesh.Mesh;
+				combineCollide[n].mesh = BezMesh.Mesh;
+				index++;
+				if (BezMesh.ColliderObject != null)
+					hasCollider = true;
+			}
+			//Don't use Mesh Collider unless it's a 2d Surface
+			if (!hasCollider)
+			{
+				GameObject ColliderObject = new GameObject("2D_Bezier_Collider_" + surfaces[i].surfaceId);
+				ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
 
+				Mesh collideMesh = new Mesh();
+				collideMesh.name = Name;
+				collideMesh.CombineMeshes(combineCollide, true, false, false);
+
+				MeshCollider mc = ColliderObject.AddComponent<MeshCollider>();
+				mc.sharedMesh = collideMesh;
+
+				Rigidbody rb = ColliderObject.AddComponent<Rigidbody>();
+				rb.isKinematic = true;
+				rb.useGravity = false;
+				rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			}
+		}
+*/
 
 		Mesh mesh = new Mesh();
 		mesh.name = Name;
-		mesh.CombineMeshes(combine, true, false, false);
-//		mesh.CombineMeshes(c, true, false, false);
+		mesh.CombineMeshes(combineDraw, true, false, false);
 
 		GameObject bezObj = new GameObject();
 		bezObj.layer = GameManager.MapMeshesLayer;
@@ -86,8 +114,7 @@ public static class Mesher
 		Material material = MaterialManager.GetMaterials(textureName, lmIndex);
 		meshRenderer.sharedMaterial = material;
 	}
-
-	public static Mesh GenerateBezMesh(QSurface surface, int patchNumber)
+	public static BezierMesh GenerateBezMesh(QSurface surface, int patchNumber)
 	{
 		//Calculate how many patches there are using size[]
 		//There are n_patchesX by n_patchesY patches in the grid, each of those
@@ -224,8 +251,14 @@ public static class Mesher
 		}
 */
 		//Now that we have our control grid, it's business as usual
+
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
-		return bezPatch.Mesh;
+		BezierMesh bezCollider = new BezierMesh(4, surface.surfaceId, patchNumber, bverts);
+		if (bezCollider.ColliderObject != null)
+			bezCollider.ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
+		bezPatch.ColliderObject = bezCollider.ColliderObject;
+
+		return bezPatch;
 	}
 	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
 	{
@@ -374,7 +407,7 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static Mesh GenerateModelObject(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
+	public static Mesh GenerateModelObjectGetMesh(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
 	{
 		if (md3Model == null || md3Model.meshes.Count == 0)
 		{
@@ -390,23 +423,73 @@ public static class Mesher
 			obj.transform.SetParent(MapMeshes);
 		}
 
+		Mesh mesh = GenerateModelMesh(md3Model.meshes[0]);
+
+		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
+		meshFilter.mesh = mesh;
+
+		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1, forceSkinAlpha);
+
+		mr.sharedMaterial = material;
+
+		return mesh;
+	}
+
+	public static GameObject GenerateModelObject(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
+	{
+		if (md3Model == null || md3Model.meshes.Count == 0)
+		{
+			Debug.LogWarning("Failed to create model object because there are no meshes");
+			return null;
+		}
+
+		if (obj == null)
+		{
+			obj = new GameObject();
+			obj.layer = GameManager.ThingsLayer;
+			obj.name = "Mesh_" + md3Model.name;
+			obj.transform.SetParent(MapMeshes);
+		}
+
+		Mesh mesh = GenerateModelMesh(md3Model.meshes[0]);
+
+		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
+		meshFilter.mesh = mesh;
+
+		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1, forceSkinAlpha);
+
+		mr.sharedMaterial = material;
+
+		return obj;
+	}
+
+	public static Mesh GenerateModelMesh(MD3Mesh md3Mesh)
+	{
+		if (md3Mesh == null)
+		{
+			Debug.LogWarning("Failed to generate polygon mesh because there are no meshe info");
+			return null;
+		}
+
 		Mesh mesh = new Mesh();
-		mesh.name = md3Model.meshes[0].name;
+		mesh.name = md3Mesh.name;
 
 		List<int> Triangles = new List<int>();
 
-		for (int i = 0; i < md3Model.meshes[0].triangles.Count; i++)
+		for (int i = 0; i < md3Mesh.triangles.Count; i++)
 		{
-			Triangles.Add(md3Model.meshes[0].triangles[i].vertex1);
-			Triangles.Add(md3Model.meshes[0].triangles[i].vertex2);
-			Triangles.Add(md3Model.meshes[0].triangles[i].vertex3);
+			Triangles.Add(md3Mesh.triangles[i].vertex1);
+			Triangles.Add(md3Mesh.triangles[i].vertex2);
+			Triangles.Add(md3Mesh.triangles[i].vertex3);
 		}
 
 		// add the verts
-		mesh.SetVertices(md3Model.meshes[0].verts[0]);
+		mesh.SetVertices(md3Mesh.verts[0]);
 
 		// Add the texture co-ords (or UVs) to the surface/mesh
-		mesh.SetUVs(0, md3Model.meshes[0].texCoords);
+		mesh.SetUVs(0, md3Mesh.texCoords);
 
 		// add the meshverts to the object being built
 		mesh.SetTriangles(Triangles, 0);
@@ -414,29 +497,24 @@ public static class Mesher
 		// Let Unity do some heavy lifting for us
 		mesh.RecalculateBounds();
 
-		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
-		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
-		meshFilter.mesh = mesh;
-
-		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1 ,forceSkinAlpha);
-
-		mr.sharedMaterial = material;
-
 		return mesh;
 	}
 
-	public static void GenerateBrushCollider(QBrush brush, Transform holder)
+	public static void GenerateBrushCollider(QBrush brush, Transform holder, bool isModel = false)
 	{
 		//Remove brushed used for BSP Generations and for Details
 		uint type = MapLoader.mapTextures[brush.shaderId].contentsFlags;
 
-		if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
+		if (!isModel)
 		{
-//			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
-			return;
+			if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
+			{
+	//			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
+				return;
+			}
 		}
 
-		GameObject objCollider = new GameObject(brush.brushSide + "_collider");
+		GameObject objCollider = new GameObject("Polygon_"+brush.brushSide + "_collider");
 		objCollider.layer = GameManager.ColliderLayer;
 		objCollider.transform.SetParent(holder);
 
@@ -493,6 +571,9 @@ public static class Mesher
 		rb.useGravity = false;
 		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
+		if (isModel)
+			return;
+
 		ContentType contentType = objCollider.AddComponent<ContentType>();
 		contentType.Init(type);
 
@@ -533,7 +614,7 @@ public static class Mesher
 	{
 		float d = f1 - f2;
 
-		if (Mathf.Abs(d) > APROX_ERROR)
+		if (d < -APROX_ERROR || d > APROX_ERROR)
 			return false;
 		return true;
 	}

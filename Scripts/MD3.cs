@@ -22,7 +22,8 @@ public class MD3
 	public float bs_Radius;				// The radius of the model's bounding sphere
 	public Vector3 origin;				// The origin of the model
 	public float scale;                 // The scale factor of the model
-
+	public List<Mesh> readyMeshes = new List<Mesh>();				// This is the processed Unity Mesh
+	public List<Material> readyMaterial = new List<Material>();		// This is the processed Material
 	public static MD3 ImportModel(string modelName, bool forceSkinAlpha)
 	{
 		BinaryReader Md3ModelFile;
@@ -209,10 +210,9 @@ public class MD3Mesh
 	public int numVertices;				// The number of vertexes in the surface
 	public List<MD3Skin> skins;			// The list of shaders in the surface
 	public List<MD3Triangle> triangles;	// The list of triangles in the surface
-	public List<Vector3>[] verts;         // The list of vertexes in the surface
+	public List<Vector3>[] verts;		// The list of vertexes in the surface
 	public List<Vector2> texCoords;		// The texture coordinates of the vertex
 	public int meshSize;				// This stores the total mesh size
-
 	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset, bool forceSkinAlpha)
 	{
 		string[] fullName;

@@ -12,12 +12,29 @@ public class MachineGunWeapon : PlayerWeapon
 	public float barrelSpeed = 400;
 
 	private float currentRotSpeed = 0;
+
 	protected override void OnUpdate()
 	{
 		if (playerInfo.Ammo[0] <= 0 && fireTime < .1f)
+		{
+			if ((!putAway)  && (Sounds.Length > 1)) 
+			{
+				audioSource.AudioClip = Sounds[1];
+				audioSource.Play();
+			}
 			putAway = true;
+
+		}
 	}
 
+	protected override void OnInit() 
+	{
+		if (Sounds.Length > 2)
+		{
+			audioSource.AudioClip = Sounds[2];
+			audioSource.Play();
+		}
+	}
 	public override bool Fire()
 	{
 		if (LowerAmount > .2f)

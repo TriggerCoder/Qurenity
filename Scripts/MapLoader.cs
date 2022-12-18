@@ -16,7 +16,7 @@ public static class MapLoader
 
 	public static BSPHeader header;
 
-	private static Transform DynamicMeshes;
+	public static Transform ColliderGroup;
 
 	public static List<QSurface> surfaces;
 	public static List<Texture2D> lightMaps;
@@ -27,6 +27,7 @@ public static class MapLoader
 	public static List<QLeaf> leafs;
 	public static List<int> leafsSurfaces;
 	public static int[] leafRenderFrame;
+	public static List<QModel> models;
 	public static List<QBrush> brushes;
 	public static List<int> leafsBrushes;
 	public static List<QBrushSide> brushSides;
@@ -134,6 +135,19 @@ public static class MapLoader
 			for (int i = 0; i < num; i++)
 			{
 				leafsBrushes.Add(BSPMap.ReadInt32());
+			}
+		}
+
+		//models (rigid geometry)
+		{
+			BSPMap.BaseStream.Seek(header.Directory[LumpType.Models].Offset, SeekOrigin.Begin);
+			int num = header.Directory[LumpType.Models].Length / 40;
+			models = new List<QModel>(num);
+			for (int i = 0; i < num; i++)
+			{
+				models.Add(new QModel(new Vector3(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()),
+										new Vector3(BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()),
+										BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32(), BSPMap.ReadInt32()));
 			}
 		}
 
@@ -307,14 +321,33 @@ public static class MapLoader
 	{
 		GameObject MapColliders = new GameObject("MapColliders");
 		MapColliders.layer = GameManager.ColliderLayer;
-		Transform holder = MapColliders.transform;
-		holder.transform.SetParent(GameManager.Instance.transform);
+		ColliderGroup = MapColliders.transform;
+		ColliderGroup.transform.SetParent(GameManager.Instance.transform);
 
 		foreach (QBrush brush in brushes)
 		{
-			Mesher.GenerateBrushCollider(brush,holder);
+			Mesher.GenerateBrushCollider(brush, ColliderGroup);
 		}
 	}
+	public static void GenerateGeometricCollider()
+	{
+		GameObject GeometricColliders = new GameObject("GeometricColliders");
+		GeometricColliders.layer = GameManager.ColliderLayer;
+		Transform holder = GeometricColliders.transform;
+		holder.transform.SetParent(GameManager.Instance.transform);
+
+		foreach (QModel model in models)
+		{
+			List<QSurface> groupSurfaces = new List<QSurface>();
+			groupSurfaces.Add(surfaces[model.firstSurface]);
+			for (int i = 0; i < model.numSurfaces; i++)
+			{
+				groupSurfaces.Add(surfaces[model.firstSurface + i]);
+			}
+			Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, 0, groupSurfaces.ToArray());
+		}
+	}
+
 	public static void GetMapTextures()
 	{
 		TextureLoader.LoadJPGTextures(mapTextures);

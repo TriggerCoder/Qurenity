@@ -78,7 +78,9 @@ public class TextureLoader : MonoBehaviour
 					}
 					readyTex.Reinitialize(readyTex.width, readyTex.height, TextureFormat.RGBA32, false);
 					readyTex.SetPixels32(pulledColors);
+#if UNITY_EDITOR
 					readyTex.alphaIsTransparency = true;
+#endif
 					readyTex.Apply();
 				}
 				readyTex.name = tex.name;
@@ -222,7 +224,9 @@ public class TextureLoader : MonoBehaviour
 		else
 			Debug.LogError("TGA texture: " + FileName + " unknown type.");
 
+#if UNITY_EDITOR
 		texture.alphaIsTransparency = true;
+#endif
 		texture.SetPixels(colors);
 		texture.Apply();
 

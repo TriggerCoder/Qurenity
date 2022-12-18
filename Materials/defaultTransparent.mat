@@ -8,8 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: defaultTransparent
-  m_Shader: {fileID: -6465566751694194690, guid: eed01128ad55e0e45bc9f090be4ae068,
-    type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: eed01128ad55e0e45bc9f090be4ae068, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -72,7 +71,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
-    - _BUILTIN_QueueControl: -1
+    - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
     - _Blend: 0
     - _BumpScale: 1

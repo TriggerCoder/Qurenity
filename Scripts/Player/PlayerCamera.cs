@@ -3,10 +3,9 @@ using UnityEngine;
 public class PlayerCamera : MonoBehaviour
 {
 	public PlayerCamera Instance;
-	public GameObject Camera;
+	public GameObject MainCamera;
 	public Camera SkyboxCamera = null;
 	public Camera SkyholeCamera = null;
-	public Camera MainCamera = null;
 	public Camera UICamera = null;
 
 	public PlayerControls playerControls;
@@ -14,9 +13,8 @@ public class PlayerCamera : MonoBehaviour
 	void Awake()
 	{
 		Instance = this;
-		MainCamera = Camera.GetComponent<Camera>();
 
-		foreach (Transform child in Camera.transform)
+		foreach (Transform child in MainCamera.transform)
 		{
 			if (child.gameObject.name == "SkyholeCamera")
 				SkyholeCamera = child.gameObject.GetComponent<Camera>();
@@ -28,14 +26,15 @@ public class PlayerCamera : MonoBehaviour
 
 		playerControls = GetComponentInParent<PlayerControls>();
 
-		SkyholeCamera.cullingMask = ((1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
+		SkyholeCamera.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
+										(1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
 											(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
 	}
 
 	void Update()
 	{
 
-		if (Camera.activeSelf == false)
+		if (MainCamera.activeSelf == false)
 			return;
 
 		//look up and down

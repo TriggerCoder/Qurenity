@@ -148,6 +148,34 @@ public class QLeaf
 	}
 };
 
+public class QModel
+{
+	public Vector3 bb_Min;              // The bounding box min position 
+	public Vector3 bb_Max;              // The bounding box max position 
+	public int firstSurface;			// The starting index into the surface array 
+	public int numSurfaces;             // The number of surface for this geometry 
+	public int firstBrush;              // The starting brush for the geometry 
+	public int numBrushes;              // Number of brush for the geometry
+
+	public QModel(Vector3 bb_Min, Vector3 bb_Max, int firstSurface, int numSurfaces, int firstBrush, int numBrushes)
+	{
+		this.firstSurface = firstSurface;
+		this.numSurfaces = numSurfaces;
+		this.firstBrush = firstBrush;
+		this.numBrushes = numBrushes;
+		this.bb_Min = Vector3.zero;
+		this.bb_Max = Vector3.zero;
+		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
+		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
+	}
+	private Vector3 QuakeToUnityCoordSystem(Vector3 vect)
+	{
+		Vector3 vect3 = new Vector3(-vect.x, vect.z, -vect.y);
+		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		return vect3;
+	}
+};
+
 public class QBrush
 {
 	public int brushSide;              // The starting brush side for the brush 
