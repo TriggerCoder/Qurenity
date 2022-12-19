@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Assets.MultiAudioListener;
 
@@ -94,80 +93,6 @@ public class PlayerWeapon : MonoBehaviour
 				muzzleLight.enabled = false;
 			}
 	}
-
-	private void FillModelFromProcessedData(MD3 model)
-	{
-		for (int i = 0; i < model.readyMeshes.Count; i++)
-		{
-			GameObject modelObject;
-			if (i == 0)
-				modelObject = gameObject;
-			else
-			{
-				modelObject = new GameObject("Mesh_"+i);
-				modelObject.layer = gameObject.layer;
-				modelObject.transform.SetParent(transform);
-			}
-
-			MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
-			MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
-			meshFilter.mesh = model.readyMeshes[i];
-			mr.sharedMaterial = model.readyMaterial[i];
-		}
-	}
-	private void GenerateModelFromMeshes(MD3 model)
-	{
-		var baseGroups = model.meshes.GroupBy(x => new { x.numSkins });
-		int groupId = 0;
-		foreach (var baseGroup in baseGroups)
-		{
-			MD3Mesh[] baseGroupMeshes = baseGroup.ToArray();
-			if (baseGroupMeshes.Length == 0)
-				continue;
-
-			var groupMeshes = baseGroupMeshes.GroupBy(x => new { x.skins[0].name });
-			foreach (var groupMesh in groupMeshes)
-			{
-				MD3Mesh[] meshes = groupMesh.ToArray();
-				if (meshes.Length == 0)
-					continue;
-
-				string Name = "Mesh_";
-				CombineInstance[] combine = new CombineInstance[meshes.Length];
-				for (var i = 0; i < combine.Length; i++)
-				{
-					combine[i].mesh = Mesher.GenerateModelMesh(meshes[i]);
-					Name += "_" + meshes[i].name;
-				}
-
-				var mesh = new Mesh();
-				mesh.name = Name;
-				mesh.CombineMeshes(combine, true, false, false);
-
-				GameObject modelObject;
-				if (groupId == 0)
-					modelObject = gameObject;
-				else
-				{
-					modelObject = new GameObject();
-					modelObject.layer = gameObject.layer;
-					modelObject.transform.SetParent(transform);
-				}
-
-				MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
-				MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
-				meshFilter.mesh = mesh;
-
-				Material material = MaterialManager.GetMaterials(meshes[0].skins[0].name, -1);
-
-				mr.sharedMaterial = material;
-				model.readyMeshes.Add(mesh);
-				model.readyMaterial.Add(material);
-				groupId++;
-			}
-		}
-	}
-
 	public void Init(PlayerInfo p)
 	{
 		playerInfo = p;
@@ -177,9 +102,17 @@ public class PlayerWeapon : MonoBehaviour
 		if (model != null)
 		{
 			if (model.readyMeshes.Count == 0)
-				GenerateModelFromMeshes(model);
+				Mesher.GenerateModelFromMeshes(model,gameObject);
 			else
-				FillModelFromProcessedData(model);
+				Mesher.FillModelFromProcessedData(model,gameObject);
+		}
+
+		foreach (MD3Tag tag in model.tags)
+		{
+			if (string.Equals(tag.name, "tag_flash"))
+			{
+				MuzzleOffset = tag.origin;
+			}
 		}
 
 		cTransform = gameObject.transform;
@@ -197,10 +130,13 @@ public class PlayerWeapon : MonoBehaviour
 			muzzleObject.transform.localPosition = MuzzleOffset;
 			model = ModelsManager.GetModel(MuzzleModelName, true);
 			if (model != null)
-				Mesher.GenerateModelObject(model, muzzleObject, true);
+			{
+				if (model.readyMeshes.Count == 0)
+					Mesher.GenerateModelFromMeshes(model, muzzleObject, true);
+				else
+					Mesher.FillModelFromProcessedData(model, muzzleObject);
+			}
 			muzzleObject.SetActive(false);
-//			DisableAfterTime disableObject = muzzleObject.AddComponent<DisableAfterTime>();
-//			disableObject._lifeTime = _muzzleTime;
 		}
 
 		oldMousePosition.x = Input.GetAxis("Mouse X");

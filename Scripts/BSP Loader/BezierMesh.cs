@@ -80,7 +80,7 @@ public class BezierMesh
 			vertexCache.Add(BezCurve(m, control[6], control[7], control[8]));
 			vertexCache.Add(BezCurve(f, control[6], control[7], control[8]));
 
-			if (!CanIfCanFormConvexHull(vertexCache))
+			if (!CanFormConvexHull(vertexCache))
 			{
 				ColliderObject = null;
 				return;
@@ -106,7 +106,7 @@ public class BezierMesh
 			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 		}
 	}
-	public bool CanIfCanFormConvexHull(List<Vector3> points)
+	public bool CanFormConvexHull(List<Vector3> points)
 	{
 		const float EPSILON = 0.001f;
 

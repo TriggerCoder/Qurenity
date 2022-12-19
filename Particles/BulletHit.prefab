@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2927520226384291554}
   - component: {fileID: 6065389671530403023}
+  - component: {fileID: 8978653585463359293}
   m_Layer: 0
-  m_Name: BulletPuff
+  m_Name: BulletHit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,4 +46,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   modelName: weaphits/bullet
-  _frames: []
+  modelAnimation:
+    fps: 12
+    lerpTime: 0
+    currentLerpTime: 0
+  textureAnimation:
+    fps: 6
+    lerpTime: 0
+    currentLerpTime: 0
+--- !u!114 &8978653585463359293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749880978353595937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9971ce7e45503248a3352d903c690a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _lifeTime: 0.5

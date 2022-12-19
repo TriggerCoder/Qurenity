@@ -255,21 +255,26 @@ public static class MapLoader
 
 	public static void LerpColorOnRepeatedVertex()
 	{
+		// Group surfaces by their type
 		var sGroups = surfaces.GroupBy(s => new { s.type });
 
 		foreach (var sGroup in sGroups)
 		{
 			QSurface[] groupsurfaces = sGroup.ToArray();
 
+			// If the array is empty, skip to the next group
 			if (groupsurfaces.Length == 0)
 				continue;
 
+			// We are only looking for bezier type
 			if (sGroup.Key.type != QSurfaceType.Patch)
 				continue;
 
+			// Initialize 2 lists (one for test) to hold the vertices of each surface in the group
 			List<QVertex> surfVerts = new List<QVertex>();
 			List<QVertex> testVerts = new List<QVertex>();
 
+			// Now searh all the vertexes for all the bezier surface
 			for (int i = 0; i < groupsurfaces.Length; i++)
 			{
 				testVerts.Clear();
@@ -279,9 +284,11 @@ public static class MapLoader
 					testVerts.Add(verts[vertStep]);
 					vertStep++;
 				}
-				var tGroups = testVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
 
+				// Group all the vertexes by their position, as we want to get the uniques
+				var tGroups = testVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
 				bool unique = true;
+
 				foreach (var tGroup in tGroups)
 				{
 					QVertex[] testVerteces = tGroup.ToArray();
@@ -291,10 +298,13 @@ public static class MapLoader
 					if (testVerteces.Length != 1)
 						unique = false;
 				}
+
+				// If the vertex is unique, add the test vertices to the surface list
 				if (unique)
 					surfVerts.AddRange(testVerts);
 			}
 
+			//Now we got unique vertexes for each bezier surface, search for common positions
 			var vGroups = surfVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
 
 			foreach (var vGroup in vGroups)
@@ -304,10 +314,14 @@ public static class MapLoader
 				if (groupVerteces.Length == 0)
 					continue;
 
+				// Set the initial color to the color of the first vertex in the group
+				// The we will be interpolating the color of every common vertex
 				Color color = groupVerteces[0].color;
 				for (int i = 1; i < groupVerteces.Length; i++)
 					color = Color.Lerp(color, groupVerteces[i].color, 0.5f);
 
+
+				// Finally set the final color to all the common vertexex
 				for (int i = 0; i < groupVerteces.Length; i++)
 				{
 					int index = groupVerteces[i].vertId;
@@ -324,27 +338,9 @@ public static class MapLoader
 		ColliderGroup = MapColliders.transform;
 		ColliderGroup.transform.SetParent(GameManager.Instance.transform);
 
-		foreach (QBrush brush in brushes)
+		for (int i = 0; i < models[0].numBrushes; i++)
 		{
-			Mesher.GenerateBrushCollider(brush, ColliderGroup);
-		}
-	}
-	public static void GenerateGeometricCollider()
-	{
-		GameObject GeometricColliders = new GameObject("GeometricColliders");
-		GeometricColliders.layer = GameManager.ColliderLayer;
-		Transform holder = GeometricColliders.transform;
-		holder.transform.SetParent(GameManager.Instance.transform);
-
-		foreach (QModel model in models)
-		{
-			List<QSurface> groupSurfaces = new List<QSurface>();
-			groupSurfaces.Add(surfaces[model.firstSurface]);
-			for (int i = 0; i < model.numSurfaces; i++)
-			{
-				groupSurfaces.Add(surfaces[model.firstSurface + i]);
-			}
-			Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, 0, groupSurfaces.ToArray());
+			Mesher.GenerateBrushCollider(brushes[models[0].firstBrush + i], ColliderGroup);
 		}
 	}
 
@@ -363,9 +359,12 @@ public static class MapLoader
 
 		holder.transform.SetParent(GameManager.Instance.transform);
 
+		List<QSurface> staticGeometry = new List<QSurface>();
+		for (int i = 0; i < models[0].numSurfaces; i++)
+			staticGeometry.Add(surfaces[models[0].firstSurface + i]);
 
 		// Each surface group is its own gameobject
-		var groups = surfaces.GroupBy(x => new { x.type, x.shaderId, x.lightMapID });
+		var groups = staticGeometry.GroupBy(x => new { x.type, x.shaderId, x.lightMapID });
 		int groupId = 0;
 		foreach (var group in groups)
 		{

@@ -69,6 +69,57 @@ public class MachineGunWeapon : PlayerWeapon
 			audioSource.Play();
 		}
 
+		//Hitscan attack
+		{
+			Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
+			Vector2 r = GetDispersion();
+			d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
+			d.Normalize();
+
+			Ray ray = new Ray(playerInfo.playerCamera.MainCamera.transform.position, d);
+			RaycastHit hit;
+			if (Physics.Raycast(ray, out hit, maxRange, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.PlayerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore))
+			{
+				Damageable target = hit.collider.gameObject.GetComponent<Damageable>();
+				if (target != null)
+				{
+					target.Damage(Random.Range(DamageMin, DamageMax + 1), DamageType.Generic, playerInfo.gameObject);
+
+					if (target.Bleed)
+					{
+						GameObject blood;
+						switch (target.BloodColor)
+						{
+							default:
+							case BloodType.Red:
+								blood = PoolManager.GetObjectFromPool("BloodRed");
+								break;
+							case BloodType.Green:
+								blood = PoolManager.GetObjectFromPool("BloodGreen");
+								break;
+							case BloodType.Blue:
+								blood = PoolManager.GetObjectFromPool("BloodBlue");
+								break;
+						}
+						blood.transform.position = hit.point - ray.direction * .2f;
+					}
+					else
+					{
+						GameObject puff = PoolManager.GetObjectFromPool("BulletHit");
+						puff.transform.position = hit.point - ray.direction * .2f;
+					}
+				}
+				else
+				{
+					GameObject puff = PoolManager.GetObjectFromPool("BulletHit");
+					puff.transform.position = hit.point - ray.direction * .2f;
+					puff.transform.right = -hit.normal;
+					//puff.transform.right = -ray.direction;
+				}
+			}
+
+		}
+
 		return true;
 	}
 	protected override Quaternion GetRotate()

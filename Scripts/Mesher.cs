@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 public static class Mesher
 {
@@ -250,8 +251,6 @@ public static class Mesher
 			mr.sharedMaterial = mat;
 		}
 */
-		//Now that we have our control grid, it's business as usual
-
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
 		BezierMesh bezCollider = new BezierMesh(4, surface.surfaceId, patchNumber, bverts);
 		if (bezCollider.ColliderObject != null)
@@ -407,62 +406,153 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static Mesh GenerateModelObjectGetMesh(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
+	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, GameObject ownerObject = null, bool forceSkinAlpha = false)
 	{
-		if (md3Model == null || md3Model.meshes.Count == 0)
+		if (model == null || model.meshes.Count == 0)
 		{
 			Debug.LogWarning("Failed to create model object because there are no meshes");
 			return null;
 		}
 
-		if (obj == null)
+		if (ownerObject == null)
 		{
-			obj = new GameObject();
-			obj.layer = GameManager.ThingsLayer;
-			obj.name = "Mesh_" + md3Model.name;
-			obj.transform.SetParent(MapMeshes);
+			ownerObject = new GameObject();
+			ownerObject.layer = GameManager.ThingsLayer;
+			ownerObject.name = "Model_" + model.name;
 		}
 
-		Mesh mesh = GenerateModelMesh(md3Model.meshes[0]);
+		MD3UnityConverted md3Model = new MD3UnityConverted();
+		md3Model.go = ownerObject;
+		md3Model.numMeshes = model.meshes.Count;
+		md3Model.data = new MD3UnityConverted.dataMeshes[md3Model.numMeshes];
 
-		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
-		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
-		meshFilter.mesh = mesh;
+		int groupId = 0;
+		if (model.numFrames > 1)
+		{
+			foreach (MD3Mesh modelMesh in model.meshes)
+			{
+				Mesh mesh = GenerateModelMesh(modelMesh);
+				mesh.name = "Mesh_" + modelMesh.name;
 
-		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1, forceSkinAlpha);
+				GameObject modelObject;
+				if (groupId == 0)
+					modelObject = ownerObject;
+				else
+				{
+					modelObject = new GameObject("Mesh_" + groupId);
+					modelObject.layer = ownerObject.layer;
+					modelObject.transform.SetParent(ownerObject.transform);
+				}
 
-		mr.sharedMaterial = material;
+				MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
+				MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
+				meshFilter.mesh = mesh;
 
-		return mesh;
+				Material material = MaterialManager.GetMaterials(modelMesh.skins[0].name, -1, forceSkinAlpha);
+
+				md3Model.data[modelMesh.meshNum].meshFilter = meshFilter;
+				md3Model.data[modelMesh.meshNum].meshRenderer = mr;
+
+				mr.sharedMaterial = material;
+				model.readyMeshes.Add(mesh);
+				model.readyMaterials.Add(material);
+				groupId++;
+			}
+		}
+		else
+		{
+			var baseGroups = model.meshes.GroupBy(x => new { x.numSkins });
+			foreach (var baseGroup in baseGroups)
+			{
+				MD3Mesh[] baseGroupMeshes = baseGroup.ToArray();
+				if (baseGroupMeshes.Length == 0)
+					continue;
+
+				var groupMeshes = baseGroupMeshes.GroupBy(x => new { x.skins[0].name });
+				foreach (var groupMesh in groupMeshes)
+				{
+					MD3Mesh[] meshes = groupMesh.ToArray();
+					if (meshes.Length == 0)
+						continue;
+
+					string Name = "Mesh_";
+					CombineInstance[] combine = new CombineInstance[meshes.Length];
+					for (var i = 0; i < combine.Length; i++)
+					{
+						combine[i].mesh = GenerateModelMesh(meshes[i]);
+						Name += "_" + meshes[i].name;
+					}
+
+					var mesh = new Mesh();
+					mesh.name = Name;
+					mesh.CombineMeshes(combine, true, false, false);
+
+					GameObject modelObject;
+					if (groupId == 0)
+						modelObject = ownerObject;
+					else
+					{
+						modelObject = new GameObject("Mesh_" + groupId);
+						modelObject.layer = ownerObject.layer;
+						modelObject.transform.SetParent(ownerObject.transform);
+					}
+
+					MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
+					MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
+					meshFilter.mesh = mesh;
+
+					Material material = MaterialManager.GetMaterials(meshes[0].skins[0].name, -1, forceSkinAlpha);
+
+					for (int i = 0; i < meshes.Length; i++)
+					{
+						md3Model.data[meshes[i].meshNum].meshFilter = meshFilter;
+						md3Model.data[meshes[i].meshNum].meshRenderer = mr;
+					}
+					mr.sharedMaterial = material;
+					model.readyMeshes.Add(mesh);
+					model.readyMaterials.Add(material);
+					groupId++;
+				}
+			}
+		}
+		return md3Model;
 	}
-
-	public static GameObject GenerateModelObject(MD3 md3Model, GameObject obj = null, bool forceSkinAlpha = false)
+	public static MD3UnityConverted FillModelFromProcessedData(MD3 model, GameObject ownerObject = null)
 	{
-		if (md3Model == null || md3Model.meshes.Count == 0)
+		if (ownerObject == null)
 		{
-			Debug.LogWarning("Failed to create model object because there are no meshes");
-			return null;
+			ownerObject = new GameObject();
+			ownerObject.layer = GameManager.ThingsLayer;
+			ownerObject.name = "Model_" + model.name;
 		}
 
-		if (obj == null)
+		MD3UnityConverted md3Model = new MD3UnityConverted();
+		md3Model.go = ownerObject;
+		md3Model.numMeshes = model.meshes.Count;
+		md3Model.data = new MD3UnityConverted.dataMeshes[md3Model.numMeshes];
+
+		for (int i = 0; i < model.readyMeshes.Count; i++)
 		{
-			obj = new GameObject();
-			obj.layer = GameManager.ThingsLayer;
-			obj.name = "Mesh_" + md3Model.name;
-			obj.transform.SetParent(MapMeshes);
+			GameObject modelObject;
+			if (i == 0)
+				modelObject = ownerObject;
+			else
+			{
+				modelObject = new GameObject("Mesh_" + i);
+				modelObject.layer = ownerObject.layer;
+				modelObject.transform.SetParent(ownerObject.transform);
+			}
+
+			MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
+			MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
+			meshFilter.mesh = model.readyMeshes[i];
+			mr.sharedMaterial = model.readyMaterials[i];
+
+			md3Model.data[i].meshFilter = meshFilter;
+			md3Model.data[i].meshRenderer = mr;
+
 		}
-
-		Mesh mesh = GenerateModelMesh(md3Model.meshes[0]);
-
-		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
-		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
-		meshFilter.mesh = mesh;
-
-		Material material = MaterialManager.GetMaterials(md3Model.meshes[0].skins[0].name, -1, forceSkinAlpha);
-
-		mr.sharedMaterial = material;
-
-		return obj;
+		return md3Model;
 	}
 
 	public static Mesh GenerateModelMesh(MD3Mesh md3Mesh)
@@ -499,7 +589,6 @@ public static class Mesher
 
 		return mesh;
 	}
-
 	public static void GenerateBrushCollider(QBrush brush, Transform holder, bool isModel = false)
 	{
 		//Remove brushed used for BSP Generations and for Details
@@ -580,8 +669,8 @@ public static class Mesher
 		if ((contentType.value & MaskPlayerSolid) == 0)
 			mc.isTrigger = true;
 
-		if ((contentType.value & ContentFlags.PlayerClip) == 0)
-			objCollider.layer = GameManager.InvisibleBlockerLayer;
+//		if ((contentType.value & ContentFlags.PlayerClip) == 0)
+//			objCollider.layer = GameManager.InvisibleBlockerLayer;
 
 		type = MapLoader.mapTextures[brush.shaderId].surfaceFlags;
 		SurfaceType surfaceType = objCollider.AddComponent<SurfaceType>();

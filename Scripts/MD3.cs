@@ -4,6 +4,17 @@ using System.IO;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
 
+public class MD3UnityConverted
+{
+	public GameObject go;
+	public int numMeshes;
+	public dataMeshes[] data;
+	public struct dataMeshes
+	{
+		public MeshFilter meshFilter;
+		public MeshRenderer meshRenderer;
+	}
+}
 public class MD3
 {
 	public string name;                 // The name of the model
@@ -17,13 +28,8 @@ public class MD3
 	public List<MD3Tag> tags;			// The list of tags in the model
 	public List<MD3Mesh> meshes;		// The list of meshes in the model
 	public List<MD3Skin> skins;			// The list of skins in the model
-	public Vector3 bb_Min;				// The minimum bounds of the model's bounding box
-	public Vector3 bb_Max;		         // The maximum bounds of the model's bounding box
-	public float bs_Radius;				// The radius of the model's bounding sphere
-	public Vector3 origin;				// The origin of the model
-	public float scale;                 // The scale factor of the model
 	public List<Mesh> readyMeshes = new List<Mesh>();				// This is the processed Unity Mesh
-	public List<Material> readyMaterial = new List<Material>();		// This is the processed Material
+	public List<Material> readyMaterials = new List<Material>();		// This is the processed Material
 	public static MD3 ImportModel(string modelName, bool forceSkinAlpha)
 	{
 		BinaryReader Md3ModelFile;
@@ -147,7 +153,7 @@ public class MD3
 			Md3ModelFile.BaseStream.Seek(offset, SeekOrigin.Begin);
 			MD3Mesh md3Mesh = new MD3Mesh();
 
-			md3Mesh.parseMesh(md3Model.name, Md3ModelFile, offset, forceSkinAlpha);
+			md3Mesh.parseMesh(i, md3Model.name, Md3ModelFile, offset, forceSkinAlpha);
 			offset += md3Mesh.meshSize;
 			md3Model.meshes.Add(md3Mesh);
 		}
@@ -190,8 +196,6 @@ public class MD3Skin
 {
 	public string name;					// The name of the skin
 	public int skinId;					// The index of the skin in the list of skins
-	public Texture2D texture;           // The texture map associated with the skin
-
 	public MD3Skin(int skinId, string name)
 	{
 		this.skinId = skinId;
@@ -201,7 +205,8 @@ public class MD3Skin
 
 public class MD3Mesh
 {
-	public string name;					// The name of the surface
+	public string name;                 // The name of the surface
+	public int meshNum;					// The index num of the mesh in the model
 	public int meshId;					// The index of the mesh in the list of meshes
 	public int flags;					// The flags associated with the surface
 	public int numFrames;				// The number of frames in the surface
@@ -212,11 +217,11 @@ public class MD3Mesh
 	public List<MD3Triangle> triangles;	// The list of triangles in the surface
 	public List<Vector3>[] verts;		// The list of vertexes in the surface
 	public List<Vector2> texCoords;		// The texture coordinates of the vertex
-	public int meshSize;				// This stores the total mesh size
-	public void parseMesh(string modelName, BinaryReader Md3ModelFile, int MeshOffset, bool forceSkinAlpha)
+	public int meshSize;                // This stores the total mesh size
+	public void parseMesh(int MeshNum, string modelName, BinaryReader Md3ModelFile, int MeshOffset, bool forceSkinAlpha)
 	{
 		string[] fullName;
-
+		meshNum = MeshNum;
 		meshId = Md3ModelFile.ReadInt32();
 		fullName = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
 		name = fullName[0].Replace("\0", string.Empty);
@@ -256,6 +261,8 @@ public class MD3Mesh
 			skins.Add(new MD3Skin(num, fullName[0]));
 			skinList.Add(fullName[0]);
 		}
+		//Update Number of skins as some are repeated
+		numSkins = skins.Count;
 
 		triangles = new List<MD3Triangle>();
 		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsTriangles, SeekOrigin.Begin);
@@ -283,9 +290,9 @@ public class MD3Mesh
 		Md3ModelFile.BaseStream.Seek(MeshOffset + ofsVerts, SeekOrigin.Begin);
 		for (int i = 0, j = 0; i < numVertices * numFrames; i++)
 		{
-			float x = Md3ModelFile.ReadInt16() / 64f;
-			float y = Md3ModelFile.ReadInt16() / 64f;
-			float z = Md3ModelFile.ReadInt16() / 64f;
+			float x = Md3ModelFile.ReadInt16() * GameManager.modelScale;
+			float y = Md3ModelFile.ReadInt16() * GameManager.modelScale;
+			float z = Md3ModelFile.ReadInt16() * GameManager.modelScale;
 			float n1 = Md3ModelFile.ReadByte();
 			float n2 = Md3ModelFile.ReadByte();
 

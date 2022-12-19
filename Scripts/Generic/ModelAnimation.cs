@@ -7,20 +7,31 @@ public class ModelAnimation : MonoBehaviour
 	public string modelName;
 
 	private MD3 md3Model;
-	private Mesh modelMesh;
-	private Material material;
-	public Texture[] _frames;
 
-	public float frameTime = 1f;
-	public bool oscillates;
-	public int direction = 1;
+	private MD3UnityConverted unityModel;
 
-	private int numSkins;
-	private int numFrames;
+	[SerializeField]
+	public AnimData modelAnimation;
+	[SerializeField]
+	public AnimData textureAnimation;
 
-	bool lastflip = false;
-	int currentFrame = 0;
-	int currentSkin;
+	private List<int> modelAnim = new List<int>();
+	private List<int> textureAnim = new List<int>();
+	private Dictionary<int, Texture[]> textures = new Dictionary<int, Texture[]>();
+	private Dictionary<int, int> currentSkin = new Dictionary<int, int>();
+
+
+	private int modelCurrentFrame;
+	private List<int> textureCurrentFrame = new List<int>();
+
+	[System.Serializable]
+	public struct AnimData
+	{
+		public float fps;
+		public float lerpTime;
+		public float currentLerpTime;
+	}
+
 	void Awake()
 	{
 		if (string.IsNullOrEmpty(modelName))
@@ -28,76 +39,113 @@ public class ModelAnimation : MonoBehaviour
 			enabled = false;
 			return;
 		}
+
 		md3Model = ModelsManager.GetModel(modelName,true);
 		if (md3Model == null)
 		{
 			enabled = false;
 			return;
 		}
+		if (md3Model.readyMeshes.Count == 0)
+			unityModel = Mesher.GenerateModelFromMeshes(md3Model, gameObject, true);
+		else
+			unityModel = Mesher.FillModelFromProcessedData(md3Model, gameObject);
 
-		modelMesh = Mesher.GenerateModelObjectGetMesh(md3Model, gameObject);
-		//Check for differens in skin count per mesh
-		numSkins = md3Model.numSkins;
-		_frames = new Texture[numSkins];
-
-		numFrames = md3Model.meshes[0].numFrames;
-
-		for (int i = 0; i < _frames.Length; i++)
+		for (int i = 0; i < md3Model.meshes.Count; i++)
 		{
-			string texName = md3Model.meshes[0].skins[i].name;
-			if (TextureLoader.HasTexture(texName))
-				_frames[i] = TextureLoader.Instance.GetTexture(texName);
-			else
+			var modelMesh = md3Model.meshes[i];
+			if (modelMesh.numFrames > 1)
+				modelAnim.Add(i);
+			if (modelMesh.numSkins > 1)
 			{
-				TextureLoader.AddNewTexture(texName,true);
-				_frames[i] = TextureLoader.Instance.GetTexture(texName);
+				Texture[] frames = new Texture[modelMesh.numSkins];
+				for (int j = 0; j < modelMesh.numSkins; j++)
+				{
+					string texName = modelMesh.skins[j].name;
+					if (TextureLoader.HasTexture(texName))
+						frames[j] = TextureLoader.Instance.GetTexture(texName);
+					else
+					{
+						TextureLoader.AddNewTexture(texName, true);
+						frames[j] = TextureLoader.Instance.GetTexture(texName);
+					}
+				}
+				textureAnim.Add(i);
+				textureCurrentFrame.Add(0);
+				textures.Add(i, frames);
 			}
 		}
-
-		material = GetComponent<MeshRenderer>().material;
 	}
 
 	void OnEnable()
 	{
-		lastflip = false;
-		currentFrame = 0;
+		modelCurrentFrame = 0;
+		modelAnimation.currentLerpTime = 0;
+		for(int i = 0; i < textureCurrentFrame.Count; i++)
+			textureCurrentFrame[i] = 0;
+		textureAnimation.currentLerpTime = 0;
 	}
+
+	void AnimateModel()
+	{
+		int currentFrame = modelCurrentFrame;
+		int nextFrame = currentFrame + 1;
+		float t = modelAnimation.currentLerpTime;
+		if (nextFrame >= md3Model.numFrames)
+			nextFrame = 0;
+
+		for (int i = 0; i < modelAnim.Count; i++)
+		{
+			MD3Mesh currentMesh = md3Model.meshes[modelAnim[i]];
+			List<Vector3> lerpVertex = new List<Vector3>(currentMesh.numVertices);
+			for (int j = 0; j < currentMesh.numVertices; j++)
+			{
+				Vector3 newVertex = Vector3.Lerp(currentMesh.verts[currentFrame][j], currentMesh.verts[nextFrame][j], t);
+				lerpVertex.Add(newVertex);
+			}
+			unityModel.data[i].meshFilter.mesh.SetVertices(lerpVertex);
+		}
+
+		modelAnimation.lerpTime = modelAnimation.fps * Time.deltaTime;
+		modelAnimation.currentLerpTime += modelAnimation.lerpTime;
+
+		if (modelAnimation.currentLerpTime >= 1.0f)
+		{
+			modelAnimation.currentLerpTime -= 1.0f;
+			modelCurrentFrame = nextFrame;
+		}
+	}
+
+	void AnimateTexture()
+	{
+		textureAnimation.lerpTime = textureAnimation.fps * Time.deltaTime;
+		textureAnimation.currentLerpTime += textureAnimation.lerpTime;
+
+		for (int i = 0; i < textureAnim.Count; i++)
+		{
+			MD3Mesh currentMesh = md3Model.meshes[textureAnim[i]];
+
+			int currentFrame = textureCurrentFrame[i];
+			int nextFrame = currentFrame + 1;
+			if (nextFrame >= currentMesh.numSkins)
+				nextFrame = 0;
+			if (textureAnimation.currentLerpTime >= 1.0f)
+			{
+				unityModel.data[currentMesh.meshNum].meshRenderer.material.mainTexture = textures[i][textureCurrentFrame[i]];
+				textureCurrentFrame[i] = nextFrame;
+			}
+		}
+
+		if (textureAnimation.currentLerpTime >= 1.0f)
+			textureAnimation.currentLerpTime -= 1.0f;
+	}
+
 	void Update()
 	{
 		if (GameManager.Paused)
 			return;
 
-		bool flip = Time.time % (frameTime + .15f) > frameTime;
-		if (flip != lastflip)
-		{
-			lastflip = flip;
-			currentFrame += direction;
-
-			if (currentFrame >= _frames.Length)
-				if (oscillates)
-				{
-					direction = -1;
-					currentFrame--;
-				}
-				else
-					currentFrame = 0;
-
-			if (currentFrame < 0)
-				if (oscillates)
-				{
-					direction = 1;
-					currentFrame++;
-				}
-				else
-					currentFrame = _frames.Length - 1;
-
-			if ((currentFrame + 1 % 2) == 0)
-				currentSkin++;
-			if (currentSkin >= numSkins)
-				currentSkin = 0;
-
-			modelMesh.SetVertices(md3Model.meshes[0].verts[currentFrame]);
-			material.mainTexture = _frames[currentSkin];
-		}
+		AnimateModel();
+		AnimateTexture();
 	}
 }

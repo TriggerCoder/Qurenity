@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
 
 	// Quake3 also uses Doom and Wolf3d scaling down
 	public const float sizeDividor = 1f / 32f;
+	public const float modelScale = 1f / 64f;
+
 	public const short DefaultLayer = 0;
 	public const short TransparentFXLayer = 1;
 	public const short UILayer = 5;
