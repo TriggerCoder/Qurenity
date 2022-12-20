@@ -159,12 +159,14 @@ public class PlayerWeapon : MonoBehaviour
 					{
 						muzzleLight.intensity = 0;
 						muzzleLight.enabled = false;
+						if (muzzleObject != null)
+							if (muzzleObject.activeSelf)
+								muzzleObject.SetActive(false);
 					}
 					else if (muzzleLight.intensity <= 0.8f)
 						if (muzzleObject != null)
 							if (muzzleObject.activeSelf)
 								muzzleObject.SetActive(false);
-
 				}
 			}
 

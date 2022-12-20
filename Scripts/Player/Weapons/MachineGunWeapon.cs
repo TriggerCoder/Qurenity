@@ -114,6 +114,7 @@ public class MachineGunWeapon : PlayerWeapon
 					GameObject puff = PoolManager.GetObjectFromPool("BulletHit");
 					puff.transform.position = hit.point - ray.direction * .2f;
 					puff.transform.right = -hit.normal;
+					Debug.Log(hit.collider.name);
 					//puff.transform.right = -ray.direction;
 				}
 			}

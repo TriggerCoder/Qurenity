@@ -5,6 +5,7 @@ using UnityEngine;
 public class ModelAnimation : MonoBehaviour
 {
 	public string modelName;
+	public bool isTransparent;
 
 	private MD3 md3Model;
 
@@ -18,8 +19,6 @@ public class ModelAnimation : MonoBehaviour
 	private List<int> modelAnim = new List<int>();
 	private List<int> textureAnim = new List<int>();
 	private Dictionary<int, Texture[]> textures = new Dictionary<int, Texture[]>();
-	private Dictionary<int, int> currentSkin = new Dictionary<int, int>();
-
 
 	private int modelCurrentFrame;
 	private List<int> textureCurrentFrame = new List<int>();
@@ -31,23 +30,25 @@ public class ModelAnimation : MonoBehaviour
 		public float lerpTime;
 		public float currentLerpTime;
 	}
-
 	void Awake()
 	{
 		if (string.IsNullOrEmpty(modelName))
 		{
-			enabled = false;
+			Destroy(gameObject);
 			return;
 		}
+	}
 
-		md3Model = ModelsManager.GetModel(modelName,true);
+	void Start()
+	{
+		md3Model = ModelsManager.GetModel(modelName, isTransparent);
 		if (md3Model == null)
 		{
 			enabled = false;
 			return;
 		}
 		if (md3Model.readyMeshes.Count == 0)
-			unityModel = Mesher.GenerateModelFromMeshes(md3Model, gameObject, true);
+			unityModel = Mesher.GenerateModelFromMeshes(md3Model, gameObject, isTransparent);
 		else
 			unityModel = Mesher.FillModelFromProcessedData(md3Model, gameObject);
 
@@ -66,7 +67,7 @@ public class ModelAnimation : MonoBehaviour
 						frames[j] = TextureLoader.Instance.GetTexture(texName);
 					else
 					{
-						TextureLoader.AddNewTexture(texName, true);
+						TextureLoader.AddNewTexture(texName, isTransparent);
 						frames[j] = TextureLoader.Instance.GetTexture(texName);
 					}
 				}
@@ -75,6 +76,10 @@ public class ModelAnimation : MonoBehaviour
 				textures.Add(i, frames);
 			}
 		}
+
+		//If no vertex animation nor texture animation, disable the animation
+		if ((modelAnim.Count == 0) && (textureAnim.Count == 0))
+			enabled = false;
 	}
 
 	void OnEnable()
@@ -131,7 +136,7 @@ public class ModelAnimation : MonoBehaviour
 				nextFrame = 0;
 			if (textureAnimation.currentLerpTime >= 1.0f)
 			{
-				unityModel.data[currentMesh.meshNum].meshRenderer.material.mainTexture = textures[i][textureCurrentFrame[i]];
+				unityModel.data[currentMesh.meshNum].meshRenderer.material.mainTexture = textures[i][nextFrame];
 				textureCurrentFrame[i] = nextFrame;
 			}
 		}

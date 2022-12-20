@@ -14,12 +14,16 @@ public static class Mesher
 	private static List<int> indiciesCache = new List<int>();
 
 	public const float APROX_ERROR = 0.001f;
+
 	public const uint MaskSolid = ContentFlags.Solid;
 	public const uint MaskPlayerSolid = ContentFlags.Solid | ContentFlags.PlayerClip | ContentFlags.Body;
 	public const uint MaskDeadSolid = ContentFlags.Solid | ContentFlags.PlayerClip;
 	public const uint MaskWater = ContentFlags.Water | ContentFlags.Lava | ContentFlags.Slime;
 	public const uint MaskOpaque = ContentFlags.Solid | ContentFlags.Lava | ContentFlags.Slime;
 	public const uint MaskShot = ContentFlags.Solid | ContentFlags.Body | ContentFlags.Corpse;
+
+	public const uint MaskTransparent = SurfaceFlags.NonSolid | SurfaceFlags.Sky;
+
 
 	public static void ClearMesherCache()
 	{
@@ -298,7 +302,7 @@ public static class Mesher
 		Material material = null;
 		if (MaterialManager.GetOverrideMaterials(textureName, lmIndex, ref material, ref obj))
 		{
-			Debug.LogWarning("Found Material");
+//			Debug.LogWarning("Found Material");
 		}
 		else
 			material = MaterialManager.GetMaterials(textureName, lmIndex);
@@ -326,8 +330,9 @@ public static class Mesher
 			billboard.layer = GameManager.MapMeshesLayer;
 			billboard.name = "Billboard_Surface" + surfaces[i].surfaceId;
 			billboard.transform.SetParent(holder);
+			billboard.transform.position = surfaces[i].lm_Origin;
 
-			Mesh mesh = GeneratePolygonMesh(surfaces[i]);
+			Mesh mesh = CreateBillboardMesh(1, 1, .5f, .5f);
 			MeshRenderer mr = billboard.AddComponent<MeshRenderer>();
 			MeshFilter meshFilter = billboard.AddComponent<MeshFilter>();
 			meshFilter.mesh = mesh;
@@ -339,6 +344,45 @@ public static class Mesher
 		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
 		cluster.RegisterClusterAndSurfaces(surfaces);
 	}
+
+	public static Mesh CreateBillboardMesh(float width, float height, float pivotX, float pivotY)
+	{
+		Mesh mesh = new Mesh();
+		mesh.name = "Billboard";
+		Vector3[] vertices = new Vector3[4];
+		Vector2[] uvs = new Vector2[4];
+		int[] indices = new int[6];
+
+		float x0 = -width * pivotX;
+		float x1 = width * (1 - pivotX);
+		float y0 = -height * pivotY;
+		float y1 = height * (1 - pivotY);
+
+		vertices[0] = new Vector3(x0, y0, 0);
+		vertices[1] = new Vector3(x1, y0, 0);
+		vertices[2] = new Vector3(x0, y1, 0);
+		vertices[3] = new Vector3(x1, y1, 0);
+
+		indices[0] = 0;
+		indices[1] = 1;
+		indices[2] = 2;
+		indices[3] = 2;
+		indices[4] = 1;
+		indices[5] = 3;
+
+		uvs[0] = new Vector2(0, 0);
+		uvs[1] = new Vector2(1, 0);
+		uvs[2] = new Vector2(0, 1);
+		uvs[3] = new Vector2(1, 1);
+
+		mesh.vertices = vertices;
+		mesh.triangles = indices;
+		mesh.uv = uvs;
+
+		mesh.bounds = new Bounds(new Vector3(0, (y0 + y1) * .5f, 0), new Vector3(width, height, width) * 2f);
+		return mesh;
+	}
+
 	public static Mesh GeneratePolygonMesh(QSurface surface)
 	{
 		Mesh mesh = new Mesh();
@@ -432,23 +476,32 @@ public static class Mesher
 			foreach (MD3Mesh modelMesh in model.meshes)
 			{
 				Mesh mesh = GenerateModelMesh(modelMesh);
-				mesh.name = "Mesh_" + modelMesh.name;
+				mesh.name = "Mesh_" + groupId;
 
 				GameObject modelObject;
 				if (groupId == 0)
 					modelObject = ownerObject;
 				else
 				{
-					modelObject = new GameObject("Mesh_" + groupId);
+					modelObject = new GameObject("Mesh_" + modelMesh.name);
 					modelObject.layer = ownerObject.layer;
 					modelObject.transform.SetParent(ownerObject.transform);
+					modelObject.transform.localPosition = Vector3.zero;
+					modelObject.transform.localRotation = Quaternion.identity;
 				}
 
 				MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
 				MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
 				meshFilter.mesh = mesh;
 
-				Material material = MaterialManager.GetMaterials(modelMesh.skins[0].name, -1, forceSkinAlpha);
+
+				Material material = null;
+				if (MaterialManager.GetOverrideMaterials(modelMesh.skins[0].name, -1, ref material, ref modelObject))
+				{
+//					Debug.LogWarning("Found Material");
+				}
+				else
+					material = MaterialManager.GetMaterials(modelMesh.skins[0].name, -1, forceSkinAlpha);
 
 				md3Model.data[modelMesh.meshNum].meshFilter = meshFilter;
 				md3Model.data[modelMesh.meshNum].meshRenderer = mr;
@@ -484,7 +537,7 @@ public static class Mesher
 					}
 
 					var mesh = new Mesh();
-					mesh.name = Name;
+					mesh.name = "Mesh_" + groupId;
 					mesh.CombineMeshes(combine, true, false, false);
 
 					GameObject modelObject;
@@ -492,16 +545,24 @@ public static class Mesher
 						modelObject = ownerObject;
 					else
 					{
-						modelObject = new GameObject("Mesh_" + groupId);
+						modelObject = new GameObject(Name);
 						modelObject.layer = ownerObject.layer;
 						modelObject.transform.SetParent(ownerObject.transform);
+						modelObject.transform.localPosition = Vector3.zero;
+						modelObject.transform.localRotation = Quaternion.identity;
 					}
 
 					MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
 					MeshFilter meshFilter = modelObject.AddComponent<MeshFilter>();
 					meshFilter.mesh = mesh;
 
-					Material material = MaterialManager.GetMaterials(meshes[0].skins[0].name, -1, forceSkinAlpha);
+					Material material = null;
+					if (MaterialManager.GetOverrideMaterials(meshes[0].skins[0].name, -1, ref material, ref modelObject))
+					{
+//						Debug.LogWarning("Found Material");
+					}
+					else
+						material = MaterialManager.GetMaterials(meshes[0].skins[0].name, -1, forceSkinAlpha);
 
 					for (int i = 0; i < meshes.Length; i++)
 					{
@@ -541,6 +602,8 @@ public static class Mesher
 				modelObject = new GameObject("Mesh_" + i);
 				modelObject.layer = ownerObject.layer;
 				modelObject.transform.SetParent(ownerObject.transform);
+				modelObject.transform.localPosition = Vector3.zero;
+				modelObject.transform.localRotation = Quaternion.identity;
 			}
 
 			MeshRenderer mr = modelObject.AddComponent<MeshRenderer>();
@@ -675,10 +738,12 @@ public static class Mesher
 		type = MapLoader.mapTextures[brush.shaderId].surfaceFlags;
 		SurfaceType surfaceType = objCollider.AddComponent<SurfaceType>();
 		surfaceType.Init(type);
+
+		if ((surfaceType.value & MaskTransparent) != 0)
+			objCollider.layer = GameManager.InvisibleBlockerLayer;
+
 //		if ((type & SurfaceFlags.NonSolid) != 0)
 //			Debug.Log("brushSide: " + brush.brushSide + " Surface Type is: " + type);
-
-
 	}
 
 	public static List<Vector3> RemoveDuplicatedVectors(List<Vector3> test)

@@ -8,7 +8,9 @@ public class MaterialManager : MonoBehaviour
 
 	public Material illegal;
 	public Material skyHole;
+	public Material opaqueMaterial;
 	public Material defaultMaterial;
+	public Material billBoardMaterial;
 	public Material defaultTransparentMaterial;
 	public Material defaultLightMapMaterial;
 	public Material defaultTransparentLightMapMaterial;
@@ -73,15 +75,11 @@ public class MaterialManager : MonoBehaviour
 		if (mo.material != null)
 			mat = Instantiate(mo.material);
 
-		MeshRenderer mr = go.GetComponent<MeshRenderer>();
-		MaterialPropertyBlock materialParameters = new MaterialPropertyBlock();
-
-		mr.GetPropertyBlock(materialParameters);
 		if (mo.opaque)
 		{
 			// Load the opaque texture for the surface
 			Texture tex = TextureLoader.Instance.GetTexture(mo.opaqueTextureName);
-			materialParameters.SetTexture(opaqueTexPropertyId, tex);
+			mat.SetTexture(opaqueTexPropertyId, tex);
 
 			if (lm_index >= 0 && Instance.applyLightmaps)
 			{
@@ -89,7 +87,7 @@ public class MaterialManager : MonoBehaviour
 				Texture2D lmap = MapLoader.lightMaps[lm_index];
 				lmap.Compress(true);
 				lmap.Apply();
-				materialParameters.SetTexture(lightMapPropertyId, lmap);
+				mat.SetTexture(lightMapPropertyId, lmap);
 			}
 		}
 		for (int i = 0; i < mo.animation.Length; i++)
@@ -98,13 +96,11 @@ public class MaterialManager : MonoBehaviour
 			anim.frames = mo.animation[i].textureFrames;
 			anim.frameTime = mo.animation[i].fps;
 			anim.textureType = i;
-			materialParameters.SetFloat(rgbGenBase[i], mo.animation[i].Base);
-			materialParameters.SetFloat(rgbGenAmp[i], mo.animation[i].Amp);
-			materialParameters.SetFloat(rgbGenPhase[i], mo.animation[i].Phase);
-			materialParameters.SetFloat(rgbGenFreq[i], mo.animation[i].Freq);
+			mat.SetFloat(rgbGenBase[i], mo.animation[i].Base);
+			mat.SetFloat(rgbGenAmp[i], mo.animation[i].Amp);
+			mat.SetFloat(rgbGenPhase[i], mo.animation[i].Phase);
+			mat.SetFloat(rgbGenFreq[i], mo.animation[i].Freq);
 		}
-		mr.SetPropertyBlock(materialParameters);
-
 		return true;
 	}
 

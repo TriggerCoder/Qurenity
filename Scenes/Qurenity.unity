@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3tourney2
+  autoloadMap: q3dm1
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -208,7 +208,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   illegal: {fileID: 2100000, guid: f486d59daadfbd54c88aba80eea6b0db, type: 2}
   skyHole: {fileID: 2100000, guid: a2196f5cd0c659f4d97144b608742690, type: 2}
+  opaqueMaterial: {fileID: 2100000, guid: 2a17e28db41587e429ba56b6828ffeb9, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
+  billBoardMaterial: {fileID: 2100000, guid: 993c729bed4dce84e9fcf092f99239f3, type: 2}
   defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
   defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
   defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
@@ -408,6 +410,16 @@ MonoBehaviour:
     opaque: 1
     opaqueTextureName: textures/base_floor/pjgrate2
     material: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
+    animation: []
+  - overrideName: models/ammo/rocket/rocket
+    opaque: 1
+    opaqueTextureName: models/ammo/rocket/rocket
+    material: {fileID: 2100000, guid: 2a17e28db41587e429ba56b6828ffeb9, type: 2}
+    animation: []
+  - overrideName: models/ammo/rocket/rocketfn
+    opaque: 1
+    opaqueTextureName: models/ammo/rocket/rocketfn
+    material: {fileID: 2100000, guid: 2a17e28db41587e429ba56b6828ffeb9, type: 2}
     animation: []
   applyLightmaps: 1
   lightMapProperty: _LightMap

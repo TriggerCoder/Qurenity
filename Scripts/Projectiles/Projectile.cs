@@ -53,9 +53,8 @@ public class Projectile : MonoBehaviour
 		}
 		if (OnDeathSpawn != null)
 		{
-			OnDeathSpawn = Instantiate(OnDeathSpawn);
-			OnDeathSpawn.SetActive(false);
-			OnDeathSpawn.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+			if (!PoolManager.HasObjectPool(OnDeathSpawn.name))
+				PoolManager.CreateObjectPool(OnDeathSpawn.name, OnDeathSpawn, 10);
 		}
 		if (SecondaryOnDeathSpawn != null)
 		{
@@ -88,8 +87,8 @@ public class Projectile : MonoBehaviour
 			cgameObject.SetActive(false);
 			if (OnDeathSpawn != null)
 			{
-				OnDeathSpawn.transform.position = transform.position;
-				OnDeathSpawn.SetActive(true);
+				GameObject go = PoolManager.GetObjectFromPool(OnDeathSpawn.name);
+				go.transform.position = transform.position - transform.forward * .2f;
 			}
 			return;
 		}
@@ -182,8 +181,8 @@ public class Projectile : MonoBehaviour
 
 			if (OnDeathSpawn != null)
 			{
-				OnDeathSpawn.transform.position = transform.position;
-				OnDeathSpawn.SetActive(true);
+				GameObject go = PoolManager.GetObjectFromPool(OnDeathSpawn.name);
+				go.transform.position = transform.position - transform.forward * .2f;
 			}
 
 			if (damageType == DamageType.BFGBall)

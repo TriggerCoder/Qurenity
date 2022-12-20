@@ -7,8 +7,6 @@ public class RocketLauncherWeapon : PlayerWeapon
 	public GameObject AttackProjectile;
 	public string AttackProjectileName;
 	public Vector3 spawnPos;
-	public float attackHappenTime = .25f;
-	bool attacking = false;
 	protected override void OnUpdate()
 	{
 		if (playerInfo.Ammo[3] <= 0 && fireTime < .1f)
@@ -19,24 +17,7 @@ public class RocketLauncherWeapon : PlayerWeapon
 				audioSource.Play();
 			}
 			putAway = true;
-		}
-
-		if (attacking)
-			if (fireTime < attackHappenTime)
-			{
-				attacking = false;
-				Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
-				Vector2 r = GetDispersion();
-				d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
-				d.Normalize();
-
-/*				PoolObject<Projectile> projectile = PoolManager.GetProjectileFromPool(AttackProjectileName);
-				Projectile rocket = (Projectile)projectile.data;
-				rocket.owner = playerInfo.gameObject;
-				rocket.transform.position = playerInfo.playerCamera.MainCamera.transform.position + (playerInfo.playerCamera.MainCamera.transform.right * spawnPos.x) + (playerInfo.playerCamera.MainCamera.transform.up * spawnPos.y) + (playerInfo.playerCamera.MainCamera.transform.forward * spawnPos.z);
-				rocket.transform.rotation = Quaternion.LookRotation(d);
-				rocket.transform.SetParent(GameManager.Instance.BaseThingsHolder);
-*/			}
+		}	
 	}
 	protected override void OnInit()
 	{
@@ -86,7 +67,20 @@ public class RocketLauncherWeapon : PlayerWeapon
 			audioSource.Play();
 		}
 
-		attacking = true;
+		//Projectile attack
+		{
+			Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
+			Vector2 r = GetDispersion();
+			d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
+			d.Normalize();
+
+			PoolObject<Projectile> projectile = PoolManager.GetProjectileFromPool(AttackProjectileName);
+			Projectile rocket = (Projectile)projectile.data;
+			rocket.owner = playerInfo.gameObject;
+			rocket.transform.position = playerInfo.playerCamera.MainCamera.transform.position + (playerInfo.playerCamera.MainCamera.transform.right * spawnPos.x) + (playerInfo.playerCamera.MainCamera.transform.up * spawnPos.y) + (playerInfo.playerCamera.MainCamera.transform.forward * spawnPos.z);
+			rocket.transform.rotation = Quaternion.LookRotation(d);
+			rocket.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+		}
 
 		return true;
 	}

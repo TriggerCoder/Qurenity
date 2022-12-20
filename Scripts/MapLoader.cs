@@ -384,7 +384,7 @@ public static class MapLoader
 						Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
 						break;
 				case QSurfaceType.Billboard:
-						Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
+//						Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
 					break;
 					
 

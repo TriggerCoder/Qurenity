@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   modelName: weaphits/bullet
+  isTransparent: 1
   modelAnimation:
     fps: 12
     lerpTime: 0
