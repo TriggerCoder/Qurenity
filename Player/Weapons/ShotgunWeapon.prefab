@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &581271814343664896
+--- !u!1 &1051393759348763670
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5330564852973355236}
-  - component: {fileID: 4684996456024899825}
+  - component: {fileID: 2338641124368809301}
+  - component: {fileID: 6798343871245122001}
   m_Layer: 5
   m_Name: Point light
   m_TagString: Untagged
@@ -17,28 +17,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5330564852973355236
+--- !u!4 &2338641124368809301
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581271814343664896}
+  m_GameObject: {fileID: 1051393759348763670}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 19.691116, y: 0.6239732, z: 22.038631}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3225670040760065228}
+  m_Father: {fileID: 6512875085832503877}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &4684996456024899825
+--- !u!108 &6798343871245122001
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581271814343664896}
+  m_GameObject: {fileID: 1051393759348763670}
   m_Enabled: 0
   serializedVersion: 10
   m_Type: 2
@@ -94,7 +94,7 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!1 &4592322547465933954
+--- !u!1 &8820987492180322404
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,65 +102,65 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3225670040760065228}
-  - component: {fileID: 2948330587790430167}
-  - component: {fileID: 5103868332384159966}
+  - component: {fileID: 6512875085832503877}
+  - component: {fileID: 7800589690560894554}
+  - component: {fileID: 3706866728741676048}
   m_Layer: 5
-  m_Name: RocketWeapon
+  m_Name: ShotgunWeapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3225670040760065228
+--- !u!4 &6512875085832503877
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8820987492180322404}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5330564852973355236}
+  - {fileID: 2338641124368809301}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2948330587790430167
+--- !u!114 &7800589690560894554
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8820987492180322404}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3745ff519d939c64e9ccc0d9a7a71c72, type: 3}
+  m_Script: {fileID: 11500000, guid: 111d4ba60fc4d23459ebd033bb02c820, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Offset: {x: 0.2, y: -0.3, z: 0}
+  Offset: {x: 0.2, y: -0.25, z: 0}
   MuzzleOffset: {x: -0.5, y: 0, z: 0}
   muzzleObject: {fileID: 0}
-  ModelName: weapons2/rocketl/rocketl
-  MuzzleModelName: weapons2/rocketl/rocketl_flash
+  ModelName: weapons2/shotgun/shotgun
+  MuzzleModelName: weapons2/shotgun/shotgun_flash
   useCrosshair: 1
-  DamageMin: 5
-  DamageMax: 15
+  DamageMin: 8
+  DamageMax: 11
   swapSpeed: 6
   Sensitivity: {x: 4, y: 3}
   rotateSpeed: 4
   maxTurn: 3
   _sounds:
-  - weapons/rocket/rocklf1a
+  - weapons/shotgun/sshotf1b
   - weapons/noammo
   - weapons/change
   Sounds: []
   Instance: {fileID: 0}
   playerInfo: {fileID: 0}
   LowerOffset: -0.3
-  LowerAmount: 1.2
+  LowerAmount: 1
   Noise: 0
   bopActive: 0
   vBob: 0.08
@@ -169,20 +169,21 @@ MonoBehaviour:
   useCooldown: 0
   muzzleLightTime: 5
   cooldownTime: 0
-  _fireRate: 0.8
+  _fireRate: 0.95
   fireTime: 0
-  _muzzleTime: 0.8
+  _muzzleTime: 0.1
   muzzleTimer: 0
-  AttackProjectile: {fileID: 9108129251432354766, guid: 0e8cecd77d9f2b44f8e48281681be182, type: 3}
-  AttackProjectileName: RocketProjectile
-  spawnPos: {x: 0, y: 0, z: 0}
---- !u!114 &5103868332384159966
+  caseName: ShogunShell
+  vDispersion: 0.7
+  maxRange: 400
+  pushForce: 350
+--- !u!114 &3706866728741676048
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8820987492180322404}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac209986762ffc442898707afa18ad2b, type: 3}

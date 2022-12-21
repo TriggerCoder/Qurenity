@@ -11,6 +11,7 @@ public class MaterialManager : MonoBehaviour
 	public Material opaqueMaterial;
 	public Material defaultMaterial;
 	public Material billBoardMaterial;
+	public Material spriteMaterial;
 	public Material defaultTransparentMaterial;
 	public Material defaultLightMapMaterial;
 	public Material defaultTransparentLightMapMaterial;
@@ -19,13 +20,21 @@ public class MaterialManager : MonoBehaviour
 	public MaterialOverride[] _OverrideMaterials = new MaterialOverride[0];
 
 	public bool applyLightmaps = true;
-	public static int lightMapPropertyId;
-	public static int opaqueTexPropertyId;
+
 	public string lightMapProperty = "_LightMap";
 	public string opaqueTexProperty = "_MainTex";
+	public string colorProperty = "_Color";
+
+	[HideInInspector]
+	public static int lightMapPropertyId;
+	[HideInInspector]
+	public static int opaqueTexPropertyId;
+	[HideInInspector]
+	public static int colorPropertyId;
+
 	public static Dictionary<string, Material> Materials = new Dictionary<string, Material>();
 	public static Dictionary<string, MaterialOverride> OverrideMaterials = new Dictionary<string, MaterialOverride>();
-	public static Dictionary<string, QShader> AnimatedTextures = new Dictionary<string, QShader>();
+	public static Dictionary<string, QShader> AditionalTextures = new Dictionary<string, QShader>();
 
 	public static readonly string[] rgbGenTextures = { "_S_Texture", "_W_Texture", "_IW_Texture" };
 	public static readonly string[] rgbGenBase = { "_S_Base", "_W_Base", "_IW_Base" };
@@ -37,29 +46,36 @@ public class MaterialManager : MonoBehaviour
 		Instance = this;
 		lightMapPropertyId = Shader.PropertyToID(lightMapProperty);
 		opaqueTexPropertyId = Shader.PropertyToID(opaqueTexProperty);
+		colorPropertyId = Shader.PropertyToID(colorProperty);
+
 		foreach (MaterialOverride mo in _OverrideMaterials)
 		{
 			OverrideMaterials.Add(mo.overrideName, mo);
-			if (mo.opaque)
-				AddAnimatedTextures(mo.opaqueTextureName);
+			if (!string.IsNullOrEmpty(mo.opaqueTextureName))
+			{
+				if (mo.opaque)
+					AddAditionalTextures(mo.opaqueTextureName);
+				else
+					AddAditionalTextures(mo.opaqueTextureName, true);
+			}
 			foreach (MaterialAnimation ma in mo.animation)
 			{
 				foreach (string textureName in ma.textureFrames)
-					AddAnimatedTextures(textureName, ma.addAlpha);
+					AddAditionalTextures(textureName, ma.addAlpha);
 			}
 		}
 	}
 
-	void AddAnimatedTextures(string textureName, bool addAlpha = false)
+	void AddAditionalTextures(string textureName, bool addAlpha = false)
 	{
 		QShader shader = new QShader(textureName, 0, 0, addAlpha);
-		if (!AnimatedTextures.ContainsKey(textureName))
-			AnimatedTextures.Add(textureName, shader);
+		if (!AditionalTextures.ContainsKey(textureName))
+			AditionalTextures.Add(textureName, shader);
 	}
 	public static void GetShaderAnimationsTextures()
 	{
-		List<QShader> list = new List<QShader>(AnimatedTextures.Count);
-		foreach (var shader in AnimatedTextures)
+		List<QShader> list = new List<QShader>(AditionalTextures.Count);
+		foreach (var shader in AditionalTextures)
 			list.Add(shader.Value);
 
 		TextureLoader.LoadJPGTextures(list);
@@ -75,7 +91,7 @@ public class MaterialManager : MonoBehaviour
 		if (mo.material != null)
 			mat = Instantiate(mo.material);
 
-		if (mo.opaque)
+		if (!string.IsNullOrEmpty(mo.opaqueTextureName))
 		{
 			// Load the opaque texture for the surface
 			Texture tex = TextureLoader.Instance.GetTexture(mo.opaqueTextureName);
@@ -90,6 +106,7 @@ public class MaterialManager : MonoBehaviour
 				mat.SetTexture(lightMapPropertyId, lmap);
 			}
 		}
+
 		for (int i = 0; i < mo.animation.Length; i++)
 		{
 			TextureAnimation anim = go.AddComponent<TextureAnimation>();
@@ -103,7 +120,6 @@ public class MaterialManager : MonoBehaviour
 		}
 		return true;
 	}
-
 	public static Material GetMaterials(string textureName, int lm_index, bool forceSkinAlpha = false)
 	{
 		if (MapLoader.IsSkyTexture(textureName))

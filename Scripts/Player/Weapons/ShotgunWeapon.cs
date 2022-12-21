@@ -2,24 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MachineGunWeapon : PlayerWeapon
+public class ShotgunWeapon : PlayerWeapon
 {
-	public override float avgDispersion { get { return .017f; } } // tan(2º) / 2
-	public override float maxDispersion { get { return .049f; } } // tan(5.6º) / 2
+	public override float avgDispersion { get { return .049f; } } // tan(4º) / 2
+	public override float maxDispersion { get { return .062f; } } //tan(7.1º) / 2
 
 	public string caseName;
 
+	public float vDispersion = .7f;
 	public float maxRange = 400f;
-
-	public float barrelSpeed = 400;
-
-	private float currentRotSpeed = 0;
+	public float pushForce = 350;
 
 	protected override void OnUpdate()
 	{
-		if (playerInfo.Ammo[0] <= 0 && fireTime < .1f)
+		if (playerInfo.Ammo[1] <= 0 && fireTime < .1f)
 		{
-			if ((!putAway)  && (Sounds.Length > 1)) 
+			if ((!putAway) && (Sounds.Length > 1))
 			{
 				audioSource.AudioClip = Sounds[1];
 				audioSource.Play();
@@ -29,7 +27,7 @@ public class MachineGunWeapon : PlayerWeapon
 		}
 	}
 
-	protected override void OnInit() 
+	protected override void OnInit()
 	{
 		if (Sounds.Length > 2)
 		{
@@ -46,10 +44,10 @@ public class MachineGunWeapon : PlayerWeapon
 		if (fireTime > 0.05f)
 			return false;
 
-		if (playerInfo.Ammo[0] <= 0)
+		if (playerInfo.Ammo[1] <= 0)
 			return false;
 
-		playerInfo.Ammo[0]--;
+		playerInfo.Ammo[1]--;
 
 		if (GameOptions.UseMuzzleLight)
 			if (muzzleLight != null)
@@ -72,8 +70,9 @@ public class MachineGunWeapon : PlayerWeapon
 		}
 
 		//Hitscan attack
+		Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
+		for (int i = 0; i < 11; i++)
 		{
-			Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
 			Vector2 r = GetDispersion();
 			d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
 			d.Normalize();
@@ -136,26 +135,17 @@ public class MachineGunWeapon : PlayerWeapon
 		//Case Drop
 		if (!string.IsNullOrEmpty(caseName))
 		{
-			PoolObject<Rigidbody> ammocase = PoolManager.GetRigidBodyFromPool(caseName);
-			Rigidbody rb = (Rigidbody)ammocase.data;
-			ammocase.go.transform.position = transform.position;
-			ammocase.go.transform.rotation = Quaternion.AngleAxis(currentRotSpeed, Vector3.right);
-			ammocase.go.transform.SetParent(GameManager.Instance.BaseThingsHolder);
-			rb.AddForce(new Vector3(Random.Range(-100f, 10f), Random.Range(100f, 200f), Random.Range(-100f, 100f)));
+			for (int i = 0; i < 2; i++)
+			{
+				PoolObject<Rigidbody> ammocase = PoolManager.GetRigidBodyFromPool(caseName);
+				Rigidbody rb = (Rigidbody)ammocase.data;
+				ammocase.go.transform.position = transform.position;
+				ammocase.go.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+				Vector3 force = new Vector3(Random.Range(-100f, 100f), Random.Range(100f, 200f), Random.Range(0, 100f));
+				rb.AddForce(force);
+			}
 		}
 
 		return true;
-	}
-	protected override Quaternion GetRotate()
-	{
-		if (fireTime > 0f)
-		{
-			currentRotSpeed += barrelSpeed * Time.deltaTime;
-			if (currentRotSpeed < -180)
-				currentRotSpeed += 360;
-			if (currentRotSpeed > 180)
-				currentRotSpeed -= 360;
-		}
-		return Quaternion.AngleAxis(currentRotSpeed, Vector3.right);
 	}
 }

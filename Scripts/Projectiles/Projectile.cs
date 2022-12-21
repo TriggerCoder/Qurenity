@@ -9,6 +9,7 @@ public class Projectile : MonoBehaviour
 	public string projectileName;
 	public bool destroyAfterUse = true;
 	public float speed = 4f;
+	public int rotateSpeed = 0;
 	public int damageMin = 3;
 	public int damageMax = 24;
 	public int blastDamage = 0;
@@ -17,6 +18,7 @@ public class Projectile : MonoBehaviour
 	public DamageType damageType = DamageType.Generic;
 	public float pushForce = 0f;
 	public GameObject OnDeathSpawn;
+	public string decalMark;
 	public GameObject SecondaryOnDeathSpawn;
 	public string _onFlySound;
 	public string _onDeathSound;
@@ -49,7 +51,6 @@ public class Projectile : MonoBehaviour
 			}
 			audioSource.Loop = true;
 			audioSource.AudioClip = SoundLoader.LoadSound(_onFlySound);
-			audioSource.Play();
 		}
 		if (OnDeathSpawn != null)
 		{
@@ -67,6 +68,8 @@ public class Projectile : MonoBehaviour
 	{
 		//Reset Timer
 		time = 0f;
+		if (!string.IsNullOrEmpty(_onFlySound))
+			audioSource.Play();
 	}
 
 	void OnDisable()
@@ -94,6 +97,7 @@ public class Projectile : MonoBehaviour
 		}
 		//check for collision
 		float nearest = float.MaxValue;
+		RaycastHit Hit = new RaycastHit();
 		{
 			Vector3 dir = transform.forward;
 			int max = Physics.SphereCastNonAlloc(transform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
@@ -108,7 +112,10 @@ public class Projectile : MonoBehaviour
 					continue;
 
 				if (hit.distance < nearest)
+				{
 					nearest = hit.distance;
+					Hit = hit;
+				}
 
 				if ((damageType == DamageType.Rocket) || (damageType == DamageType.Grenade) ||(damageType == DamageType.Plasma) || (damageType == DamageType.BFGBall))
 				{
@@ -183,6 +190,17 @@ public class Projectile : MonoBehaviour
 			{
 				GameObject go = PoolManager.GetObjectFromPool(OnDeathSpawn.name);
 				go.transform.position = transform.position - transform.forward * .2f;
+			}
+			
+			//Check if collider can be marked
+			if (!MapLoader.noMarks.Contains(Hit.collider))
+			{
+				GameObject mark = PoolManager.GetObjectFromPool(decalMark);
+				if (mark != null)
+				{
+					mark.transform.position = Hit.point - -Hit.normal * .05f;
+					mark.transform.forward = Hit.normal;
+				}
 			}
 
 			if (damageType == DamageType.BFGBall)
@@ -275,14 +293,17 @@ public class Projectile : MonoBehaviour
 			}
 			transform.forward = aimAt;
 		}
-
+		
+		if (rotateSpeed != 0)
+			transform.RotateAround(transform.position, transform.forward, rotateSpeed * Time.deltaTime);
+		
 		if (goingUp)
 			transform.position = transform.position + transform.up * speed * Time.deltaTime;
 		else
 			transform.position = transform.position + transform.forward * speed * Time.deltaTime;
+
 	}
 }
-
 public static class BFGTracers
 {
 	public static float[] hx;
@@ -304,7 +325,6 @@ public static class BFGTracers
 
 		return r;
 	}
-
 	public static void SetTracers()
 	{
 		pixels = Mathf.FloorToInt(Screen.currentResolution.width * Screen.currentResolution.height / 4f);

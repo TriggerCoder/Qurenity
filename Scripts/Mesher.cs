@@ -23,7 +23,7 @@ public static class Mesher
 	public const uint MaskShot = ContentFlags.Solid | ContentFlags.Body | ContentFlags.Corpse;
 
 	public const uint MaskTransparent = SurfaceFlags.NonSolid | SurfaceFlags.Sky;
-
+	public const uint NoMarks = SurfaceFlags.NoImpact | SurfaceFlags.NoMarks;
 
 	public static void ClearMesherCache()
 	{
@@ -317,32 +317,35 @@ public static class Mesher
 			Debug.LogWarning("Failed to create billboard object because there are no surfaces");
 			return;
 		}
-		
+
+		//Check if Flare Texture exist, if not add it
+		if (!TextureLoader.HasTexture(TextureLoader.FlareTexture))
+			TextureLoader.AddNewTexture(TextureLoader.FlareTexture, true);
+
 		GameObject obj = new GameObject();
-		obj.layer = GameManager.MapMeshesLayer;
+		obj.layer = GameManager.CombinesMapMeshesLayer;
 		obj.name = "Billboard_" + indexId;
 		Transform holder = obj.transform;
 		holder.SetParent(MapMeshes);
 
 		for (var i = 0; i < surfaces.Length; i++)
 		{
+
 			GameObject billboard = new GameObject();
-			billboard.layer = GameManager.MapMeshesLayer;
+			billboard.layer = GameManager.CombinesMapMeshesLayer;
 			billboard.name = "Billboard_Surface" + surfaces[i].surfaceId;
 			billboard.transform.SetParent(holder);
 			billboard.transform.position = surfaces[i].lm_Origin;
-
-			Mesh mesh = CreateBillboardMesh(1, 1, .5f, .5f);
-			MeshRenderer mr = billboard.AddComponent<MeshRenderer>();
-			MeshFilter meshFilter = billboard.AddComponent<MeshFilter>();
-			meshFilter.mesh = mesh;
-			Material material = MaterialManager.GetMaterials(textureName, lmIndex);
-			mr.sharedMaterial = material;
+			SpriteAnimation spriteAnimation = billboard.AddComponent<SpriteAnimation>();
+			spriteAnimation.frames = new string[1];
+			spriteAnimation.frames[0] = TextureLoader.FlareTexture;
+			spriteAnimation.color = new Color(surfaces[i].lm_vecs[0].x, surfaces[i].lm_vecs[0].y, surfaces[i].lm_vecs[0].z, 1f);
+			//PVS
+			ClusterPVSController cluster = billboard.AddComponent<ClusterPVSController>();
+			cluster.RegisterClusterAndSurfaces(surfaces[i]);
 		}
 
-		//PVS
-		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
-		cluster.RegisterClusterAndSurfaces(surfaces);
+
 	}
 
 	public static Mesh CreateBillboardMesh(float width, float height, float pivotX, float pivotY)
@@ -528,17 +531,26 @@ public static class Mesher
 					if (meshes.Length == 0)
 						continue;
 
+					Mesh mesh;
 					string Name = "Mesh_";
-					CombineInstance[] combine = new CombineInstance[meshes.Length];
-					for (var i = 0; i < combine.Length; i++)
+					if (meshes.Length > 1)
 					{
-						combine[i].mesh = GenerateModelMesh(meshes[i]);
-						Name += "_" + meshes[i].name;
-					}
+						CombineInstance[] combine = new CombineInstance[meshes.Length];
+						for (var i = 0; i < combine.Length; i++)
+						{
+							combine[i].mesh = GenerateModelMesh(meshes[i]);
+							Name += "_" + meshes[i].name;
+						}
 
-					var mesh = new Mesh();
+						mesh = new Mesh();
+						mesh.CombineMeshes(combine, true, false, false);
+					}
+					else
+					{
+						mesh = GenerateModelMesh(meshes[0]);
+						Name += meshes[0].name;
+					}
 					mesh.name = "Mesh_" + groupId;
-					mesh.CombineMeshes(combine, true, false, false);
 
 					GameObject modelObject;
 					if (groupId == 0)
@@ -738,6 +750,9 @@ public static class Mesher
 		type = MapLoader.mapTextures[brush.shaderId].surfaceFlags;
 		SurfaceType surfaceType = objCollider.AddComponent<SurfaceType>();
 		surfaceType.Init(type);
+
+		if ((surfaceType.value & NoMarks) != 0)
+			MapLoader.noMarks.Add(mc);
 
 		if ((surfaceType.value & MaskTransparent) != 0)
 			objCollider.layer = GameManager.InvisibleBlockerLayer;

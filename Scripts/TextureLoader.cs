@@ -11,6 +11,7 @@ public class TextureLoader : MonoBehaviour
 {
 	public static TextureLoader Instance;
 	public Texture illegal;
+	public static readonly string FlareTexture = "GFX/MISC/FLARE";
 	public enum ImageFilterMode
 	{
 		Nearest,

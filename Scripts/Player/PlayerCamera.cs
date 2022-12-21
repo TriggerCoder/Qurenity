@@ -27,8 +27,9 @@ public class PlayerCamera : MonoBehaviour
 		playerControls = GetComponentInParent<PlayerControls>();
 
 		SkyholeCamera.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
+										(1 << (GameManager.RagdollLayer & 0x1f)) |
 										(1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
-											(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
+										(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
 	}
 
 	void Update()

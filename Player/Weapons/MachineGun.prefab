@@ -156,6 +156,9 @@ MonoBehaviour:
   - weapons/machinegun/machgf1b
   - weapons/noammo
   - weapons/change
+  - weapons/machinegun/ric1
+  - weapons/machinegun/ric2
+  - weapons/machinegun/ric3
   Sounds: []
   Instance: {fileID: 0}
   playerInfo: {fileID: 0}
@@ -173,6 +176,7 @@ MonoBehaviour:
   fireTime: 0
   _muzzleTime: 0.13
   muzzleTimer: 0
+  caseName: BulletCase
   maxRange: 400
   barrelSpeed: 600
 --- !u!114 &-5919527084121346426

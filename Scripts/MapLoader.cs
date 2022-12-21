@@ -33,6 +33,8 @@ public static class MapLoader
 	public static List<QBrushSide> brushSides;
 	public static List<QShader> mapTextures;
 	public static QVisData visData;
+
+	public static HashSet<Collider> noMarks;
 	
 	public static bool IsSkyTexture(string textureName)
 	{
@@ -59,6 +61,7 @@ public static class MapLoader
 		else
 			return false;
 
+		noMarks = new HashSet<Collider>();
 		//header
 		{
 			header = new BSPHeader(BSPMap);

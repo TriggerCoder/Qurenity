@@ -16,6 +16,12 @@ public class GameManager : MonoBehaviour
 	public PlayerInfo[] Player = new PlayerInfo[1];
 
 	public GameObject BulletHit;
+	public GameObject BulletMark;
+	public GameObject BurnMark;
+	public GameObject PlasmaMark;
+
+	public GameObject BulletCase;
+	public GameObject ShogunShell;
 
 	// Quake3 also uses Doom and Wolf3d scaling down
 	public const float sizeDividor = 1f / 32f;
@@ -66,6 +72,35 @@ public class GameManager : MonoBehaviour
 			if (!PoolManager.HasObjectPool("BulletHit"))
 				PoolManager.CreateObjectPool("BulletHit", BulletHit, 30);
 		}
+		if (BulletMark != null)
+		{
+			if (!PoolManager.HasObjectPool("BulletMark"))
+				PoolManager.CreateObjectPool("BulletMark", BulletMark, 30);
+		}
+		if (BurnMark != null)
+		{
+			if (!PoolManager.HasObjectPool("BurnMark"))
+				PoolManager.CreateObjectPool("BurnMark", BurnMark, 30);
+		}
+		if (PlasmaMark != null)
+		{
+			if (!PoolManager.HasObjectPool("PlasmaMark"))
+				PoolManager.CreateObjectPool("PlasmaMark", PlasmaMark, 30);
+		}
+		
+
+		//Ammo Cadtrige Cases
+		if (BulletCase != null)
+		{
+			if (!PoolManager.HasObjectPool("BulletCase"))
+				PoolManager.CreateRigidBodyPool("BulletCase", BulletCase, 30);
+		}
+		if (ShogunShell != null)
+		{
+			if (!PoolManager.HasObjectPool("ShogunShell"))
+				PoolManager.CreateRigidBodyPool("ShogunShell", ShogunShell, 5);
+		}
+
 		if (!PoolManager.HasObjectPool("3DSound"))
 			PoolManager.Create3DSoundPool("3DSound", 10);
 

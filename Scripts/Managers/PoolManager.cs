@@ -126,6 +126,63 @@ public static class PoolManager
 		poolObjectProj.go.SetActive(true);
 		return poolObjectProj;
 	}
+
+	public static void CreateRigidBodyPool(string pool, GameObject go, int quantity = 5)
+	{
+		if (ObjectsPool.ContainsKey(pool.ToUpper()))
+			return;
+		//Check if RigidBody
+		{
+			Rigidbody rb = go.GetComponent<Rigidbody>();
+			if (rb == null)
+			{
+				CreateObjectPool(pool, go, quantity);
+				return;
+			}
+		}
+		Queue<object> GameObjectPool = new Queue<object>();
+		ObjectsPool.Add(pool.ToUpper(), GameObjectPool);
+
+		for (int i = 0; i < quantity; ++i)
+		{
+			GameObject poolObject = GameObject.Instantiate(go);
+			Rigidbody rb = poolObject.GetComponent<Rigidbody>();
+			PoolObject<Rigidbody> poolObjectRB = new PoolObject<Rigidbody>(rb, poolObject);
+			poolObject.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+			poolObject.SetActive(false);
+			GameObjectPool.Enqueue(poolObjectRB);
+		}
+		return;
+	}
+	public static PoolObject<Rigidbody> GetRigidBodyFromPool(string pool)
+	{
+		if (!ObjectsPool.ContainsKey(pool.ToUpper()))
+			return null;
+
+		PoolObject<Rigidbody> poolObjectRB;
+		Queue<object> ActivePool = ObjectsPool[pool.ToUpper()];
+
+		do
+		{
+			poolObjectRB = (PoolObject<Rigidbody>)ActivePool.Dequeue();
+			ActivePool.Enqueue(poolObjectRB);
+			if (poolObjectRB.go.activeSelf)
+			{
+				for (int i = 0; i < 10; ++i)
+				{
+					GameObject poolObject = GameObject.Instantiate(poolObjectRB.go);
+					Rigidbody rb = poolObject.GetComponent<Rigidbody>();
+					poolObjectRB = new PoolObject<Rigidbody>(rb, poolObject);
+					poolObject.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+					poolObject.SetActive(false);
+					ActivePool.Enqueue(poolObjectRB);
+				}
+			}
+		} while (poolObjectRB.go.activeSelf);
+
+		poolObjectRB.go.SetActive(true);
+		return poolObjectRB;
+	}
 	public static void Create3DSoundPool(string pool, int quantity = 5)
 	{
 		if (ObjectsPool.ContainsKey(pool.ToUpper()))

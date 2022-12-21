@@ -256,7 +256,8 @@ public class MD3Mesh
 			if (skinList.Contains(fullName[0]))
 				continue;
 			
-			TextureLoader.AddNewTexture(fullName[0], forceSkinAlpha);
+			if (!TextureLoader.HasTexture(fullName[0]))
+				TextureLoader.AddNewTexture(fullName[0], forceSkinAlpha);
 
 			skins.Add(new MD3Skin(num, fullName[0]));
 			skinList.Add(fullName[0]);

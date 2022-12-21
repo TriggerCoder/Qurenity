@@ -11,8 +11,9 @@ public class SpriteAnimation : MonoBehaviour
 	public string[] frames;
 	private Texture[] _frames;
 
+	public bool isOmni = true;
 	public bool isTransparent;
-
+	public Color color = Color.white;
 	public Vector2 pivot = new Vector2(.5f, .5f);
 	public float scale = 1;
 
@@ -23,22 +24,20 @@ public class SpriteAnimation : MonoBehaviour
 
 	MeshRenderer mr;
 	MeshFilter meshFilter;
-	MaterialPropertyBlock materialParameters;
 
-	void Awake()
+	//Cached Transform
+	Transform cTransform;
+	void Start()
 	{
 		mr = GetComponent<MeshRenderer>();
 		meshFilter = GetComponent<MeshFilter>();
-		materialParameters = new MaterialPropertyBlock();
 		if ((frames.Length == 0) || (string.IsNullOrEmpty(frames[0])))
 		{
 			Destroy(gameObject);
 			return;
 		}
-	}
+		cTransform = transform;
 
-	void Start()
-	{
 		_frames = new Texture[frames.Length];
 		size = new Vector2[frames.Length];
 		for (int i = 0; i < frames.Length; i++)
@@ -55,8 +54,9 @@ public class SpriteAnimation : MonoBehaviour
 		}
 		CreateBillboard();
 
-		if ((frames.Length == 1) || (frameTime == 0))
-			enabled = false;
+		if (!isOmni)
+			if ((frames.Length == 1) || (frameTime == 0))
+				enabled = false;
 	}
 
 	bool lastflip = false;
@@ -72,18 +72,27 @@ public class SpriteAnimation : MonoBehaviour
 		if (!string.IsNullOrEmpty(frames[0]))
 		{
 			meshFilter.mesh = Mesher.CreateBillboardMesh(1, 1, pivot.x, pivot.y);
-			mr.sharedMaterial = Instantiate(MaterialManager.Instance.billBoardMaterial);
-			mr.GetPropertyBlock(materialParameters);
-			materialParameters.SetFloat("_ScaleX", size[0].x);
-			materialParameters.SetFloat("_ScaleY", size[0].y);
-			materialParameters.SetTexture("_MainTex", _frames[0]);
-			mr.SetPropertyBlock(materialParameters);
+			if (isOmni)
+				mr.sharedMaterial = Instantiate(MaterialManager.Instance.billBoardMaterial);
+			else
+				mr.sharedMaterial = Instantiate(MaterialManager.Instance.spriteMaterial);
+
+			mr.material.SetFloat("_ScaleX", size[0].x);
+			mr.material.SetFloat("_ScaleY", size[0].y);
+			mr.material.SetColor(MaterialManager.colorPropertyId, color);
+			mr.material.SetTexture(MaterialManager.opaqueTexPropertyId, _frames[0]);
 		}
 	}
 
 	void Update()
 	{
+		if (isOmni)
+			mr.enabled = true;
+
 		if (GameManager.Paused)
+			return;
+
+		if ((frames.Length == 1) || (frameTime == 0))
 			return;
 
 		bool flip = Time.time % (frameTime + .15f) > frameTime;
@@ -110,15 +119,34 @@ public class SpriteAnimation : MonoBehaviour
 				else
 					index = _frames.Length - 1;
 
-			mr.GetPropertyBlock(materialParameters);
-			materialParameters.SetFloat("_ScaleX", size[index].x);
-			materialParameters.SetFloat("_ScaleY", size[index].y);
-			materialParameters.SetTexture("_MainTex", _frames[index]);
-			mr.SetPropertyBlock(materialParameters);
+			mr.material.SetFloat("_ScaleX", size[index].x);
+			mr.material.SetFloat("_ScaleY", size[index].y);
+			mr.material.SetTexture(MaterialManager.opaqueTexPropertyId, _frames[index]);
 		}
 	}
 	void OnWillRenderObject()
 	{
-		transform.LookAt(Camera.current.transform);
+		Transform camera = Camera.current.transform;
+		if (CanLineToCamera(camera))
+			transform.LookAt(Camera.current.transform);
+		else
+			mr.enabled = false;
 	}
+
+	public bool CanLineToCamera(Transform camera)
+	{
+		Vector3 from = cTransform.position;
+		Vector3 toCamera = camera.position;
+
+		if (Physics.Linecast(from, toCamera, ((1 << GameManager.MapMeshesLayer) |
+												(1 << GameManager.ColliderLayer) |
+												(1 << GameManager.CombinesMapMeshesLayer) |
+												(1 << GameManager.MapMeshesPlayer1Layer) |
+												(1 << GameManager.MapMeshesPlayer2Layer) |
+												(1 << GameManager.MapMeshesPlayer3Layer) |
+												(1 << GameManager.MapMeshesPlayer4Layer)), QueryTriggerInteraction.Ignore))
+			return false;
+		return true;
+	}
+
 }

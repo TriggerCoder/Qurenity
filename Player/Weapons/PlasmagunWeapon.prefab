@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &581271814343664896
+--- !u!1 &2111336783937964913
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,42 +8,42 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5330564852973355236}
-  - component: {fileID: 4684996456024899825}
-  m_Layer: 5
-  m_Name: Point light
+  - component: {fileID: 2109410754072935723}
+  - component: {fileID: 2074014163740720739}
+  m_Layer: 0
+  m_Name: Plasma light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5330564852973355236
+--- !u!4 &2109410754072935723
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581271814343664896}
+  m_GameObject: {fileID: 2111336783937964913}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3225670040760065228}
+  m_Father: {fileID: 1017014648487230747}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &4684996456024899825
+--- !u!108 &2074014163740720739
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581271814343664896}
+  m_GameObject: {fileID: 2111336783937964913}
   m_Enabled: 0
   serializedVersion: 10
   m_Type: 2
   m_Shape: 0
-  m_Color: {r: 1, g: 0.6862745, b: 0, a: 1}
+  m_Color: {r: 0.3137255, g: 0.6313726, b: 0.8039216, a: 1}
   m_Intensity: 0
   m_Range: 30
   m_SpotAngle: 30
@@ -81,7 +81,7 @@ Light:
   m_RenderMode: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 2147483415
+    m_Bits: 4294967295
   m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
@@ -94,7 +94,7 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!1 &4592322547465933954
+--- !u!1 &8266529740339983380
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,49 +102,49 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3225670040760065228}
-  - component: {fileID: 2948330587790430167}
-  - component: {fileID: 5103868332384159966}
-  m_Layer: 5
-  m_Name: RocketWeapon
+  - component: {fileID: 1017014648487230747}
+  - component: {fileID: 6181765487028298}
+  - component: {fileID: 630893770471447916}
+  m_Layer: 0
+  m_Name: PlasmagunWeapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3225670040760065228
+--- !u!4 &1017014648487230747
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8266529740339983380}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5330564852973355236}
+  - {fileID: 2109410754072935723}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2948330587790430167
+--- !u!114 &6181765487028298
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8266529740339983380}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3745ff519d939c64e9ccc0d9a7a71c72, type: 3}
+  m_Script: {fileID: 11500000, guid: 9fef28ca328ac9f4dbb97524a86a3582, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Offset: {x: 0.2, y: -0.3, z: 0}
+  Offset: {x: 0.2, y: -0.35, z: 0.1}
   MuzzleOffset: {x: -0.5, y: 0, z: 0}
   muzzleObject: {fileID: 0}
-  ModelName: weapons2/rocketl/rocketl
-  MuzzleModelName: weapons2/rocketl/rocketl_flash
+  ModelName: weapons2/plasma/plasma
+  MuzzleModelName: weapons2/plasma/plasma_flash
   useCrosshair: 1
   DamageMin: 5
   DamageMax: 15
@@ -153,14 +153,14 @@ MonoBehaviour:
   rotateSpeed: 4
   maxTurn: 3
   _sounds:
-  - weapons/rocket/rocklf1a
+  - weapons/plasma/hyprbf1a
   - weapons/noammo
   - weapons/change
   Sounds: []
   Instance: {fileID: 0}
   playerInfo: {fileID: 0}
   LowerOffset: -0.3
-  LowerAmount: 1.2
+  LowerAmount: 1
   Noise: 0
   bopActive: 0
   vBob: 0.08
@@ -169,20 +169,20 @@ MonoBehaviour:
   useCooldown: 0
   muzzleLightTime: 5
   cooldownTime: 0
-  _fireRate: 0.8
+  _fireRate: 0.1
   fireTime: 0
-  _muzzleTime: 0.8
+  _muzzleTime: 0.1
   muzzleTimer: 0
-  AttackProjectile: {fileID: 9108129251432354766, guid: 0e8cecd77d9f2b44f8e48281681be182, type: 3}
-  AttackProjectileName: RocketProjectile
+  AttackProjectile: {fileID: 8728047549134831877, guid: db07ce6955104644b88ddb45f0b763bc, type: 3}
+  AttackProjectileName: PlasmaProjectile
   spawnPos: {x: 0, y: 0, z: 0}
---- !u!114 &5103868332384159966
+--- !u!114 &630893770471447916
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592322547465933954}
+  m_GameObject: {fileID: 8266529740339983380}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac209986762ffc442898707afa18ad2b, type: 3}

@@ -2,17 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RocketLauncherWeapon : PlayerWeapon
+public class PlasmagunWeapon : PlayerWeapon
 {
-	public override float avgDispersion { get { return .01f; } }
-	public override float maxDispersion { get { return .02f; } }
-
 	public GameObject AttackProjectile;
 	public string AttackProjectileName;
 	public Vector3 spawnPos;
 	protected override void OnUpdate()
 	{
-		if (playerInfo.Ammo[3] <= 0 && fireTime < .1f)
+		if (playerInfo.Ammo[6] <= 0 && fireTime < .1f)
 		{
 			if ((!putAway) && (Sounds.Length > 1))
 			{
@@ -20,14 +17,14 @@ public class RocketLauncherWeapon : PlayerWeapon
 				audioSource.Play();
 			}
 			putAway = true;
-		}	
+		}
 	}
 	protected override void OnInit()
 	{
 		if (AttackProjectile != null)
 		{
 			if (!PoolManager.HasObjectPool(AttackProjectileName))
-				PoolManager.CreateProjectilePool(AttackProjectileName, AttackProjectile, 10);
+				PoolManager.CreateProjectilePool(AttackProjectileName, AttackProjectile, 20);
 		}
 		if (Sounds.Length > 2)
 		{
@@ -44,10 +41,10 @@ public class RocketLauncherWeapon : PlayerWeapon
 		if (fireTime > 0.05f)
 			return false;
 
-		if (playerInfo.Ammo[3] <= 0)
+		if (playerInfo.Ammo[6] <= 0)
 			return false;
 
-		playerInfo.Ammo[3]--;
+		playerInfo.Ammo[6]--;
 
 		if (GameOptions.UseMuzzleLight)
 			if (muzzleLight != null)
@@ -78,14 +75,14 @@ public class RocketLauncherWeapon : PlayerWeapon
 			d.Normalize();
 
 			PoolObject<Projectile> projectile = PoolManager.GetProjectileFromPool(AttackProjectileName);
-			Projectile rocket = (Projectile)projectile.data;
-			rocket.owner = playerInfo.gameObject;
+			Projectile plasma = (Projectile)projectile.data;
+			plasma.owner = playerInfo.gameObject;
 			if (muzzleObject != null)
-				rocket.transform.position = muzzleObject.transform.position;
+				plasma.transform.position = muzzleObject.transform.position;
 			else
-				rocket.transform.position = playerInfo.playerCamera.MainCamera.transform.position + (playerInfo.playerCamera.MainCamera.transform.right * spawnPos.x) + (playerInfo.playerCamera.MainCamera.transform.up * spawnPos.y) + (playerInfo.playerCamera.MainCamera.transform.forward * spawnPos.z);
-			rocket.transform.rotation = Quaternion.LookRotation(d);
-			rocket.transform.SetParent(GameManager.Instance.BaseThingsHolder);
+				plasma.transform.position = playerInfo.playerCamera.MainCamera.transform.position + (playerInfo.playerCamera.MainCamera.transform.right * spawnPos.x) + (playerInfo.playerCamera.MainCamera.transform.up * spawnPos.y) + (playerInfo.playerCamera.MainCamera.transform.forward * spawnPos.z);
+			plasma.transform.rotation = Quaternion.LookRotation(d);
+			plasma.transform.SetParent(GameManager.Instance.BaseThingsHolder);
 		}
 
 		return true;
