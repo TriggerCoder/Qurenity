@@ -11,7 +11,7 @@ public static class AudioManager
 	{
 		Create2DSound(SoundLoader.LoadSound(soundName), 1);
 	}
-	public static void Create2DSound(AudioClip clip, float minDistance)
+	public static GameObject Create2DSound(AudioClip clip, float minDistance)
 	{
 		GameObject sound = new GameObject("2dsound");
 		sound.transform.position = GameManager.Instance.Player[0].transform.position;
@@ -27,20 +27,21 @@ public static class AudioManager
 		audioSource.Play();
 
 		sound.AddComponent<DestroyAfterSoundPlayed>();
+
+		return sound;
 	}
 
-	public static void Create3DSound(Vector3 position, string soundName, float minDistance)
+	public static GameObject Create3DSound(Vector3 position, string soundName, float minDistance)
 	{
-		Create3DSound(position, SoundLoader.LoadSound(soundName), minDistance);
+		return Create3DSound(position, SoundLoader.LoadSound(soundName), minDistance);
 	}
 
-	public static void Create3DSound(Vector3 position, AudioClip clip, float minDistance, float Sound3D = 1f)
+	public static GameObject Create3DSound(Vector3 position, AudioClip clip, float minDistance, float Sound3D = 1f)
 	{
 		//Check 2D Sounds
 		if (Sound3D == 0)
 		{
-			Create2DSound(clip, minDistance);
-			return;
+			return Create2DSound(clip, minDistance);
 		}
 
 		PoolObject<MultiAudioSource> poolObjectAudio = PoolManager.Get3DSoundFromPool("3DSound");
@@ -53,6 +54,8 @@ public static class AudioManager
 		audioSource.MinDistance = minDistance;
 		audioSource.Stop();
 		audioSource.Play();
+
+		return sound;
 	}
 	public static void ChangeBGMVolume()
 	{

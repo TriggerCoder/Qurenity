@@ -109,10 +109,13 @@ public class MaterialManager : MonoBehaviour
 
 		for (int i = 0; i < mo.animation.Length; i++)
 		{
-			TextureAnimation anim = go.AddComponent<TextureAnimation>();
-			anim.frames = mo.animation[i].textureFrames;
-			anim.frameTime = mo.animation[i].fps;
-			anim.textureType = i;
+			if (mo.animation[i].textureFrames.Length != 0)
+			{
+				TextureAnimation anim = go.AddComponent<TextureAnimation>();
+				anim.frames = mo.animation[i].textureFrames;
+				anim.frameTime = mo.animation[i].fps;
+				anim.textureType = i;
+			}
 			mat.SetFloat(rgbGenBase[i], mo.animation[i].Base);
 			mat.SetFloat(rgbGenAmp[i], mo.animation[i].Amp);
 			mat.SetFloat(rgbGenPhase[i], mo.animation[i].Phase);

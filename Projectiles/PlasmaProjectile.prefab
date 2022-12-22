@@ -253,7 +253,7 @@ MonoBehaviour:
   projectileName: PlasmaProjectile
   destroyAfterUse: 0
   speed: 60
-  rotateSpeed: 0
+  rotateSpeed: 720
   damageMin: 14
   damageMax: 20
   blastDamage: 14

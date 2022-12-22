@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
 	public GameObject BulletMark;
 	public GameObject BurnMark;
 	public GameObject PlasmaMark;
+	public GameObject SlugMark;
 
 	public GameObject BulletCase;
 	public GameObject ShogunShell;
@@ -87,9 +88,12 @@ public class GameManager : MonoBehaviour
 			if (!PoolManager.HasObjectPool("PlasmaMark"))
 				PoolManager.CreateObjectPool("PlasmaMark", PlasmaMark, 30);
 		}
-		
-
-		//Ammo Cadtrige Cases
+		if (SlugMark != null)
+		{
+			if (!PoolManager.HasObjectPool("SlugMark"))
+				PoolManager.CreateObjectPool("SlugMark", SlugMark, 10);
+		}
+		//Ammo Catridge Cases
 		if (BulletCase != null)
 		{
 			if (!PoolManager.HasObjectPool("BulletCase"))

@@ -147,6 +147,34 @@ public class PlayerControls : MonoBehaviour
 				SwapWeapon = -1;
 			}
 		}
+		float wheel = Input.GetAxis("Mouse ScrollWheel");
+
+		if ((wheel > 0) || (Input.GetKeyDown(KeyCode.Plus)))
+		{
+			bool gotWeapon = false;
+			for (int NextWeapon = CurrentWeapon + 1; NextWeapon < 9; NextWeapon++)
+			{
+				gotWeapon = TrySwapWeapon(NextWeapon);
+				if (gotWeapon)
+					break;
+			}
+			if (!gotWeapon)
+				TrySwapWeapon(0);
+		}
+
+		if ((wheel < 0) || (Input.GetKeyDown(KeyCode.Minus)))
+		{
+			bool gotWeapon = false;
+			for (int NextWeapon = CurrentWeapon - 1; NextWeapon >= 0; NextWeapon--)
+			{
+				gotWeapon = TrySwapWeapon(NextWeapon);
+				if (gotWeapon)
+					break;
+			}
+			if (!gotWeapon)
+				SwapToBestWeapon();
+		}
+
 
 		if (Input.GetKeyDown(KeyCode.Alpha0))
 			TrySwapWeapon(0);
@@ -428,9 +456,9 @@ public class PlayerControls : MonoBehaviour
 	//gauntlet, machinegun, shotgun, grenade launcher, rocket launcher, lightning gun, railgun, plasma gun, bfg10k
 	public void SwapToBestWeapon()
 	{
-		if (TrySwapWeapon(9)) return; //bfg10k
+		if (TrySwapWeapon(8)) return; //bfg10k
 		if (TrySwapWeapon(5)) return; //lightning gun
-		if (TrySwapWeapon(8)) return; //plasma gun
+		if (TrySwapWeapon(7)) return; //plasma gun
 		if (TrySwapWeapon(6)) return; //railgun
 		if (TrySwapWeapon(2)) return; //shotgun
 		if (TrySwapWeapon(1)) return; //machinegun

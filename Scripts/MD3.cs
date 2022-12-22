@@ -80,7 +80,7 @@ public class MD3
 		
 		md3Model.frames = new List<MD3Frame>();
 		Md3ModelFile.BaseStream.Seek(ofsFrames, SeekOrigin.Begin);
-		for (int i = 0; i < md3Model.numFrames * md3Model.numTags; i++)
+		for (int i = 0, j = 0; i < md3Model.numFrames * md3Model.numTags; i++)
 		{
 			MD3Frame frame = new MD3Frame();
 
@@ -101,8 +101,12 @@ public class MD3
 			z = Md3ModelFile.ReadSingle();
 			frame.locOrigin = new Vector3(x, y, z);
 
-			name = (new string(Md3ModelFile.ReadChars(16))).Split('\0');
-			frame.name = name[0].Replace("\0", string.Empty);
+			Md3ModelFile.ReadBytes(16);
+//			name = (new string(Md3ModelFile.ReadChars(16))).Split('\0');
+//			frame.name = name[0].Replace("\0", string.Empty);
+			frame.name = "Tag Frame " + i;
+			if (((i + 1) % md3Model.numFrames) == 0)
+				j++;
 
 			frame.QuakeToUnityCoordSystem();
 			md3Model.frames.Add(frame);

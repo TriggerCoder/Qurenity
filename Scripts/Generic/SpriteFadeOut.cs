@@ -28,12 +28,7 @@ public class SpriteFadeOut : MonoBehaviour
 	private void OnEnable()
 	{
 		time = 0f;
-		if (mat != null)
-		{
-			mr.GetPropertyBlock(materialProperties);
-			materialProperties.SetColor(MaterialManager.colorPropertyId, startColor);
-			mr.SetPropertyBlock(materialProperties);
-		}
+		currentColor = startColor;
 	}
 	// Update is called once per frame
 	void Update()

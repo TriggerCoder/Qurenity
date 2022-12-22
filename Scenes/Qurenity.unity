@@ -183,6 +183,7 @@ MonoBehaviour:
   BulletMark: {fileID: 8145336117116166367, guid: 88fb1cd2684a56442ae990594e923141, type: 3}
   BurnMark: {fileID: 8145336117116166367, guid: 72c4fedd031bd7443b3450f6068b34d7, type: 3}
   PlasmaMark: {fileID: 8145336117116166367, guid: bc7de774593dbdb41995d81dd8c6e190, type: 3}
+  SlugMark: {fileID: 8145336117116166367, guid: 2d4bd8bcede3dcf4f97b675273c982b2, type: 3}
   BulletCase: {fileID: 3778548176006231648, guid: 6b4a985403b517a4c88e5e78ead9a4c3, type: 3}
   ShogunShell: {fileID: 6489570926119005409, guid: fb492697b24919949b25743dbd807e92, type: 3}
   paused: 1
@@ -432,6 +433,49 @@ MonoBehaviour:
     opaqueTextureName: models/weapons2/shotgun/shotgun_laser
     material: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
     animation: []
+  - overrideName: models/weapons2/plasma/plasma_glass
+    opaque: 0
+    opaqueTextureName: textures/effects/tinfxb
+    material: {fileID: 2100000, guid: 21507c4f5a6cbde479e326b82816a154, type: 2}
+    animation:
+    - textureFrames:
+      - textures/effects/tinfxb
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.8
+  - overrideName: models/weapons2/plasma/plasma_glo
+    opaque: 0
+    opaqueTextureName: models/weapons2/plasma/plasma_glo
+    material: {fileID: 2100000, guid: 21507c4f5a6cbde479e326b82816a154, type: 2}
+    animation:
+    - textureFrames:
+      - textures/effects/tinfxb
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.7
+  - overrideName: models/weapons2/railgun/railgun2
+    opaque: 0
+    opaqueTextureName: models/weapons2/railgun/railgun2.glow
+    material: {fileID: 2100000, guid: 21507c4f5a6cbde479e326b82816a154, type: 2}
+    animation:
+    - textureFrames: []
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.7
+  - overrideName: models/weapons2/railgun/railgun4
+    opaque: 0
+    opaqueTextureName: models/weapons2/railgun/railgun4
+    material: {fileID: 2100000, guid: f1bc8d258044ec84e89aed2e50b17fb5, type: 2}
+    animation: []
   applyLightmaps: 1
   lightMapProperty: _LightMap
   opaqueTexProperty: _MainTex
@@ -631,6 +675,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Ammo.Array.data[5]
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: Ammo.Array.data[6]
       value: 10000
       objectReference: {fileID: 0}
@@ -640,6 +688,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: Weapon.Array.data[4]
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: Weapon.Array.data[6]
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
@@ -654,6 +706,10 @@ PrefabInstance:
       propertyPath: WeaponPrefabs.Array.data[4]
       value: 
       objectReference: {fileID: 2948330587790430167, guid: 9ead3d799f5b03942ab3b628f35f6b75, type: 3}
+    - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: WeaponPrefabs.Array.data[6]
+      value: 
+      objectReference: {fileID: 5580961529819052829, guid: 037ad689525996346859d98c951f3010, type: 3}
     - target: {fileID: 253155318, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: WeaponPrefabs.Array.data[7]
       value: 

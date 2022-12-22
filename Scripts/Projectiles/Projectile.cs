@@ -37,9 +37,13 @@ public class Projectile : MonoBehaviour
 
 	public float _lifeTime = 1;
 	float time = 0f;
+	Transform cTransform;
 	void Awake()
 	{
+		//Cached
 		cgameObject = gameObject;
+		cTransform = transform;
+
 		if (!string.IsNullOrEmpty(_onFlySound))
 		{
 			audioSource = GetComponent<MultiAudioSource>();
@@ -91,7 +95,7 @@ public class Projectile : MonoBehaviour
 			if (OnDeathSpawn != null)
 			{
 				GameObject go = PoolManager.GetObjectFromPool(OnDeathSpawn.name);
-				go.transform.position = transform.position - transform.forward * .2f;
+				go.transform.position = cTransform.position - cTransform.forward * .2f;
 			}
 			return;
 		}
@@ -99,8 +103,8 @@ public class Projectile : MonoBehaviour
 		float nearest = float.MaxValue;
 		RaycastHit Hit = new RaycastHit();
 		{
-			Vector3 dir = transform.forward;
-			int max = Physics.SphereCastNonAlloc(transform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
+			Vector3 dir = cTransform.forward;
+			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
 
 			if (max > hits.Length)
 				max = hits.Length;
@@ -143,22 +147,23 @@ public class Projectile : MonoBehaviour
 		//explosion
 		if (nearest < float.MaxValue)
 		{
-			transform.position = transform.position + transform.forward * nearest;
-
-			Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius, ~(1 << GameManager.InvisibleBlockerLayer), QueryTriggerInteraction.Ignore);
+			cTransform.position = cTransform.position + cTransform.forward * nearest;
+			Vector3 cPosition = cTransform.position;
+			Collider[] hits = Physics.OverlapSphere(cTransform.position, explosionRadius, ~(1 << GameManager.InvisibleBlockerLayer), QueryTriggerInteraction.Ignore);
 			foreach (Collider hit in hits)
 			{
 				float distance;
 				Damageable d = hit.GetComponent<Damageable>();
 				if (d != null)
 				{
-					Vector3 impulseDir = (hit.transform.position - transform.position).normalized;
+					Vector3 hPosition = hit.transform.position;
+					Vector3 impulseDir = (hPosition - cPosition).normalized;
 
 					switch (damageType)
 					{
 						case DamageType.Explosion:
 						case DamageType.Rocket:
-							distance = (hit.transform.position - transform.position).magnitude;
+							distance = (hPosition - cPosition).magnitude;
 							d.Damage(Mathf.CeilToInt(Mathf.Lerp(blastDamage, 1, distance / explosionRadius)), DamageType.Explosion, owner);
 							d.Impulse(impulseDir, Mathf.Lerp(pushForce, 100, distance / explosionRadius));
 							break;
@@ -175,7 +180,7 @@ public class Projectile : MonoBehaviour
 								d.Damage(Random.Range(damageMin, damageMax + 1) * 100, damageType, owner);
 							break;
 						case DamageType.Telefrag:
-							distance = (hit.transform.position - transform.position).magnitude;
+							distance = (hPosition - cPosition).magnitude;
 							d.Damage(blastDamage, DamageType.Telefrag, owner);
 							d.Impulse(impulseDir, Mathf.Lerp(pushForce, 100, distance / explosionRadius));
 							break;
@@ -189,7 +194,7 @@ public class Projectile : MonoBehaviour
 			if (OnDeathSpawn != null)
 			{
 				GameObject go = PoolManager.GetObjectFromPool(OnDeathSpawn.name);
-				go.transform.position = transform.position - transform.forward * .2f;
+				go.transform.position = cTransform.position - cTransform.forward * .2f;
 			}
 			
 			//Check if collider can be marked
@@ -214,7 +219,7 @@ public class Projectile : MonoBehaviour
 					Ray r;
 					int numRay = 0;
 					int index = 0;
-					Vector3 dir = transform.forward;
+					Vector3 dir = cTransform.forward;
 					dir.y = 0;
 					Camerarotation = rayCaster.transform.rotation;
 					rayCaster.transform.rotation = Quaternion.LookRotation(dir);
@@ -270,7 +275,7 @@ public class Projectile : MonoBehaviour
 			}
 
 			if (!string.IsNullOrEmpty(_onDeathSound))
-				AudioManager.Create3DSound(transform.position, _onDeathSound, 5f);
+				AudioManager.Create3DSound(cTransform.position, _onDeathSound, 5f);
 			if (destroyAfterUse)
 				DestroyAfterTime.DestroyObject(cgameObject);
 			else
@@ -280,27 +285,27 @@ public class Projectile : MonoBehaviour
 
 		if (target != null)
 		{
-			Vector3 aimAt = (target.transform.position - transform.position).normalized;
-			float angle = Vector3.SignedAngle(aimAt, transform.forward, transform.up);
+			Vector3 aimAt = (target.transform.position - cTransform.position).normalized;
+			float angle = Vector3.SignedAngle(aimAt, cTransform.forward, cTransform.up);
 			if (Mathf.Abs(angle) > capAngle)
 			{
 				Quaternion newRot;
 				if (angle > 0)
-					newRot = Quaternion.AngleAxis(capAngle, transform.up);
+					newRot = Quaternion.AngleAxis(capAngle, cTransform.up);
 				else
-					newRot = Quaternion.AngleAxis(-capAngle, transform.up);
-				aimAt = (newRot * transform.forward).normalized;
+					newRot = Quaternion.AngleAxis(-capAngle, cTransform.up);
+				aimAt = (newRot * cTransform.forward).normalized;
 			}
-			transform.forward = aimAt;
+			cTransform.forward = aimAt;
 		}
 		
 		if (rotateSpeed != 0)
-			transform.RotateAround(transform.position, transform.forward, rotateSpeed * Time.deltaTime);
+			cTransform.RotateAround(cTransform.position, cTransform.forward, rotateSpeed * Time.deltaTime);
 		
 		if (goingUp)
-			transform.position = transform.position + transform.up * speed * Time.deltaTime;
+			cTransform.position = cTransform.position + cTransform.up * speed * Time.deltaTime;
 		else
-			transform.position = transform.position + transform.forward * speed * Time.deltaTime;
+			cTransform.position = cTransform.position + cTransform.forward * speed * Time.deltaTime;
 
 	}
 }

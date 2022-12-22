@@ -128,7 +128,19 @@ public class SpriteAnimation : MonoBehaviour
 	{
 		Transform camera = Camera.current.transform;
 		if (CanLineToCamera(camera))
-			transform.LookAt(Camera.current.transform);
+		{
+			//transform.LookAt(Camera.current.transform);
+			// This was changed in order to be able to keep the same roll angle but
+			// change the yaw and pitch angles to look at the camera position
+			// Calculate the roll angle of the object
+			float rollAngle = cTransform.rotation.eulerAngles.z;
+			Vector3 direction = camera.position - cTransform.position;
+
+			// Set the rotation of the object to look at the camera
+			cTransform.rotation = Quaternion.LookRotation(direction);
+			// Rotate the object around its new forward axis, while maintaining the original roll angle
+			cTransform.RotateAround(cTransform.position, cTransform.forward, rollAngle);
+		}
 		else
 			mr.enabled = false;
 	}

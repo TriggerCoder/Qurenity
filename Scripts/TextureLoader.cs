@@ -457,6 +457,9 @@ public class TextureLoader : MonoBehaviour
 		if (colorize != illegal)
 			return colorize;
 
+		if (texture == null)
+			texture = GetTexture(textureName) as Texture2D;
+
 		colorize = new Texture2D(texture.width, texture.height);
 		int width = texture.width;
 		int height = texture.height;

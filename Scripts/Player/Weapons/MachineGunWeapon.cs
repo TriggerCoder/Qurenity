@@ -124,7 +124,7 @@ public class MachineGunWeapon : PlayerWeapon
 					if (!MapLoader.noMarks.Contains(hit.collider))
 					{
 						GameObject mark = PoolManager.GetObjectFromPool("BulletMark");
-						mark.transform.position = hit.point - -hit.normal * .05f;
+						mark.transform.position = hit.point + hit.normal * .05f;
 						mark.transform.forward = hit.normal;
 					}
 					Debug.Log(hit.collider.name);
