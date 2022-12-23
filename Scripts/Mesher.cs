@@ -453,7 +453,11 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, GameObject ownerObject = null, bool forceSkinAlpha = false)
+	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, Dictionary<string, string> meshToSkin)
+	{
+		return GenerateModelFromMeshes(model, null, false, meshToSkin);
+	}
+	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, GameObject ownerObject = null, bool forceSkinAlpha = false, Dictionary<string, string> meshToSkin = null)
 	{
 		if (model == null || model.meshes.Count == 0)
 		{
@@ -474,7 +478,7 @@ public static class Mesher
 		md3Model.data = new MD3UnityConverted.dataMeshes[md3Model.numMeshes];
 
 		int groupId = 0;
-		if (model.numFrames > 1)
+		if ((model.numFrames > 1) || (meshToSkin != null))
 		{
 			foreach (MD3Mesh modelMesh in model.meshes)
 			{
@@ -499,12 +503,19 @@ public static class Mesher
 
 
 				Material material = null;
-				if (MaterialManager.GetOverrideMaterials(modelMesh.skins[0].name, -1, ref material, ref modelObject))
+
+				string skinName;
+				if (meshToSkin == null)
+					skinName = modelMesh.skins[0].name;
+				else
+					skinName = meshToSkin[modelMesh.name];
+
+				if (MaterialManager.GetOverrideMaterials(skinName, -1, ref material, ref modelObject))
 				{
 //					Debug.LogWarning("Found Material");
 				}
 				else
-					material = MaterialManager.GetMaterials(modelMesh.skins[0].name, -1, forceSkinAlpha);
+					material = MaterialManager.GetMaterials(skinName, -1, forceSkinAlpha);
 
 				md3Model.data[modelMesh.meshNum].meshFilter = meshFilter;
 				md3Model.data[modelMesh.meshNum].meshRenderer = mr;

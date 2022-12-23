@@ -26,6 +26,7 @@ public class MD3
 	public int numSkins;				// The number of skins in the model
 	public List<MD3Frame> frames;		// The list of frames in the model
 	public List<MD3Tag> tags;			// The list of tags in the model
+	public Dictionary<string, List<MD3Tag>> tagsbyName = new Dictionary<string, List<MD3Tag>>();
 	public List<MD3Mesh> meshes;		// The list of meshes in the model
 	public List<MD3Skin> skins;			// The list of skins in the model
 	public List<Mesh> readyMeshes = new List<Mesh>();				// This is the processed Unity Mesh
@@ -80,7 +81,7 @@ public class MD3
 		
 		md3Model.frames = new List<MD3Frame>();
 		Md3ModelFile.BaseStream.Seek(ofsFrames, SeekOrigin.Begin);
-		for (int i = 0, j = 0; i < md3Model.numFrames * md3Model.numTags; i++)
+		for (int i = 0, j = 0, numFrame = 1; i < md3Model.numFrames * md3Model.numTags; i++)
 		{
 			MD3Frame frame = new MD3Frame();
 
@@ -104,10 +105,12 @@ public class MD3
 			Md3ModelFile.ReadBytes(16);
 //			name = (new string(Md3ModelFile.ReadChars(16))).Split('\0');
 //			frame.name = name[0].Replace("\0", string.Empty);
-			frame.name = "Tag Frame " + i;
+			frame.name = "Tag Frame " + numFrame++;
 			if (((i + 1) % md3Model.numFrames) == 0)
+			{
 				j++;
-
+				numFrame = 1;
+			}
 			frame.QuakeToUnityCoordSystem();
 			md3Model.frames.Add(frame);
 		}
@@ -119,7 +122,6 @@ public class MD3
 			MD3Tag tag = new MD3Tag();
 			name = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
 			tag.name = name[0].Replace("\0", string.Empty);
-
 			float x = Md3ModelFile.ReadSingle();
 			float y = Md3ModelFile.ReadSingle();
 			float z = Md3ModelFile.ReadSingle();
@@ -142,11 +144,25 @@ public class MD3
 			Vector4 column2 = new Vector4(m02, m12, m22, 0);
 			Vector4 column3 = new Vector4(0, 0, 0, 1);
 
+
+			tag.orientation = new Matrix4x4(column0, column1, column2, column3);
+//			tag.rotation = Quaternion.Euler(180f, 0f, 90f) * tag.orientation.rotation;
+
+
 			tag.orientation = new Matrix4x4(-1 * column0, column2, -1 * column1, column3);
 			tag.rotation = new Quaternion(m21, 0.0f, -m20, 1 + m22);
+//			tag.rotation = Quaternion.Euler(0f, 0f, 90f) * new Quaternion(m21, 0.0f, -m20, 1 + m22);
+//			tag.rotation = new Quaternion(90 * m21 - m20, 90 * m21, -90 * m20 + 90 + 90 * m22, 90 + 90 * m22);
+
 			tag.rotation.Normalize();
 
 			tag.QuakeToUnityCoordSystem();
+			if (!md3Model.tagsbyName.ContainsKey(tag.name))
+			{
+				List<MD3Tag> tagList = new List<MD3Tag>();
+				md3Model.tagsbyName.Add(tag.name, tagList);
+			}
+			md3Model.tagsbyName[tag.name].Add(tag);
 			md3Model.tags.Add(tag);
 		}
 
