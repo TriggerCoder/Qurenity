@@ -5,29 +5,31 @@ using System.Collections.Generic;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
 
-public class PlayerModel
+public class PlayerModel : MonoBehaviour
 {
-	string lowerModelName;			// This stores the file name for the lower.md3 model
-	string upperModelName;			// This stores the file name for the upper.md3 model
-	string headModelName;			// This stores the file name for the head.md3 model
-	string lowerSkin;				// This stores the file name for the lower.md3 skin
-	string upperSkin;				// This stores the file name for the upper.md3 skin
-	string headSkin;                // This stores the file name for the head.md3 skin
-	public MD3 head;
-	public MD3 upper;
-	public MD3 lower;
-	public MD3 weapon;
+	private MD3 head;
+	private MD3 upper;
+	private MD3 lower;
+	private MD3 weapon;
 
-	public List<ModelAnimation> upperAnim = new List<ModelAnimation>();
-	public List<ModelAnimation> lowerAnim = new List<ModelAnimation>();
+	public UpperAnimation upperAnimation = UpperAnimation.Stand;
+	public LowerAnimation lowerAnimation = LowerAnimation.Walk;
+
+	private List<ModelAnimation> upperAnim = new List<ModelAnimation>();
+	private List<ModelAnimation> lowerAnim = new List<ModelAnimation>();
 
 	private Dictionary<string, string> meshToSkin = new Dictionary<string, string>();
-	private Dictionary<string, MD3> tagToModel = new Dictionary<string, MD3>();
 
-	MD3UnityConverted lowerModel;
-	MD3UnityConverted upperModel;
-	MD3UnityConverted headModel;
+	private MD3UnityConverted lowerModel;
+	private MD3UnityConverted upperModel;
+	private MD3UnityConverted headModel;
 
+	private ModelAnimation currentUpper;
+	private ModelAnimation currentLower;
+	private int currentFrameUpper;
+	private int currentFrameLower;
+
+	bool loaded = false;
 	public class ModelAnimation
 	{
 		public int startFrame;
@@ -37,18 +39,144 @@ public class PlayerModel
 		public string strName;
 	}
 
+	public enum UpperAnimation
+	{
+		Death1,
+		Dead1,
+		Death2,
+		Dead2,
+		Death3,
+		Dead3,
+		Gesture,
+		Attack,
+		Melee,
+		Drop,
+		Raise,
+		Stand,
+		Stand2
+	}
+	public enum LowerAnimation
+	{
+		Death1,
+		Dead1,
+		Death2,
+		Dead2,
+		Death3,
+		Dead3,
+		WalkCR,
+		Walk,
+		Run,
+		Back,
+		Swim,
+		Jump,
+		Land,
+		JumpBack,
+		LandBack,
+		Idle,
+		IdleCR,
+		Turn
+	}
+
+
+	public float _lifeTime = 1;
+	float time = 0f;
+	private void Update()
+	{
+		if (!loaded)
+			return;
+
+		if (GameManager.Paused)
+			return;
+
+		time += Time.deltaTime;
+
+		if (time >= _lifeTime)
+		{
+			currentUpper = upperAnim[(int)upperAnimation];
+			currentLower = lowerAnim[(int)lowerAnimation];
+
+			//Reset Timer
+			time = 0f;
+
+			if (currentFrameUpper >= currentUpper.endFrame)
+				currentFrameUpper = currentUpper.startFrame;
+			else if (currentFrameUpper < currentUpper.startFrame)
+				currentFrameUpper = currentUpper.startFrame;
+
+			if (currentFrameLower >= currentLower.endFrame)
+				currentFrameLower = currentLower.startFrame;
+			else if (currentFrameLower < currentLower.startFrame)
+				currentFrameLower = currentLower.startFrame;
+
+			Vector3 currentOffset = upper.tagsbyName["tag_torso"][currentFrameUpper].origin;
+			Quaternion currentRotation = upper.tagsbyName["tag_torso"][currentFrameUpper].rotation;
+
+			currentRotation *= lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
+
+			for (int i = 0; i < upper.meshes.Count; i++)
+			{
+				MD3Mesh currentMesh = upper.meshes[i];
+				Vector3[] currentVect = currentMesh.verts[currentFrameUpper].ToArray();
+				for (int j = 0; j < currentVect.Length; j++)
+				{
+					currentVect[j] = currentRotation * currentVect[j];
+					currentVect[j] += currentOffset;
+				}
+
+				upperModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+			}
+
+			Quaternion baseRotation = lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
+			currentOffset = baseRotation * upper.tagsbyName["tag_head"][currentFrameUpper].origin;
+			currentRotation = baseRotation * upper.tagsbyName["tag_head"][currentFrameUpper].rotation;
+
+			for (int i = 0; i < head.meshes.Count; i++)
+			{
+				MD3Mesh currentMesh = head.meshes[i];
+				Vector3[] currentVect = currentMesh.verts[0].ToArray();
+				for (int j = 0; j < currentVect.Length; j++)
+				{
+					currentVect[j] = currentRotation * currentVect[j];
+					currentVect[j] += currentOffset;
+				}
+				headModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+			}
+			
+			baseRotation = upper.tagsbyName["tag_torso"][currentFrameUpper].rotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
+			currentOffset = baseRotation * upper.tagsbyName["tag_torso"][currentFrameUpper].rotation * upper.tagsbyName["tag_torso"][currentFrameUpper].origin;
+
+			currentOffset -= baseRotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation * lower.tagsbyName["tag_torso"][currentFrameLower].origin;
+			currentRotation = baseRotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
+
+			for (int i = 0; i < lower.meshes.Count; i++)
+			{
+				MD3Mesh currentMesh = lower.meshes[i];
+				Vector3[] currentVect = currentMesh.verts[currentFrameLower].ToArray();
+				for (int j = 0; j < currentVect.Length; j++)
+				{
+					currentVect[j] = currentRotation * currentVect[j];
+					currentVect[j] += currentOffset;
+
+				}
+				lowerModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+			}
+
+			currentFrameUpper++;
+			currentFrameLower++;
+		}
+	}
 	public bool LoadPlayer(string modelName)
 	{
 		string playerModelPath = "players/" + modelName;
 
-		lowerModelName = playerModelPath + "/lower";
-		upperModelName = playerModelPath + "/upper";
-		headModelName = playerModelPath + "/head";
+		string lowerModelName = playerModelPath + "/lower";
+		string upperModelName = playerModelPath + "/upper";
+		string headModelName = playerModelPath + "/head";
 		string animationFile = playerModelPath + "/animation";
 
-		lowerSkin = playerModelPath + "/lower_default";
-		upperSkin = playerModelPath + "/upper_default";
-		headSkin = playerModelPath + "/head_default";
+		string lowerSkin = playerModelPath + "/lower_default";
+		string upperSkin = playerModelPath + "/upper_default";
+		string headSkin = playerModelPath + "/head_default";
 
 		lower = ModelsManager.GetModel(lowerModelName);
 		if (lower == null)
@@ -68,131 +196,40 @@ public class PlayerModel
 		if (!LoadSkin(head, headSkin))
 			return false;
 
-		LinkModel(lower, upper, "tag_torso");
-		LinkModel(upper, head, "tag_head");
-
 		LoadAnimations(animationFile, upperAnim, lowerAnim);
-		
+		currentUpper = upperAnim[(int)UpperAnimation.Stand];
+		currentFrameUpper = currentUpper.startFrame;
+		currentLower = lowerAnim[(int)LowerAnimation.Walk];
+		currentFrameLower = currentLower.startFrame;
+
 		{
-			GameObject playerModel = new GameObject(modelName);
+			GameObject playerModel = gameObject;
+			playerModel.name = modelName;
+
 			if (upper.readyMeshes.Count == 0)
 				upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin);
 			else
-				upperModel = Mesher.FillModelFromProcessedData(upper);
+				upperModel = Mesher.FillModelFromProcessedData(upper, meshToSkin);
 			upperModel.go.name = "upper_body";
 			upperModel.go.transform.SetParent(playerModel.transform);
-
-			for (int i = 0; i < upper.meshes.Count; i++)
-			{
-				MD3Mesh currentMesh = upper.meshes[i];
-				List<Vector3> currentVect = currentMesh.verts[152];
-				upperModel.data[i].meshFilter.mesh.SetVertices(currentVect);
-			}
-
 
 			if (head.readyMeshes.Count == 0)
 				headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin);
 			else
-				headModel = Mesher.FillModelFromProcessedData(head);
+				headModel = Mesher.FillModelFromProcessedData(head, meshToSkin);
 
 			headModel.go.name = "head";
 			headModel.go.transform.SetParent(playerModel.transform);
 
-			Vector3 currentOffset = upper.tagsbyName["tag_head"][152].origin;
-			Quaternion currentRotation = upper.tagsbyName["tag_head"][152].rotation;
-
-			for (int i = 0; i < head.meshes.Count; i++)
-			{
-				MD3Mesh currentMesh = head.meshes[i];
-				List<Vector3> currentVect = currentMesh.verts[0];
-				for (int j = 0; j < currentVect.Count; j++)
-				{
-					currentVect[j] =  currentRotation * currentVect[j];
-					currentVect[j] += currentOffset;
-
-				}
-				headModel.data[i].meshFilter.mesh.SetVertices(currentVect);
-			}
-
-
 			if (lower.readyMeshes.Count == 0)
 				lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin);
 			else
-				lowerModel = Mesher.FillModelFromProcessedData(lower);
+				lowerModel = Mesher.FillModelFromProcessedData(lower, meshToSkin);
 			lowerModel.go.name = "lower_body";
 			lowerModel.go.transform.SetParent(playerModel.transform);
 
-			currentOffset = upper.tagsbyName["tag_torso"][152].origin;
-			currentRotation = upper.tagsbyName["tag_torso"][152].rotation;
-
-			currentOffset -= lower.tagsbyName["tag_torso"][166].origin;
-			currentRotation *= lower.tagsbyName["tag_torso"][166].rotation;
-
-			for (int i = 0; i < lower.meshes.Count; i++)
-			{
-				MD3Mesh currentMesh = lower.meshes[i];
-				List<Vector3> currentVect = currentMesh.verts[166];
-				for (int j = 0; j < currentVect.Count; j++)
-				{
-					currentVect[j] = currentRotation * currentVect[j];
-					currentVect[j] += currentOffset;
-
-				}
-				lowerModel.data[i].meshFilter.mesh.SetVertices(currentVect);
-			}
+			loaded = true;
 		}
-
-		/*		{
-					GameObject playerModel = new GameObject(modelName);
-					GameObject tag_upper_torso = new GameObject("tag_upper_torso");
-					GameObject tag_lower_torso = new GameObject("tag_lower_torso");
-					GameObject tag_head = new GameObject("tag_head");
-
-					if (upper.readyMeshes.Count == 0)
-						upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin);
-					else
-						upperModel = Mesher.FillModelFromProcessedData(upper);
-
-					upperModel.go.name = "upper_body";
-					upperModel.go.transform.SetParent(playerModel.transform);
-					tag_upper_torso.transform.SetParent(upperModel.go.transform);
-					tag_head.transform.SetParent(upperModel.go.transform);
-
-					tag_upper_torso.transform.localPosition = upper.tagsbyName["tag_torso"][0].origin;
-					tag_upper_torso.transform.localRotation = upper.tagsbyName["tag_torso"][0].rotation;
-
-					tag_head.transform.localPosition = upper.tagsbyName["tag_head"][0].origin;
-					tag_head.transform.localRotation = upper.tagsbyName["tag_head"][0].rotation;
-
-					if (lower.readyMeshes.Count == 0)
-						lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin);
-					else
-						lowerModel = Mesher.FillModelFromProcessedData(lower);
-
-					lowerModel.go.name = "lower_body";
-		//			lowerModel.go.transform.SetParent(tag_upper_torso.transform);
-		//			lowerModel.go.transform.SetLocalPositionAndRotation(lower.tagsbyName["tag_torso"][0].origin, lower.tagsbyName["tag_torso"][0].rotation);
-					lowerModel.go.transform.localScale = Vector3.one;
-		//			tag_lower_torso.transform.SetParent(lowerModel.go.transform);
-
-					tag_lower_torso.transform.localPosition = lower.tagsbyName["tag_torso"][0].origin;
-					tag_lower_torso.transform.localRotation = lower.tagsbyName["tag_torso"][0].rotation;
-
-
-					lowerModel.go.transform.position = tag_lower_torso.transform.InverseTransformPoint(tag_lower_torso.transform.position);
-
-					if (head.readyMeshes.Count == 0)
-						headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin);
-					else
-						headModel = Mesher.FillModelFromProcessedData(head);
-
-					headModel.go.name = "head";
-					headModel.go.transform.SetParent(tag_head.transform);
-					headModel.go.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-					headModel.go.transform.localScale = Vector3.one;
-
-				}
-				*/
 		return true;
 	}
 
@@ -306,26 +343,6 @@ public class PlayerModel
 
 		animFile.Close();
 		return true;
-	}
-	public bool LinkModel(MD3 model, MD3 link, string linkTag)
-	{
-		if ((model == null) || (link == null) || (string.IsNullOrEmpty(linkTag)))
-		{
-			Debug.Log("Invalid data for linking");
-			return false;
-		}
-
-		// Go through all of our tags and find which tag contains the linkTag, then link'em
-		for (int i = 0; i < model.numTags; i++)
-		{
-			// If this current tag index has the tag name we are looking for
-			if (string.Equals(model.tags[i].name, linkTag, StringComparison.OrdinalIgnoreCase))
-			{
-				tagToModel.Add(linkTag, link);
-				return true;
-			}
-		}
-		return false;
 	}
 	public bool LoadSkin(MD3 model, string skinName)
 	{

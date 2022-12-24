@@ -483,14 +483,14 @@ public static class Mesher
 			foreach (MD3Mesh modelMesh in model.meshes)
 			{
 				Mesh mesh = GenerateModelMesh(modelMesh);
-				mesh.name = "Mesh_" + groupId;
+				mesh.name = modelMesh.name;
 
 				GameObject modelObject;
 				if (groupId == 0)
 					modelObject = ownerObject;
 				else
 				{
-					modelObject = new GameObject("Mesh_" + modelMesh.name);
+					modelObject = new GameObject("Mesh_" + groupId);
 					modelObject.layer = ownerObject.layer;
 					modelObject.transform.SetParent(ownerObject.transform);
 					modelObject.transform.localPosition = Vector3.zero;
@@ -601,7 +601,12 @@ public static class Mesher
 		}
 		return md3Model;
 	}
-	public static MD3UnityConverted FillModelFromProcessedData(MD3 model, GameObject ownerObject = null)
+	public static MD3UnityConverted FillModelFromProcessedData(MD3 model, Dictionary<string, string> meshToSkin)
+	{
+		return FillModelFromProcessedData(model, null, meshToSkin);
+	}
+
+	public static MD3UnityConverted FillModelFromProcessedData(MD3 model, GameObject ownerObject = null, Dictionary<string, string> meshToSkin = null)
 	{
 		if (ownerObject == null)
 		{
@@ -634,6 +639,15 @@ public static class Mesher
 			meshFilter.mesh = model.readyMeshes[i];
 			mr.sharedMaterial = model.readyMaterials[i];
 
+			if (meshToSkin != null)
+			{
+				string skinName = meshToSkin[model.readyMeshes[i].name];
+				if (TextureLoader.HasTexture(skinName))
+				{
+					Texture tex = TextureLoader.Instance.GetTexture(skinName);
+					mr.material.SetTexture(MaterialManager.opaqueTexPropertyId, tex);
+				}
+			}
 			md3Model.data[i].meshFilter = meshFilter;
 			md3Model.data[i].meshRenderer = mr;
 

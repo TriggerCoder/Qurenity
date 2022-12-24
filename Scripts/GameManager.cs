@@ -108,6 +108,11 @@ public class GameManager : MonoBehaviour
 		if (!PoolManager.HasObjectPool("3DSound"))
 			PoolManager.Create3DSoundPool("3DSound", 10);
 
+
+		GameObject player = new GameObject();
+		PlayerModel sarge = player.AddComponent<PlayerModel>();
+		sarge.LoadPlayer("sarge");
+
 		if (MapLoader.Load(autoloadMap))
 		{
 			MaterialManager.GetShaderAnimationsTextures();
@@ -118,6 +123,8 @@ public class GameManager : MonoBehaviour
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
+
+		MusicPlayer.Instance.Play(autoloadMap);
 		paused = false;
 	}
 	void OnApplicationFocus(bool hasFocus)
