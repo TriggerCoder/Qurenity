@@ -9,6 +9,8 @@ public class PlayerControls : MonoBehaviour
 	public PlayerWeapon playerWeapon;
 	[HideInInspector]
 	public PlayerCamera playerCamera;
+	[HideInInspector]
+	public PlayerThing playerThing;
 
 	public float centerHeight = .88f; // character controller height/2 + skin.width
 
@@ -55,10 +57,11 @@ public class PlayerControls : MonoBehaviour
 	public int SwapWeapon = -1;
 	void Awake()
 	{
-		controller = GetComponent<CharacterController>();
+//		controller = GetComponent<CharacterController>();
 		audioSource = GetComponent<MultiAudioSource>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
 		playerInfo = GetComponentInChildren<PlayerInfo>();
+		playerThing = GetComponentInChildren<PlayerThing>();
 		playerWeapon = null;
 	}
 
@@ -105,7 +108,6 @@ public class PlayerControls : MonoBehaviour
 			GroundMove();
 		else if (!controller.isGrounded)
 			AirMove();
-
 
 		//apply move
 		lastPosition = transform.position;
@@ -250,6 +252,11 @@ public class PlayerControls : MonoBehaviour
 
 		SetMovementDir();
 
+		if (playerThing.avatar.enableOffset)
+		{
+			playerThing.avatar.TurnLegs(cMove.sidewaysSpeed, cMove.forwardSpeed);
+		}
+
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
 		wishdir = transform.TransformDirection(wishdir);
 		wishdir.Normalize();
@@ -265,6 +272,14 @@ public class PlayerControls : MonoBehaviour
 
 		if (wishJump)
 		{
+//			if (playerThing.avatar.enableOffset)
+			{
+				if (cMove.forwardSpeed >= 0)
+					playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.Jump;
+				else if (cMove.forwardSpeed < 0)
+					playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
+				playerThing.avatar.enableOffset = false;
+			}
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
 		}
@@ -352,6 +367,7 @@ public class PlayerControls : MonoBehaviour
 			AirControl(wishdir, wishspeed2);
 
 		// Apply gravity
+
 		playerVelocity.y -= gravity * Time.deltaTime;
 	}
 

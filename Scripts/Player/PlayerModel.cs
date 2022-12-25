@@ -13,7 +13,11 @@ public class PlayerModel : MonoBehaviour
 	private MD3 weapon;
 
 	public UpperAnimation upperAnimation = UpperAnimation.Stand;
-	public LowerAnimation lowerAnimation = LowerAnimation.Walk;
+	public LowerAnimation lowerAnimation = LowerAnimation.Idle;
+
+	public bool enableOffset { get { return _enableOffset; } set { _enableOffset = value; } }
+
+	private bool _enableOffset = true;
 
 	private List<ModelAnimation> upperAnim = new List<ModelAnimation>();
 	private List<ModelAnimation> lowerAnim = new List<ModelAnimation>();
@@ -36,7 +40,7 @@ public class PlayerModel : MonoBehaviour
 	private int currentFrameUpper;
 	private int currentFrameLower;
 
-	bool loaded = false;
+	private bool loaded = false;
 	public class ModelAnimation
 	{
 		public int index;
@@ -91,7 +95,9 @@ public class PlayerModel : MonoBehaviour
 
 	GameObject upperBody;
 	GameObject headBody;
-	Transform cTransform;
+	Transform playerTransform;
+	Transform lowerTransform;
+	Transform upperTransform;
 	Transform headTransform;
 
 	private float upperLerpTime = 0;
@@ -114,8 +120,10 @@ public class PlayerModel : MonoBehaviour
 			if (nextUpper.index == currentUpper.index)
 			{
 				nextFrameUpper = currentFrameUpper + 1;
-				if (nextFrameUpper > currentUpper.endFrame)
+				if (nextFrameUpper >= currentUpper.endFrame)
+				{
 					nextFrameUpper = currentUpper.startFrame;
+				}
 			}
 			else
 				nextFrameUpper = nextUpper.startFrame;
@@ -123,8 +131,28 @@ public class PlayerModel : MonoBehaviour
 			if (nextLower.index == currentLower.index)
 			{
 				nextFrameLower = currentFrameLower + 1;
-				if (nextFrameLower > currentLower.endFrame)
+				if (nextFrameLower >= currentLower.endFrame)
+				{
+					switch (nextLower.index)
+					{
+						default:
+							
+						break;
+						case (int)LowerAnimation.Jump:
+							lowerAnimation = LowerAnimation.Land;
+						break;
+						case (int)LowerAnimation.JumpBack:
+							lowerAnimation = LowerAnimation.LandBack;
+						break;
+						case (int)LowerAnimation.Land:
+						case (int)LowerAnimation.LandBack:
+							lowerAnimation = LowerAnimation.Idle;
+							_enableOffset = true;
+						break;
+					}
+					nextLower = lowerAnim[(int)lowerAnimation];
 					nextFrameLower = currentLower.startFrame;
+				}
 			}
 			else
 				nextFrameLower = nextLower.startFrame;
@@ -161,7 +189,11 @@ public class PlayerModel : MonoBehaviour
 
 				headTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
-				cTransform.localPosition = lowerTorsoOrigin;
+				if (_enableOffset)
+					playerTransform.localPosition = lowerTorsoOrigin;
+				else
+					playerTransform.localPosition = Vector3.zero;
+
 				currentOffset = upperTorsoRotation * upperTorsoOrigin;
 				currentOffset -= lowerTorsoOrigin;
 				currentRotation = upperTorsoRotation;
@@ -182,8 +214,8 @@ public class PlayerModel : MonoBehaviour
 				}
 			}
 
-			upperLerpTime = nextUpper.fps * Time.deltaTime * .25f;
-			lowerLerpTime = nextLower.fps * Time.deltaTime * .25f;
+			upperLerpTime = nextUpper.fps * Time.deltaTime;
+			lowerLerpTime = nextLower.fps * Time.deltaTime;
 
 			upperCurrentLerpTime += upperLerpTime;
 			lowerCurrentLerpTime += lowerLerpTime;
@@ -203,6 +235,39 @@ public class PlayerModel : MonoBehaviour
 			}
 		}
 	}
+
+	public void TurnLegs(float sideMove, float forwardMove)
+	{
+		Quaternion rotate = Quaternion.identity;
+		if (forwardMove > 0)
+		{
+			lowerAnimation = LowerAnimation.Run;
+			if (sideMove > 0)
+				rotate = Quaternion.AngleAxis(30f, playerTransform.up);
+			else if (sideMove < 0)
+				rotate = Quaternion.AngleAxis(-30f, playerTransform.up);
+		}
+		else if (forwardMove < 0)
+		{
+			lowerAnimation = LowerAnimation.Back;
+			if (sideMove > 0)
+				rotate = Quaternion.AngleAxis(-30f, playerTransform.up);
+			else if (sideMove < 0)
+				rotate = Quaternion.AngleAxis(30f, playerTransform.up);
+		}
+		else
+		{
+			lowerAnimation = LowerAnimation.Run;
+			if (sideMove > 0)
+				rotate = Quaternion.AngleAxis(50f, playerTransform.up);
+			else if (sideMove < 0)
+				rotate = Quaternion.AngleAxis(-50f, playerTransform.up);
+			else
+				lowerAnimation = LowerAnimation.Idle;
+		}
+		lowerTransform.rotation = rotate;
+	}
+
 	public bool LoadPlayer(string modelName)
 	{
 		string playerModelPath = "players/" + modelName;
@@ -237,15 +302,16 @@ public class PlayerModel : MonoBehaviour
 		LoadAnimations(animationFile, upperAnim, lowerAnim);
 		currentUpper = upperAnim[(int)UpperAnimation.Stand];
 		currentFrameUpper = currentUpper.startFrame;
-		currentLower = lowerAnim[(int)LowerAnimation.Walk];
+		currentLower = lowerAnim[(int)LowerAnimation.Idle];
 		currentFrameLower = currentLower.startFrame;
 
 		{
 			GameObject playerModel = gameObject;
 			playerModel.name = modelName;
-			cTransform = transform;
+			playerTransform = transform;
 
 			upperBody = new GameObject("Upper Body");
+			upperTransform = upperBody.transform;
 			upperBody.transform.SetParent(playerModel.transform);
 
 			GameObject tag_head = new GameObject("tag_head");
@@ -276,6 +342,7 @@ public class PlayerModel : MonoBehaviour
 			else
 				lowerModel = Mesher.FillModelFromProcessedData(lower, meshToSkin);
 			lowerModel.go.name = "lower_body";
+			lowerTransform = lowerModel.go.transform;
 			lowerModel.go.transform.SetParent(playerModel.transform);
 
 			loaded = true;
@@ -317,6 +384,7 @@ public class PlayerModel : MonoBehaviour
 		string strWord;
 		int currentAnim = 0;
 		int torsoOffset = 0;
+		int legsOffset = 7;
 		char[]	separators = new char[2] { '\t', '(' };
 		while (!animFile.EndOfStream)
 		{
@@ -359,7 +427,7 @@ public class PlayerModel : MonoBehaviour
 
 			animations[currentAnim] = new ModelAnimation(currentAnim);
 			animations[currentAnim].startFrame = startFrame;
-			animations[currentAnim].endFrame = startFrame + numOfFrames - 1;
+			animations[currentAnim].endFrame = startFrame + numOfFrames;
 			animations[currentAnim].loopingFrames = loopingFrames;
 			animations[currentAnim].fps = fps;
 
@@ -384,8 +452,7 @@ public class PlayerModel : MonoBehaviour
 
 				animations[currentAnim].startFrame -= torsoOffset;
 				animations[currentAnim].endFrame -= torsoOffset;
-
-
+				animations[currentAnim].index -= legsOffset;
 				lower.Add(animations[currentAnim]);
 			}
 			currentAnim++;

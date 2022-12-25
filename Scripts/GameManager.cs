@@ -108,11 +108,6 @@ public class GameManager : MonoBehaviour
 		if (!PoolManager.HasObjectPool("3DSound"))
 			PoolManager.Create3DSoundPool("3DSound", 10);
 
-
-		GameObject player = new GameObject();
-		PlayerModel sarge = player.AddComponent<PlayerModel>();
-		sarge.LoadPlayer("sarge");
-
 		if (MapLoader.Load(autoloadMap))
 		{
 			MaterialManager.GetShaderAnimationsTextures();
