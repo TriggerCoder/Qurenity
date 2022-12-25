@@ -24,19 +24,31 @@ public class PlayerModel : MonoBehaviour
 	private MD3UnityConverted upperModel;
 	private MD3UnityConverted headModel;
 
+	private ModelAnimation nextUpper;
+	private ModelAnimation nextLower;
+
 	private ModelAnimation currentUpper;
 	private ModelAnimation currentLower;
+
+	private int nextFrameUpper;
+	private int nextFrameLower;
+
 	private int currentFrameUpper;
 	private int currentFrameLower;
 
 	bool loaded = false;
 	public class ModelAnimation
 	{
+		public int index;
 		public int startFrame;
 		public int endFrame;
 		public int loopingFrames;
 		public int fps;
 		public string strName;
+		public ModelAnimation(int index)
+		{
+			this.index = index;
+		}
 	}
 
 	public enum UpperAnimation
@@ -77,9 +89,16 @@ public class PlayerModel : MonoBehaviour
 		Turn
 	}
 
+	GameObject upperBody;
+	GameObject headBody;
+	Transform cTransform;
+	Transform headTransform;
 
-	public float _lifeTime = 1;
-	float time = 0f;
+	private float upperLerpTime = 0;
+	private float upperCurrentLerpTime = 0;
+	private float lowerLerpTime = 0;
+	private float lowerCurrentLerpTime = 0;
+
 	private void Update()
 	{
 		if (!loaded)
@@ -88,81 +107,100 @@ public class PlayerModel : MonoBehaviour
 		if (GameManager.Paused)
 			return;
 
-		time += Time.deltaTime;
-
-		if (time >= _lifeTime)
 		{
-			currentUpper = upperAnim[(int)upperAnimation];
-			currentLower = lowerAnim[(int)lowerAnimation];
+			nextUpper = upperAnim[(int)upperAnimation];
+			nextLower = lowerAnim[(int)lowerAnimation];
 
-			//Reset Timer
-			time = 0f;
-
-			if (currentFrameUpper >= currentUpper.endFrame)
-				currentFrameUpper = currentUpper.startFrame;
-			else if (currentFrameUpper < currentUpper.startFrame)
-				currentFrameUpper = currentUpper.startFrame;
-
-			if (currentFrameLower >= currentLower.endFrame)
-				currentFrameLower = currentLower.startFrame;
-			else if (currentFrameLower < currentLower.startFrame)
-				currentFrameLower = currentLower.startFrame;
-
-			Vector3 currentOffset = upper.tagsbyName["tag_torso"][currentFrameUpper].origin;
-			Quaternion currentRotation = upper.tagsbyName["tag_torso"][currentFrameUpper].rotation;
-
-			currentRotation *= lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
-
-			for (int i = 0; i < upper.meshes.Count; i++)
+			if (nextUpper.index == currentUpper.index)
 			{
-				MD3Mesh currentMesh = upper.meshes[i];
-				Vector3[] currentVect = currentMesh.verts[currentFrameUpper].ToArray();
-				for (int j = 0; j < currentVect.Length; j++)
+				nextFrameUpper = currentFrameUpper + 1;
+				if (nextFrameUpper > currentUpper.endFrame)
+					nextFrameUpper = currentUpper.startFrame;
+			}
+			else
+				nextFrameUpper = nextUpper.startFrame;
+
+			if (nextLower.index == currentLower.index)
+			{
+				nextFrameLower = currentFrameLower + 1;
+				if (nextFrameLower > currentLower.endFrame)
+					nextFrameLower = currentLower.startFrame;
+			}
+			else
+				nextFrameLower = nextLower.startFrame;
+
+			Quaternion upperTorsoRotation = Quaternion.Slerp(upper.tagsbyName["tag_torso"][currentFrameUpper].rotation, upper.tagsbyName["tag_torso"][nextFrameUpper].rotation, upperCurrentLerpTime);
+			Quaternion upperHeadRotation = Quaternion.Slerp(upper.tagsbyName["tag_head"][currentFrameUpper].rotation, upper.tagsbyName["tag_head"][nextFrameUpper].rotation, upperCurrentLerpTime);
+			Quaternion lowerTorsoRotation = Quaternion.Slerp(lower.tagsbyName["tag_torso"][currentFrameLower].rotation, lower.tagsbyName["tag_torso"][nextFrameLower].rotation, lowerCurrentLerpTime);
+
+			Vector3 upperTorsoOrigin = Vector3.Lerp(upper.tagsbyName["tag_torso"][currentFrameUpper].origin, upper.tagsbyName["tag_torso"][nextFrameUpper].origin, upperCurrentLerpTime);
+			Vector3 upperHeadOrigin = Vector3.Lerp(upper.tagsbyName["tag_head"][currentFrameUpper].origin, upper.tagsbyName["tag_head"][nextFrameUpper].origin, upperCurrentLerpTime);
+			Vector3 lowerTorsoOrigin = Vector3.Lerp(lower.tagsbyName["tag_torso"][currentFrameLower].origin, lower.tagsbyName["tag_torso"][nextFrameLower].origin, lowerCurrentLerpTime);
+
+			{
+				Vector3 currentOffset = lowerTorsoRotation * upperTorsoOrigin;
+				Quaternion currentRotation = lowerTorsoRotation * upperTorsoRotation;
+
+				for (int i = 0; i < upper.meshes.Count; i++)
 				{
-					currentVect[j] = currentRotation * currentVect[j];
-					currentVect[j] += currentOffset;
+					MD3Mesh currentMesh = upper.meshes[i];
+					Vector3[] currentVect = currentMesh.verts[currentFrameUpper].ToArray();
+					Vector3[] nextVect = currentMesh.verts[nextFrameUpper].ToArray();
+					for (int j = 0; j < currentVect.Length; j++)
+					{
+						currentVect[j] = currentRotation * Vector3.Lerp(currentVect[j], nextVect[j], upperCurrentLerpTime);
+						currentVect[j] += currentOffset;
+					}
+
+					upperModel.data[i].meshFilter.mesh.SetVertices(currentVect);
 				}
 
-				upperModel.data[i].meshFilter.mesh.SetVertices(currentVect);
-			}
+				Quaternion baseRotation = lowerTorsoRotation;
+				currentOffset = baseRotation * upperHeadOrigin;
+				currentRotation = baseRotation * upperHeadRotation;
 
-			Quaternion baseRotation = lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
-			currentOffset = baseRotation * upper.tagsbyName["tag_head"][currentFrameUpper].origin;
-			currentRotation = baseRotation * upper.tagsbyName["tag_head"][currentFrameUpper].rotation;
+				headTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
-			for (int i = 0; i < head.meshes.Count; i++)
-			{
-				MD3Mesh currentMesh = head.meshes[i];
-				Vector3[] currentVect = currentMesh.verts[0].ToArray();
-				for (int j = 0; j < currentVect.Length; j++)
+				cTransform.localPosition = lowerTorsoOrigin;
+				currentOffset = upperTorsoRotation * upperTorsoOrigin;
+				currentOffset -= lowerTorsoOrigin;
+				currentRotation = upperTorsoRotation;
+
+				for (int i = 0; i < lower.meshes.Count; i++)
 				{
-					currentVect[j] = currentRotation * currentVect[j];
-					currentVect[j] += currentOffset;
+					MD3Mesh currentMesh = lower.meshes[i];
+					Vector3[] currentVect = currentMesh.verts[currentFrameLower].ToArray();
+					Vector3[] nextVect = currentMesh.verts[nextFrameLower].ToArray();
+
+					for (int j = 0; j < currentVect.Length; j++)
+					{
+						currentVect[j] = currentRotation * Vector3.Lerp(currentVect[j], nextVect[j], lowerCurrentLerpTime);
+						currentVect[j] += currentOffset;
+
+					}
+					lowerModel.data[i].meshFilter.mesh.SetVertices(currentVect);
 				}
-				headModel.data[i].meshFilter.mesh.SetVertices(currentVect);
 			}
-			
-			baseRotation = upper.tagsbyName["tag_torso"][currentFrameUpper].rotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
-			currentOffset = baseRotation * upper.tagsbyName["tag_torso"][currentFrameUpper].rotation * upper.tagsbyName["tag_torso"][currentFrameUpper].origin;
 
-			currentOffset -= baseRotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation * lower.tagsbyName["tag_torso"][currentFrameLower].origin;
-			currentRotation = baseRotation * lower.tagsbyName["tag_torso"][currentFrameLower].rotation;
+			upperLerpTime = nextUpper.fps * Time.deltaTime * .25f;
+			lowerLerpTime = nextLower.fps * Time.deltaTime * .25f;
 
-			for (int i = 0; i < lower.meshes.Count; i++)
+			upperCurrentLerpTime += upperLerpTime;
+			lowerCurrentLerpTime += lowerLerpTime;
+
+			if (upperCurrentLerpTime >= 1.0f)
 			{
-				MD3Mesh currentMesh = lower.meshes[i];
-				Vector3[] currentVect = currentMesh.verts[currentFrameLower].ToArray();
-				for (int j = 0; j < currentVect.Length; j++)
-				{
-					currentVect[j] = currentRotation * currentVect[j];
-					currentVect[j] += currentOffset;
-
-				}
-				lowerModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+				upperCurrentLerpTime -= 1.0f;
+				currentUpper = nextUpper;
+				currentFrameUpper = nextFrameUpper;
 			}
 
-			currentFrameUpper++;
-			currentFrameLower++;
+			if (lowerCurrentLerpTime >= 1.0f)
+			{
+				lowerCurrentLerpTime -= 1.0f;
+				currentLower = nextLower;
+				currentFrameLower = nextFrameLower;
+			}
 		}
 	}
 	public bool LoadPlayer(string modelName)
@@ -205,13 +243,25 @@ public class PlayerModel : MonoBehaviour
 		{
 			GameObject playerModel = gameObject;
 			playerModel.name = modelName;
+			cTransform = transform;
+
+			upperBody = new GameObject("Upper Body");
+			upperBody.transform.SetParent(playerModel.transform);
+
+			GameObject tag_head = new GameObject("tag_head");
+			headTransform = tag_head.transform;
+			headTransform.SetParent(upperBody.transform);
+
+			headBody = new GameObject();
+			headBody.name = "Head";
+			headBody.transform.SetParent(tag_head.transform);
 
 			if (upper.readyMeshes.Count == 0)
 				upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin);
 			else
 				upperModel = Mesher.FillModelFromProcessedData(upper, meshToSkin);
 			upperModel.go.name = "upper_body";
-			upperModel.go.transform.SetParent(playerModel.transform);
+			upperModel.go.transform.SetParent(upperBody.transform);
 
 			if (head.readyMeshes.Count == 0)
 				headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin);
@@ -219,7 +269,7 @@ public class PlayerModel : MonoBehaviour
 				headModel = Mesher.FillModelFromProcessedData(head, meshToSkin);
 
 			headModel.go.name = "head";
-			headModel.go.transform.SetParent(playerModel.transform);
+			headModel.go.transform.SetParent(headBody.transform);
 
 			if (lower.readyMeshes.Count == 0)
 				lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin);
@@ -307,9 +357,9 @@ public class PlayerModel : MonoBehaviour
 			int loopingFrames = int.Parse(values[2]);
 			int fps = int.Parse(values[3]);
 
-			animations[currentAnim] = new ModelAnimation();
+			animations[currentAnim] = new ModelAnimation(currentAnim);
 			animations[currentAnim].startFrame = startFrame;
-			animations[currentAnim].endFrame = startFrame + numOfFrames;
+			animations[currentAnim].endFrame = startFrame + numOfFrames - 1;
 			animations[currentAnim].loopingFrames = loopingFrames;
 			animations[currentAnim].fps = fps;
 

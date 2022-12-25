@@ -150,7 +150,7 @@ public class MD3
 
 
 			tag.orientation = new Matrix4x4(-1 * column0, column2, -1 * column1, column3);
-			tag.rotation = new Quaternion(m21, 0.0f, -m20, 1 + m22);
+			tag.rotation = Quaternion.Inverse(new Quaternion(m21, 0.0f, -m20, 1 + m22));
 //			tag.rotation = Quaternion.Euler(0f, 0f, 90f) * new Quaternion(m21, 0.0f, -m20, 1 + m22);
 //			tag.rotation = new Quaternion(90 * m21 - m20, 90 * m21, -90 * m20 + 90 + 90 * m22, 90 + 90 * m22);
 
