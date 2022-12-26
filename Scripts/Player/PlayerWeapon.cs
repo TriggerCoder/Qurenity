@@ -11,7 +11,8 @@ public class PlayerWeapon : MonoBehaviour
 	[HideInInspector]
 	public GameObject muzzleObject = null;
 
-	public string ModelName;
+	public string UIModelName;
+	public string CompleteModelName;
 	public string MuzzleModelName;
 	public bool useCrosshair = true;
 	public virtual float avgDispersion { get { return .02f; } } //tan(2.3º) / 2
@@ -98,13 +99,16 @@ public class PlayerWeapon : MonoBehaviour
 		playerInfo = p;
 		transform.SetParent(playerInfo.WeaponHand);
 		playerInfo.WeaponHand.localPosition = Offset;
-		MD3 model = ModelsManager.GetModel(ModelName);
+		MD3 model = ModelsManager.GetModel(UIModelName);
 		if (model != null)
 		{
 			if (model.readyMeshes.Count == 0)
 				Mesher.GenerateModelFromMeshes(model,gameObject);
 			else
 				Mesher.FillModelFromProcessedData(model,gameObject);
+
+			if (playerInfo.playerThing.avatar != null)
+				playerInfo.playerThing.avatar.LoadWeapon(model, CompleteModelName, MuzzleModelName);
 		}
 
 		foreach (MD3Tag tag in model.tags)
@@ -112,6 +116,7 @@ public class PlayerWeapon : MonoBehaviour
 			if (string.Equals(tag.name, "tag_flash"))
 			{
 				MuzzleOffset = tag.origin;
+				break;
 			}
 		}
 
@@ -161,12 +166,18 @@ public class PlayerWeapon : MonoBehaviour
 						muzzleLight.enabled = false;
 						if (muzzleObject != null)
 							if (muzzleObject.activeSelf)
+							{
 								muzzleObject.SetActive(false);
+								playerInfo.playerThing.avatar.MuzzleFlashSetActive(false);
+							}
 					}
 					else if (muzzleLight.intensity <= 0.8f)
 						if (muzzleObject != null)
 							if (muzzleObject.activeSelf)
+							{
 								muzzleObject.SetActive(false);
+								playerInfo.playerThing.avatar.MuzzleFlashSetActive(false);
+							}
 				}
 			}
 
@@ -209,6 +220,9 @@ public class PlayerWeapon : MonoBehaviour
 
 		if (putAway)
 		{
+			if (playerInfo.playerThing.avatar != null)
+				playerInfo.playerThing.avatar.UnloadWeapon();
+
 			LowerAmount = Mathf.Lerp(LowerAmount, 1, Time.deltaTime * swapSpeed);
 			if (LowerAmount > .99f)
 				DestroyAfterTime.DestroyObject(gameObject);

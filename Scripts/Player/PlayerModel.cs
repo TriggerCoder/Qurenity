@@ -7,6 +7,9 @@ using UnityEngine;
 
 public class PlayerModel : MonoBehaviour
 {
+	public int rotationFPS = 15;
+	private const float HALF_PI = 1.5707964f;
+
 	private MD3 head;
 	private MD3 upper;
 	private MD3 lower;
@@ -27,6 +30,7 @@ public class PlayerModel : MonoBehaviour
 	private MD3UnityConverted lowerModel;
 	private MD3UnityConverted upperModel;
 	private MD3UnityConverted headModel;
+	private MD3UnityConverted weaponModel;
 
 	private ModelAnimation nextUpper;
 	private ModelAnimation nextLower;
@@ -93,17 +97,25 @@ public class PlayerModel : MonoBehaviour
 		Turn
 	}
 
-	GameObject upperBody;
-	GameObject headBody;
-	Transform playerTransform;
-	Transform lowerTransform;
-	Transform upperTransform;
-	Transform headTransform;
+	private GameObject upperBody;
+	private GameObject headBody;
+	private GameObject muzzleFlash;
+
+	private Transform playerTransform;
+
+	private Transform lowerTransform;
+	private Transform upperTransform;
+	private Transform headTransform;
+
+	private Transform tagHeadTransform;
+	private Transform weaponTransform;
 
 	private float upperLerpTime = 0;
 	private float upperCurrentLerpTime = 0;
 	private float lowerLerpTime = 0;
 	private float lowerCurrentLerpTime = 0;
+
+	private Vector3 turnTo = Vector3.zero;
 
 	private void Update()
 	{
@@ -112,6 +124,11 @@ public class PlayerModel : MonoBehaviour
 
 		if (GameManager.Paused)
 			return;
+
+		if (turnTo.sqrMagnitude > 0)
+		{
+			playerTransform.forward = Vector3.Slerp(playerTransform.forward, turnTo, rotationFPS * Time.deltaTime);
+		}
 
 		{
 			nextUpper = upperAnim[(int)upperAnimation];
@@ -122,7 +139,22 @@ public class PlayerModel : MonoBehaviour
 				nextFrameUpper = currentFrameUpper + 1;
 				if (nextFrameUpper >= currentUpper.endFrame)
 				{
-					nextFrameUpper = currentUpper.startFrame;
+					switch (nextUpper.index)
+					{
+						default:
+							nextUpper = upperAnim[(int)upperAnimation];
+							nextFrameUpper = currentUpper.startFrame;
+						break;
+						case (int)UpperAnimation.Attack:
+						case (int)UpperAnimation.Raise:
+							upperAnimation = UpperAnimation.Stand;
+							nextUpper = upperAnim[(int)upperAnimation];
+							nextFrameUpper = currentUpper.startFrame;
+						break;
+						case (int)UpperAnimation.Drop:
+							nextFrameUpper = currentUpper.endFrame;
+						break;
+					}
 				}
 			}
 			else
@@ -144,9 +176,12 @@ public class PlayerModel : MonoBehaviour
 						case (int)LowerAnimation.JumpBack:
 							lowerAnimation = LowerAnimation.LandBack;
 						break;
+						case (int)LowerAnimation.Turn:
 						case (int)LowerAnimation.Land:
 						case (int)LowerAnimation.LandBack:
 							lowerAnimation = LowerAnimation.Idle;
+							playerTransform.forward = turnTo;
+							turnTo = Vector3.zero;
 							_enableOffset = true;
 						break;
 					}
@@ -160,10 +195,13 @@ public class PlayerModel : MonoBehaviour
 			Quaternion upperTorsoRotation = Quaternion.Slerp(upper.tagsbyName["tag_torso"][currentFrameUpper].rotation, upper.tagsbyName["tag_torso"][nextFrameUpper].rotation, upperCurrentLerpTime);
 			Quaternion upperHeadRotation = Quaternion.Slerp(upper.tagsbyName["tag_head"][currentFrameUpper].rotation, upper.tagsbyName["tag_head"][nextFrameUpper].rotation, upperCurrentLerpTime);
 			Quaternion lowerTorsoRotation = Quaternion.Slerp(lower.tagsbyName["tag_torso"][currentFrameLower].rotation, lower.tagsbyName["tag_torso"][nextFrameLower].rotation, lowerCurrentLerpTime);
+			Quaternion weaponRotation = Quaternion.Slerp(upper.tagsbyName["tag_weapon"][currentFrameUpper].rotation, upper.tagsbyName["tag_weapon"][nextFrameUpper].rotation, upperCurrentLerpTime);
+
 
 			Vector3 upperTorsoOrigin = Vector3.Lerp(upper.tagsbyName["tag_torso"][currentFrameUpper].origin, upper.tagsbyName["tag_torso"][nextFrameUpper].origin, upperCurrentLerpTime);
 			Vector3 upperHeadOrigin = Vector3.Lerp(upper.tagsbyName["tag_head"][currentFrameUpper].origin, upper.tagsbyName["tag_head"][nextFrameUpper].origin, upperCurrentLerpTime);
 			Vector3 lowerTorsoOrigin = Vector3.Lerp(lower.tagsbyName["tag_torso"][currentFrameLower].origin, lower.tagsbyName["tag_torso"][nextFrameLower].origin, lowerCurrentLerpTime);
+			Vector3 weaponOrigin = Vector3.Lerp(upper.tagsbyName["tag_weapon"][currentFrameUpper].origin, upper.tagsbyName["tag_weapon"][nextFrameUpper].origin, upperCurrentLerpTime);
 
 			{
 				Vector3 currentOffset = lowerTorsoRotation * upperTorsoOrigin;
@@ -187,7 +225,12 @@ public class PlayerModel : MonoBehaviour
 				currentOffset = baseRotation * upperHeadOrigin;
 				currentRotation = baseRotation * upperHeadRotation;
 
-				headTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
+				tagHeadTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
+
+				currentOffset = baseRotation * weaponOrigin;
+				currentRotation = baseRotation * weaponRotation;
+
+				weaponTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
 				if (_enableOffset)
 					playerTransform.localPosition = lowerTorsoOrigin;
@@ -236,6 +279,45 @@ public class PlayerModel : MonoBehaviour
 		}
 	}
 
+	public void ChangeView(Vector2 viewDirection, float deltaTime)
+	{
+		float vView = viewDirection.x;
+		float hView = viewDirection.y;
+
+		int vAngle = (int)Mathf.Round((vView) / (360) * 16) % 16;
+		int hAngle = (int)Mathf.Round((hView + 90) / (360) * 16) % 16;
+
+		headTransform.rotation = Quaternion.Slerp(headTransform.rotation, Quaternion.Euler(0, 22.5f * hAngle, 20 * vAngle), rotationFPS * deltaTime);
+
+
+		vAngle = (int)Mathf.Round((vView) / (360) * 32) % 32;
+		hAngle = (int)Mathf.Round((hView + 90) / (360) * 32) % 32;
+
+		upperTransform.rotation = Quaternion.Slerp(upperTransform.rotation, Quaternion.Euler(0, 11.25f * hAngle, 7.5f * vAngle), rotationFPS * deltaTime);
+	}
+
+	public void CheckLegTurn(Vector3 direction)
+	{
+		Vector3 forward = playerTransform.forward;
+		int angle = (int)Mathf.Round((Mathf.Atan2(direction.x, direction.z)) / (Mathf.PI * 2) * 8) % 8;
+
+		//Player Models are rotated 90º
+		angle += 2;
+		direction = Quaternion.Euler(0f, angle * 45f, 0f) * Vector3.forward;
+
+		angle = (int)Mathf.Round(((Mathf.Atan2((forward.z * direction.x) - (direction.z * forward.x), (forward.x * direction.x) + (forward.z * direction.z)))) / (Mathf.PI * 2) * 8) % 8;
+
+		if (angle != 0)
+		{
+			turnTo = direction;
+			if (_enableOffset)
+				lowerAnimation = LowerAnimation.Turn;
+		}
+	}
+	public void Attack ()
+	{
+		upperAnimation = UpperAnimation.Attack;
+	}
 	public void TurnLegs(float sideMove, float forwardMove)
 	{
 		Quaternion rotate = Quaternion.identity;
@@ -255,19 +337,115 @@ public class PlayerModel : MonoBehaviour
 			else if (sideMove < 0)
 				rotate = Quaternion.AngleAxis(30f, playerTransform.up);
 		}
-		else
+		else if (sideMove != 0)
 		{
 			lowerAnimation = LowerAnimation.Run;
 			if (sideMove > 0)
 				rotate = Quaternion.AngleAxis(50f, playerTransform.up);
 			else if (sideMove < 0)
 				rotate = Quaternion.AngleAxis(-50f, playerTransform.up);
-			else
-				lowerAnimation = LowerAnimation.Idle;
 		}
-		lowerTransform.rotation = rotate;
+		else if (lowerAnimation != LowerAnimation.Turn)
+			lowerAnimation = LowerAnimation.Idle;
+
+		lowerTransform.localRotation = rotate;
 	}
 
+	public void MuzzleFlashSetActive(bool active)
+	{
+		if (muzzleFlash == null)
+			return;
+
+		muzzleFlash.SetActive(active);
+	}
+
+	public void LoadWeapon(MD3 newWeapon, string completeModelName, string muzzleModelName)
+	{
+		if (weaponModel != null)
+			if (weaponModel.go != null)
+				Destroy(weaponModel.go);
+
+		if (!string.IsNullOrEmpty(completeModelName))
+		{
+			weapon = ModelsManager.GetModel(completeModelName);
+			if (weapon == null)
+				return;
+		}
+		else
+			weapon = newWeapon;
+
+		if (weapon.readyMeshes.Count == 0)
+			weaponModel = Mesher.GenerateModelFromMeshes(weapon);
+		else
+			weaponModel = Mesher.FillModelFromProcessedData(weapon);
+		weaponModel.go.name = "weapon";
+		weaponModel.go.transform.SetParent(weaponTransform.transform);
+		weaponModel.go.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+		if (!string.IsNullOrEmpty(completeModelName))
+		{
+			Vector3 OffSet = Vector3.zero;
+			GameObject UIWeapon = new GameObject("ui_weapon");
+			if (newWeapon.readyMeshes.Count == 0)
+				Mesher.GenerateModelFromMeshes(newWeapon, UIWeapon);
+			else
+				Mesher.FillModelFromProcessedData(newWeapon, UIWeapon);
+			UIWeapon.transform.SetParent(weaponModel.go.transform);
+			UIWeapon.layer = weaponModel.go.layer;
+			foreach (MD3Tag tag in weapon.tags)
+			{
+				if (string.Equals(tag.name, "tag_barrel"))
+				{
+					OffSet = tag.origin;
+					break;
+				}
+			}
+			UIWeapon.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
+		}
+
+		upperAnimation = UpperAnimation.Raise;
+
+		if (!string.IsNullOrEmpty(muzzleModelName))
+		{
+			Vector3 OffSet = Vector3.zero;
+			muzzleFlash = new GameObject("muzzle_flash");
+			MD3 muzzle = ModelsManager.GetModel(muzzleModelName, true);
+
+			if (muzzle == null)
+				return;
+
+			if (muzzle.readyMeshes.Count == 0)
+				Mesher.GenerateModelFromMeshes(muzzle, muzzleFlash, true);
+			else
+				Mesher.FillModelFromProcessedData(muzzle, muzzleFlash);
+			muzzleFlash.transform.SetParent(weaponModel.go.transform);
+			muzzleFlash.layer = weaponModel.go.layer;
+			foreach (MD3Tag tag in weapon.tags)
+			{
+				if (string.Equals(tag.name, "tag_flash"))
+				{
+					OffSet = tag.origin;
+					break;
+				}
+			}
+			muzzleFlash.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
+			muzzleFlash.SetActive(false);
+		}
+	}
+
+	public void UnloadWeapon()
+	{
+		if (weapon == null)
+			return;
+
+		if (weaponModel != null)
+			if (weaponModel.go != null)
+				Destroy(weaponModel.go);
+
+		weapon = null;
+		muzzleFlash = null;
+		upperAnimation = UpperAnimation.Drop;
+	}
 	public bool LoadPlayer(string modelName)
 	{
 		string playerModelPath = "players/" + modelName;
@@ -315,11 +493,15 @@ public class PlayerModel : MonoBehaviour
 			upperBody.transform.SetParent(playerModel.transform);
 
 			GameObject tag_head = new GameObject("tag_head");
-			headTransform = tag_head.transform;
-			headTransform.SetParent(upperBody.transform);
+			tagHeadTransform = tag_head.transform;
+			tagHeadTransform.SetParent(upperBody.transform);
 
-			headBody = new GameObject();
-			headBody.name = "Head";
+			GameObject tag_weapon = new GameObject("tag_weapon");
+			weaponTransform = tag_weapon.transform;
+			weaponTransform.SetParent(upperBody.transform);
+
+			headBody = new GameObject("Head");
+			headTransform = headBody.transform;
 			headBody.transform.SetParent(tag_head.transform);
 
 			if (upper.readyMeshes.Count == 0)

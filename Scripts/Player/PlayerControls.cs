@@ -102,6 +102,9 @@ public class PlayerControls : MonoBehaviour
 
 		transform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 
+		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
+		playerThing.avatar.CheckLegTurn(playerCamera.MainCamera.transform.forward);
+
 		//Movement Checks
 		QueueJump();
 		if (controller.isGrounded)
@@ -132,7 +135,8 @@ public class PlayerControls : MonoBehaviour
 		{
 			//use weapon
 			if (Input.GetMouseButton(0))
-				playerWeapon.Fire();
+				if (playerWeapon.Fire())
+					playerThing.avatar.Attack();
 		}
 
 		//swap weapon

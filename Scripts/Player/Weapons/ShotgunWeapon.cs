@@ -56,7 +56,10 @@ public class ShotgunWeapon : PlayerWeapon
 				muzzleLight.enabled = true;
 				if (muzzleObject != null)
 					if (!muzzleObject.activeSelf)
+					{
 						muzzleObject.SetActive(true);
+						playerInfo.playerThing.avatar.MuzzleFlashSetActive(true);
+					}
 			}
 
 		//maximum fire rate 20/s, unless you use negative number (please don't)

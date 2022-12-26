@@ -56,7 +56,10 @@ public class RocketLauncherWeapon : PlayerWeapon
 				muzzleLight.enabled = true;
 				if (muzzleObject != null)
 					if (!muzzleObject.activeSelf)
+					{
 						muzzleObject.SetActive(true);
+						playerInfo.playerThing.avatar.MuzzleFlashSetActive(true);
+					}
 			}
 
 		//maximum fire rate 20/s, unless you use negative number (please don't)
@@ -79,7 +82,7 @@ public class RocketLauncherWeapon : PlayerWeapon
 
 			PoolObject<Projectile> projectile = PoolManager.GetProjectileFromPool(AttackProjectileName);
 			Projectile rocket = (Projectile)projectile.data;
-			rocket.owner = playerInfo.gameObject;
+			rocket.owner = playerInfo.player;
 			if (muzzleObject != null)
 				rocket.transform.position = muzzleObject.transform.position;
 			else

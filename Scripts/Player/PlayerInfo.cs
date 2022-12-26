@@ -8,6 +8,11 @@ public class PlayerInfo : MonoBehaviour
 	public PlayerControls playerControls;
 	[HideInInspector]
 	public PlayerCamera playerCamera;
+	[HideInInspector]
+	public PlayerThing playerThing;
+	[HideInInspector]
+	public GameObject player;
+
 	public Transform WeaponHand;
 
 	const int checkUpdateRate = 4;
@@ -27,7 +32,9 @@ public class PlayerInfo : MonoBehaviour
 	void Awake()
 	{
 		playerControls = GetComponent<PlayerControls>();
+		playerThing = GetComponent<PlayerThing>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
+		player = playerControls.controller.gameObject;
 	}
 
 	void Update()

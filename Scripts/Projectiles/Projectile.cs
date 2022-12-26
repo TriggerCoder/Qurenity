@@ -115,6 +115,7 @@ public class Projectile : MonoBehaviour
 				if (hit.collider.gameObject == owner)
 					continue;
 
+				Debug.Log(hit.collider.name);
 				if (hit.distance < nearest)
 				{
 					nearest = hit.distance;
