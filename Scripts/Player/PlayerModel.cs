@@ -8,7 +8,6 @@ using UnityEngine;
 public class PlayerModel : MonoBehaviour
 {
 	public int rotationFPS = 15;
-	private const float HALF_PI = 1.5707964f;
 
 	private MD3 head;
 	private MD3 upper;
@@ -99,6 +98,7 @@ public class PlayerModel : MonoBehaviour
 
 	private GameObject upperBody;
 	private GameObject headBody;
+	private GameObject barrel;
 	private GameObject muzzleFlash;
 
 	private Transform playerTransform;
@@ -179,9 +179,12 @@ public class PlayerModel : MonoBehaviour
 						case (int)LowerAnimation.Turn:
 						case (int)LowerAnimation.Land:
 						case (int)LowerAnimation.LandBack:
+							if (turnTo.sqrMagnitude > 0)
+							{
+								playerTransform.forward = turnTo;
+								turnTo = Vector3.zero;
+							}
 							lowerAnimation = LowerAnimation.Idle;
-							playerTransform.forward = turnTo;
-							turnTo = Vector3.zero;
 							_enableOffset = true;
 						break;
 					}
@@ -283,16 +286,17 @@ public class PlayerModel : MonoBehaviour
 	{
 		float vView = viewDirection.x;
 		float hView = viewDirection.y;
-
+/*
 		int vAngle = (int)Mathf.Round((vView) / (360) * 16) % 16;
 		int hAngle = (int)Mathf.Round((hView + 90) / (360) * 16) % 16;
-
 		headTransform.rotation = Quaternion.Slerp(headTransform.rotation, Quaternion.Euler(0, 22.5f * hAngle, 20 * vAngle), rotationFPS * deltaTime);
+*/
+		headTransform.rotation = Quaternion.Slerp(headTransform.rotation, Quaternion.Euler(0, hView + 90, vView), rotationFPS * deltaTime);
 
+		int vAngle = (int)Mathf.Round((vView) / (360) * 32) % 32;
+		int hAngle = (int)Mathf.Round((hView + 90) / (360) * 32) % 32;
 
-		vAngle = (int)Mathf.Round((vView) / (360) * 32) % 32;
-		hAngle = (int)Mathf.Round((hView + 90) / (360) * 32) % 32;
-
+//		upperTransform.rotation = Quaternion.Slerp(upperTransform.rotation, Quaternion.Euler(0, hView, .7f * vView), rotationFPS * deltaTime);
 		upperTransform.rotation = Quaternion.Slerp(upperTransform.rotation, Quaternion.Euler(0, 11.25f * hAngle, 7.5f * vAngle), rotationFPS * deltaTime);
 	}
 
@@ -359,6 +363,14 @@ public class PlayerModel : MonoBehaviour
 		muzzleFlash.SetActive(active);
 	}
 
+	public void RotateBarrel(Quaternion rotation, float speed)
+	{
+		if (barrel == null)
+			return;
+
+		barrel.transform.localRotation = Quaternion.Slerp(barrel.transform.localRotation, rotation, speed);
+	}
+
 	public void LoadWeapon(MD3 newWeapon, string completeModelName, string muzzleModelName)
 	{
 		if (weaponModel != null)
@@ -385,13 +397,13 @@ public class PlayerModel : MonoBehaviour
 		if (!string.IsNullOrEmpty(completeModelName))
 		{
 			Vector3 OffSet = Vector3.zero;
-			GameObject UIWeapon = new GameObject("ui_weapon");
+			barrel = new GameObject("barrel_weapon");
 			if (newWeapon.readyMeshes.Count == 0)
-				Mesher.GenerateModelFromMeshes(newWeapon, UIWeapon);
+				Mesher.GenerateModelFromMeshes(newWeapon, barrel);
 			else
-				Mesher.FillModelFromProcessedData(newWeapon, UIWeapon);
-			UIWeapon.transform.SetParent(weaponModel.go.transform);
-			UIWeapon.layer = weaponModel.go.layer;
+				Mesher.FillModelFromProcessedData(newWeapon, barrel);
+			barrel.transform.SetParent(weaponModel.go.transform);
+			barrel.layer = weaponModel.go.layer;
 			foreach (MD3Tag tag in weapon.tags)
 			{
 				if (string.Equals(tag.name, "tag_barrel"))
@@ -400,7 +412,7 @@ public class PlayerModel : MonoBehaviour
 					break;
 				}
 			}
-			UIWeapon.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
+			barrel.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
 		}
 
 		upperAnimation = UpperAnimation.Raise;
@@ -408,6 +420,7 @@ public class PlayerModel : MonoBehaviour
 		if (!string.IsNullOrEmpty(muzzleModelName))
 		{
 			Vector3 OffSet = Vector3.zero;
+			List<MD3Tag> weaponTags;
 			muzzleFlash = new GameObject("muzzle_flash");
 			MD3 muzzle = ModelsManager.GetModel(muzzleModelName, true);
 
@@ -418,9 +431,20 @@ public class PlayerModel : MonoBehaviour
 				Mesher.GenerateModelFromMeshes(muzzle, muzzleFlash, true);
 			else
 				Mesher.FillModelFromProcessedData(muzzle, muzzleFlash);
-			muzzleFlash.transform.SetParent(weaponModel.go.transform);
 			muzzleFlash.layer = weaponModel.go.layer;
-			foreach (MD3Tag tag in weapon.tags)
+
+			//Such Vanity
+			if (barrel == null)
+			{
+				muzzleFlash.transform.SetParent(weaponModel.go.transform);
+				weaponTags = weapon.tags;
+			}
+			else
+			{
+				muzzleFlash.transform.SetParent(barrel.transform);
+				weaponTags = newWeapon.tags;
+			}
+			foreach (MD3Tag tag in weaponTags)
 			{
 				if (string.Equals(tag.name, "tag_flash"))
 				{
@@ -443,10 +467,11 @@ public class PlayerModel : MonoBehaviour
 				Destroy(weaponModel.go);
 
 		weapon = null;
+		barrel = null;
 		muzzleFlash = null;
 		upperAnimation = UpperAnimation.Drop;
 	}
-	public bool LoadPlayer(string modelName)
+	public bool LoadPlayer(string modelName, string SkinName = "default")
 	{
 		string playerModelPath = "players/" + modelName;
 
@@ -455,9 +480,9 @@ public class PlayerModel : MonoBehaviour
 		string headModelName = playerModelPath + "/head";
 		string animationFile = playerModelPath + "/animation";
 
-		string lowerSkin = playerModelPath + "/lower_default";
-		string upperSkin = playerModelPath + "/upper_default";
-		string headSkin = playerModelPath + "/head_default";
+		string lowerSkin = playerModelPath + "/lower_" + SkinName;
+		string upperSkin = playerModelPath + "/upper_" + SkinName;
+		string headSkin = playerModelPath + "/head_" + SkinName;
 
 		lower = ModelsManager.GetModel(lowerModelName);
 		if (lower == null)

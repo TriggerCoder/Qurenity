@@ -20,12 +20,8 @@ public class PlayerControls : MonoBehaviour
 
 	public Vector3 impulseVector = Vector3.zero;
 	public float impulseDampening = 4f;
-
+	[HideInInspector]
 	public CharacterController controller;
-
-	public float gravity = 20.0f;
-
-	public float friction = 6; //Ground friction
 
 	// Movement stuff
 	public float moveSpeed = 7.0f;                // Ground move speed
@@ -57,11 +53,11 @@ public class PlayerControls : MonoBehaviour
 	public int SwapWeapon = -1;
 	void Awake()
 	{
-//		controller = GetComponent<CharacterController>();
-		audioSource = GetComponent<MultiAudioSource>();
+		controller = GetComponentInParent<CharacterController>();
+		audioSource = GetComponentInParent<MultiAudioSource>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
-		playerInfo = GetComponentInChildren<PlayerInfo>();
-		playerThing = GetComponentInChildren<PlayerThing>();
+		playerInfo = GetComponent<PlayerInfo>();
+		playerThing = GetComponentInParent<PlayerThing>();
 		playerWeapon = null;
 	}
 
@@ -114,7 +110,7 @@ public class PlayerControls : MonoBehaviour
 
 		//apply move
 		lastPosition = transform.position;
-		controller.Move(playerVelocity * Time.deltaTime);
+		controller.Move((playerVelocity + impulseVector) * Time.deltaTime);
 
 		//Calculate top velocity
 		Vector3 udp = playerVelocity;
@@ -123,7 +119,7 @@ public class PlayerControls : MonoBehaviour
 			playerTopVelocity = udp.magnitude;
 
 		//dampen impulse
-		if (impulseVector.sqrMagnitude > 0) // if (impulseVector != Vector3.zero)
+		if (impulseVector.sqrMagnitude > 0)
 		{
 			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
 			if ((impulseVector).sqrMagnitude < 1f)
@@ -136,7 +132,10 @@ public class PlayerControls : MonoBehaviour
 			//use weapon
 			if (Input.GetMouseButton(0))
 				if (playerWeapon.Fire())
+				{
+					playerInfo.playerHUD.HUDUpdateAmmoNum();
 					playerThing.avatar.Attack();
+				}
 		}
 
 		//swap weapon
@@ -272,7 +271,7 @@ public class PlayerControls : MonoBehaviour
 		Accelerate(wishdir, wishspeed, runAcceleration);
 
 		// Reset the gravity velocity
-		playerVelocity.y = -gravity * Time.deltaTime;
+		playerVelocity.y = -GameManager.Instance.gravity * Time.deltaTime;
 
 		if (wishJump)
 		{
@@ -283,6 +282,7 @@ public class PlayerControls : MonoBehaviour
 				else if (cMove.forwardSpeed < 0)
 					playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
 				playerThing.avatar.enableOffset = false;
+				playerThing.PlayModelSound("jump1");
 			}
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
@@ -305,7 +305,7 @@ public class PlayerControls : MonoBehaviour
 		if (controller.isGrounded)
 		{
 			control = speed < runDeacceleration ? runDeacceleration : speed;
-			drop = control * friction * Time.deltaTime * t;
+			drop = control * GameManager.Instance.friction * Time.deltaTime * t;
 		}
 
 		newspeed = speed - drop;
@@ -372,7 +372,7 @@ public class PlayerControls : MonoBehaviour
 
 		// Apply gravity
 
-		playerVelocity.y -= gravity * Time.deltaTime;
+		playerVelocity.y -= GameManager.Instance.gravity * Time.deltaTime;
 	}
 
 	private void AirControl(Vector3 wishdir, float wishspeed)

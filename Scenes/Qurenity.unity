@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3dm7
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -189,6 +189,14 @@ MonoBehaviour:
   BulletCase: {fileID: 3778548176006231648, guid: 6b4a985403b517a4c88e5e78ead9a4c3, type: 3}
   ShogunShell: {fileID: 6489570926119005409, guid: fb492697b24919949b25743dbd807e92, type: 3}
   paused: 1
+  gravity: 20
+  friction: 6
+  terminalVelocity: 100
+  barrierVelocity: 1024
+  PlayerDamageReceive: 1
+  PlayerAmmoReceive: 1
+  ready: 0
+  skipFrames: 5
 --- !u!114 &300009279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -478,6 +486,16 @@ MonoBehaviour:
     opaqueTextureName: models/weapons2/railgun/railgun4
     material: {fileID: 2100000, guid: f1bc8d258044ec84e89aed2e50b17fb5, type: 2}
     animation: []
+  - overrideName: models/powerups/health/green_sphere
+    opaque: 0
+    opaqueTextureName: textures/effects/tinfx2b
+    material: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
+    animation: []
+  - overrideName: models/powerups/health/green
+    opaque: 0
+    opaqueTextureName: textures/effects/envmaprail
+    material: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
+    animation: []
   applyLightmaps: 1
   lightMapProperty: _LightMap
   opaqueTexProperty: _MainTex
@@ -630,81 +648,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &743958848
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 743958849}
-  - component: {fileID: 743958850}
-  m_Layer: 0
-  m_Name: Camera
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &743958849
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743958848}
-  m_LocalRotation: {x: -0.18301274, y: 0.6830127, z: -0.18301274, w: -0.6830127}
-  m_LocalPosition: {x: 1.8, y: 1.7, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1694659631}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 30, y: 270, z: 0}
---- !u!20 &743958850
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743958848}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 2147483607
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 1
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
 --- !u!850595691 &1245000655
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -798,11 +741,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1694659631 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-  m_PrefabInstance: {fileID: 2071567870}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2028868020
 GameObject:
   m_ObjectHideFlags: 0
@@ -841,6 +779,46 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1902460034, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: FontMat
+      value: 
+      objectReference: {fileID: 2100000, guid: cc288c801454ef9449e9914099f3c2b9, type: 2}
+    - target: {fileID: 1902460034, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: GuiFont
+      value: 
+      objectReference: {fileID: 12800000, guid: 0eb590edc5a27d5428ecbc1263940d46, type: 3}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildAlignment
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildScaleWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildScaleHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildControlWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildControlHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ReverseArrangement
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildForceExpandWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_ChildForceExpandHeight
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player

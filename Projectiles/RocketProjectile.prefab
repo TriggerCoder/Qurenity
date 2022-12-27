@@ -155,7 +155,7 @@ MonoBehaviour:
   projectileRadius: 0.2
   explosionRadius: 4
   damageType: 1
-  pushForce: 500
+  pushForce: 1900
   OnDeathSpawn: {fileID: 8145336117116166367, guid: 6740b7b83e5e801418128152be7f2043, type: 3}
   decalMark: BurnMark
   SecondaryOnDeathSpawn: {fileID: 0}

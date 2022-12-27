@@ -1,5 +1,152 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &743958848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 743958849}
+  - component: {fileID: 743958850}
+  m_Layer: 0
+  m_Name: Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &743958849
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743958848}
+  m_LocalRotation: {x: -0.18301274, y: 0.6830127, z: -0.18301274, w: -0.6830127}
+  m_LocalPosition: {x: 1.8, y: 1.7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4911946283159206}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 30, y: 270, z: 0}
+--- !u!20 &743958850
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743958848}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_FocalLength: 50
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 2147483607
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 1
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!1 &1945245718
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1945245719}
+  - component: {fileID: 1945245721}
+  - component: {fileID: 1945245720}
+  m_Layer: 5
+  m_Name: Status Bar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1945245719
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945245718}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 224408266418856560}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 75}
+  m_SizeDelta: {x: 0, y: 150}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1945245721
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945245718}
+  m_CullTransparentMesh: 1
+--- !u!114 &1945245720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945245718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 6
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 1
+  m_ChildScaleHeight: 1
+  m_ReverseArrangement: 0
 --- !u!1 &1340752516026800
 GameObject:
   m_ObjectHideFlags: 0
@@ -11,6 +158,7 @@ GameObject:
   - component: {fileID: 4911946283159206}
   - component: {fileID: 143113606728799366}
   - component: {fileID: 6906618912183216077}
+  - component: {fileID: 4338069678295091742}
   m_Layer: 10
   m_Name: Player
   m_TagString: Player
@@ -31,6 +179,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4853754259503296}
+  - {fileID: 743958849}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -80,6 +229,31 @@ MonoBehaviour:
   _minDistance: 1
   _maxDistance: 500
   OnlyPlayForClosestCamera: 1
+--- !u!114 &4338069678295091742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082d987867242374dadd2a490fc48a16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInfo: {fileID: 0}
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
+  modelName: sarge
+  player: {fileID: 0}
+  avatar: {fileID: 0}
+  hitpoints: 200
+  armor: 200
+  painTime: 0
+  lookTime: 0.5
+  finished: 0
+  radsuit: 0
+  invul: 0
 --- !u!1 &1351247977468658
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,6 +266,8 @@ GameObject:
   - component: {fileID: 223332192906287930}
   - component: {fileID: 114787870109079574}
   - component: {fileID: 114116896773800740}
+  - component: {fileID: 1902460035}
+  - component: {fileID: 1902460034}
   m_Layer: 5
   m_Name: UICanvas
   m_TagString: Untagged
@@ -110,7 +286,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1945245719}
   m_Father: {fileID: 4530601570485014}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -180,6 +357,38 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!222 &1902460035
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351247977468658}
+  m_CullTransparentMesh: 1
+--- !u!114 &1902460034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351247977468658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d0da93b4738d7847ae670c299b1308b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1340752516026800}
+  statusBar: {fileID: 1945245718}
+  displayText: {fileID: 0}
+  playerInfo: {fileID: 0}
+  playerThing: {fileID: 0}
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
+  pickupTexture: {fileID: 2800000, guid: 5e3a691264d240945ae8a6fdc965dac4, type: 3}
+  painTexture: {fileID: 2800000, guid: 39a425f272a7b2c4fab06634c08c7f7c, type: 3}
+  GuiFont: {fileID: 12800000, guid: dd2ac53fc1310a548a5c58b7876738c6, type: 3}
+  pickupFlashTime: 0
+  painFlashTime: 0
 --- !u!1 &1626833134530822
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,7 +575,6 @@ GameObject:
   - component: {fileID: 4853754259503296}
   - component: {fileID: 111704870}
   - component: {fileID: 111704871}
-  - component: {fileID: 111704872}
   m_Layer: 10
   m_Name: Controls
   m_TagString: Untagged
@@ -412,9 +620,7 @@ MonoBehaviour:
   lastPosition: {x: 0, y: 0, z: 0}
   impulseVector: {x: 0, y: 0, z: 0}
   impulseDampening: 4
-  controller: {fileID: 143113606728799366}
-  gravity: 20
-  friction: 6
+  controller: {fileID: 0}
   moveSpeed: 7
   runAcceleration: 14
   runDeacceleration: 10
@@ -443,6 +649,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
+  playerThing: {fileID: 0}
+  playerHUD: {fileID: 0}
+  player: {fileID: 0}
+  UICanvas: {fileID: 223332192906287930}
   WeaponHand: {fileID: 120263213280996051}
   Ammo: 10270000e8030000000000008813000000000000e80300001027000000000000
   Weapon: 000101000100010100
@@ -462,20 +672,6 @@ MonoBehaviour:
   - {fileID: 5580961529819052829, guid: 037ad689525996346859d98c951f3010, type: 3}
   - {fileID: 6181765487028298, guid: d2d6f1cf97ab2c1438e88a0a50083d4b, type: 3}
   - {fileID: 0}
---- !u!114 &111704872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1746486306332202}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 082d987867242374dadd2a490fc48a16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  avatar: {fileID: 0}
 --- !u!1 &1835987207524526
 GameObject:
   m_ObjectHideFlags: 0

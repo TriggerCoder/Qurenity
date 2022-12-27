@@ -47,10 +47,21 @@ public class ModelAnimation : MonoBehaviour
 			enabled = false;
 			return;
 		}
-		if (md3Model.readyMeshes.Count == 0)
-			unityModel = Mesher.GenerateModelFromMeshes(md3Model, gameObject, isTransparent);
+		GameObject currentObject;
+		//If There are other ModelAnimation, add this as a child
+		if (GetComponent<MeshRenderer>() != null)
+		{
+			currentObject = new GameObject(modelName);
+			currentObject.transform.SetParent(transform);
+			currentObject.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+		}
 		else
-			unityModel = Mesher.FillModelFromProcessedData(md3Model, gameObject);
+			currentObject = gameObject;
+
+		if (md3Model.readyMeshes.Count == 0)
+			unityModel = Mesher.GenerateModelFromMeshes(md3Model, currentObject, isTransparent);
+		else
+			unityModel = Mesher.FillModelFromProcessedData(md3Model, currentObject);
 
 		for (int i = 0; i < md3Model.meshes.Count; i++)
 		{

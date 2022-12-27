@@ -60,6 +60,17 @@ public class GameManager : MonoBehaviour
 
 	public bool paused = true;
 	public static bool Paused { get { return Instance.paused; } }
+
+	public float gravity = 20f;
+	public float friction = 6;
+	public float terminalVelocity = 100f;
+	public float barrierVelocity = 1024f;
+
+	public float PlayerDamageReceive = 1f;
+	public int PlayerAmmoReceive = 1;
+
+	public bool ready = false;
+	public int skipFrames = 5;
 	void Awake()
 	{
 		Instance = this;
@@ -118,13 +129,13 @@ public class GameManager : MonoBehaviour
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
+		
+		ready = true;
 
 		MusicPlayer.Instance.Play(autoloadMap);
-		paused = false;
 	}
 	void OnApplicationFocus(bool hasFocus)
 	{
-
 		if (hasFocus)
 		{
 			Cursor.lockState = CursorLockMode.Locked;
@@ -136,6 +147,18 @@ public class GameManager : MonoBehaviour
 	}
 	void Update()
     {
-        
-    }
+		//skip frames are used to easen up Time.deltaTime after loading
+		if (ready)
+		{
+			if (skipFrames > 0)
+			{
+				skipFrames--;
+
+				if (skipFrames == 0)
+				{
+					paused = false;
+				}
+			}
+		}
+	}
 }

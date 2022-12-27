@@ -147,6 +147,7 @@ public class PlayerWeapon : MonoBehaviour
 		oldMousePosition.x = Input.GetAxis("Mouse X");
 		oldMousePosition.y = Input.GetAxis("Mouse Y");
 
+		playerInfo.playerHUD.HUDUpdateAmmoNum();
 		OnInit();
 	}
 	void Update()
@@ -247,6 +248,8 @@ public class PlayerWeapon : MonoBehaviour
 		Quaternion rotY = Quaternion.AngleAxis(mouse.x, Vector3.up);
 
 		Quaternion rotZ = GetRotate();
+
+		playerInfo.playerThing.avatar.RotateBarrel(rotZ, rotateSpeed * Time.deltaTime);
 
 		Quaternion targetRot = rotX * rotY * rotZ;
 
