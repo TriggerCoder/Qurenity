@@ -51,6 +51,8 @@ public class SoundLoader : MonoBehaviour
 		string[] soundFileName = path.Split('/');
 		AudioClip clip = ToAudioClip(WavSoudFile, 0, soundFileName[soundFileName.Length - 1]);
 
+		if (clip == null)
+			return null;
 
 		Sounds.Add(soundName, clip);
 		if (FindHDSound(soundName))
@@ -72,7 +74,11 @@ public class SoundLoader : MonoBehaviour
 		ushort audioFormat = BitConverter.ToUInt16(fileBytes, 20);
 
 		string formatCode = FormatCode(audioFormat);
-		Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
+		if ((audioFormat != 1) && (audioFormat != 65534))
+		{
+			Debug.LogWarning("Detected format code '" + audioFormat + "' " + formatCode + ", but only PCM and WaveFormatExtensable uncompressed formats are currently supported.");
+			return null;
+		}
 
 		ushort channels = BitConverter.ToUInt16(fileBytes, 22);
 		int sampleRate = BitConverter.ToInt32(fileBytes, 24);
@@ -97,8 +103,12 @@ public class SoundLoader : MonoBehaviour
 				data = Convert32BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2);
 				break;
 			default:
-				throw new Exception(bitDepth + " bit depth is not supported.");
+				Debug.LogWarning(bitDepth + " bit depth is not supported.");
+				return null;
 		}
+
+		if (data == null)
+			return null;
 
 		AudioClip audioClip = AudioClip.Create(name, data.Length, channels, sampleRate, false);
 		audioClip.SetData(data, 0);
@@ -109,16 +119,21 @@ public class SoundLoader : MonoBehaviour
 	{
 		int wavSize = BitConverter.ToInt32(source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+
+		if ((wavSize <= 0) || (wavSize != dataSize))
+		{
+			Debug.LogWarning("Failed to get valid 8-bit wav size: " + wavSize + " from data bytes: " + dataSize + " at offset: " + headerOffset);
+			return null;
+		}
 
 		float[] data = new float[wavSize];
-
 		sbyte maxValue = sbyte.MaxValue;
+		sbyte minValue = sbyte.MinValue;
 
 		int i = 0;
 		while (i < wavSize)
 		{
-			data[i] = (float)source[i] / maxValue;
+			data[i] = (source[i + headerOffset] + minValue) / (float)maxValue;
 			++i;
 		}
 
@@ -129,7 +144,12 @@ public class SoundLoader : MonoBehaviour
 	{
 		int wavSize = BitConverter.ToInt32(source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+
+		if ((wavSize <= 0) || (wavSize != dataSize))
+		{
+			Debug.LogWarning("Failed to get valid 16-bit wav size: " + wavSize + " from data bytes: " + dataSize + " at offset: " + headerOffset);
+			return null;
+		}
 
 		int x = sizeof(ushort); // block size = 2
 		int convertedSize = wavSize / x;
@@ -147,16 +167,19 @@ public class SoundLoader : MonoBehaviour
 			++i;
 		}
 
-		Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
-
 		return data;
 	}
 	private static float[] Convert24BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
 	{
 		int wavSize = BitConverter.ToInt32(source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
 
+		if ((wavSize <= 0) || (wavSize != dataSize))
+		{
+			Debug.LogWarning("Failed to get valid 24-bit wav size: " + wavSize + " from data bytes: " + dataSize + " at offset: " + headerOffset);
+			return null;
+		}
+		
 		int x = 3; // block size = 3
 		int convertedSize = wavSize / x;
 
@@ -176,15 +199,18 @@ public class SoundLoader : MonoBehaviour
 			++i;
 		}
 
-		Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
-
 		return data;
 	}
 	private static float[] Convert32BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
 	{
 		int wavSize = BitConverter.ToInt32(source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+
+		if ((wavSize <= 0) || (wavSize != dataSize))
+		{
+			Debug.LogWarning("Failed to get valid 32-bit wav size: " + wavSize + " from data bytes: " + dataSize + " at offset: " + headerOffset);
+			return null;
+		}
 
 		int x = sizeof(float); //  block size = 4
 		int convertedSize = wavSize / x;
@@ -201,8 +227,6 @@ public class SoundLoader : MonoBehaviour
 			data[i] = (float)BitConverter.ToInt32(source, offset) / maxValue;
 			++i;
 		}
-
-		Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
 
 		return data;
 	}

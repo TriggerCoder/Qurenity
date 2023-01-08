@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
 	public bool paused = true;
 	public static bool Paused { get { return Instance.paused; } }
 
-	public float gravity = 20f;
+	public float gravity = 25f;
 	public float friction = 6;
 	public float terminalVelocity = 100f;
 	public float barrierVelocity = 1024f;
@@ -133,11 +133,10 @@ public class GameManager : MonoBehaviour
 			ClusterPVSManager.Instance.ResetClusterList();
 			MapLoader.GenerateMapCollider();
 			MapLoader.GenerateSurfaces();
-//			MapLoader.GenerateGeometricCollider();
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
-		ThingsManager.AddEntitiesToMap();
+		ThingsManager.AddThingsToMap();
 		ready = true;
 
 		MusicPlayer.Instance.Play(autoloadMap);

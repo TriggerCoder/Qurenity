@@ -72,14 +72,11 @@ public class PlayerInfo : MonoBehaviour
 			return;
 
 		if ((currentFrame & checkUpdateRate) == 0)
-			CheckPVS(currentFrame);
+			CheckPVS(currentFrame,transform.position);
 	}
 
-	private int FindCurrentLeaf()
+	private int FindCurrentLeaf(Vector3 currentPos)
 	{
-		// Cache the current position of player.
-		Vector3 currentPos = transform.position;
-
 		// Search trought the BSP tree until the index is negative, and indicate it's a leaf.
 		int i = 0;
 		while (i >= 0)
@@ -126,10 +123,10 @@ public class PlayerInfo : MonoBehaviour
 		// Return whether or not the cluster is visible
 		return visible;
 	}
-	private void CheckPVS(int currentFrame)
+	public void CheckPVS(int currentFrame, Vector3 currentPos)
 	{
 		// Find the index of the current leaf
-		int leafIndex = FindCurrentLeaf();
+		int leafIndex = FindCurrentLeaf(currentPos);
 
 		// Get the cluster the current leaf belongs to
 		int cluster = MapLoader.leafs[leafIndex].cluster;

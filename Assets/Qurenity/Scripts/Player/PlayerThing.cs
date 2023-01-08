@@ -180,9 +180,6 @@ public class PlayerThing : MonoBehaviour, Damageable
 			playerCamera.ChangeThirdPersonCamera(true);
 			PlayModelSound("death" + Random.Range(0, 4));
 			avatar.Die();
-
-//			audioSource.AudioClip = SoundLoader.Instance.LoadSound(Random.value > .5f ? "DSPLDETH" : "DSPDIEHI");
-//			audioSource.Play();
 			ready = false;
 		}
 		else if (painTime <= 0f)
@@ -200,10 +197,20 @@ public class PlayerThing : MonoBehaviour, Damageable
 		}
 	}
 
+	public void RemovePowerUps()
+	{
+		Debug.Log("Removing PowerUPS");
+	}
+
 	public void PlayModelSound(string soundName)
 	{
 		soundName = "player/" + modelName + "/" + soundName;
-		audioSource.AudioClip = SoundLoader.LoadSound(soundName);
+		AudioClip audioClip = SoundLoader.LoadSound(soundName);
+
+		if (audioClip == null)
+			return;
+
+		audioSource.AudioClip = audioClip;
 		audioSource.Play();
 	}
 	public void Impulse(Vector3 direction, float force)
@@ -212,9 +219,35 @@ public class PlayerThing : MonoBehaviour, Damageable
 		playerControls.impulseVector += direction * length;
 
 		//Check if going too fast
-		if (playerControls.impulseVector.sqrMagnitude > GameManager.Instance.barrierVelocity)
-			playerControls.impulseVector = playerControls.impulseVector.normalized * 32;
+//		if (playerControls.impulseVector.sqrMagnitude > GameManager.Instance.barrierVelocity)
+//			playerControls.impulseVector = playerControls.impulseVector.normalized * 32;
 	}
+
+	public void JumpPadDest(Vector3 destination)
+	{
+		Vector3 position = transform.position;
+		Vector3 horizontalVelocity = destination - position;
+		float height = destination.y - position.y;
+
+		if (height <= 0)
+		{
+			playerControls.jumpPadVel = Vector3.zero;
+			return;
+		}
+
+		float time = Mathf.Sqrt((2 * height) / GameManager.Instance.gravity);
+		float verticalVelocity = time * GameManager.Instance.gravity;
+
+		horizontalVelocity.y = 0;
+		float forward = horizontalVelocity.magnitude / time;
+		horizontalVelocity = horizontalVelocity.normalized * forward;
+		playerControls.jumpPadVel = horizontalVelocity;
+		playerControls.jumpPadVel.y = verticalVelocity;
+		playerControls.playerVelocity = Vector3.zero;
+		playerControls.AnimateLegsOnJump();
+	}
+
+
 
 	public int CalcPain(int hitpoint)
 	{

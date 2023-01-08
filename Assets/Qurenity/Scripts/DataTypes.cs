@@ -3,20 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
-public struct EntityLump
-{
-	public EntityLump(string lump)
-	{
-		EntityString = lump;
-	}
-
-	public string EntityString { get; }
-
-	public override string ToString()
-	{
-		return EntityString;
-	}
-}
 public class BSPHeader
 {
 	private const int LumpCount = 17;

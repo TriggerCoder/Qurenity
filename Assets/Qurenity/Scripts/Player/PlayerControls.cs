@@ -19,6 +19,9 @@ public class PlayerControls : MonoBehaviour
 	public Vector3 lastPosition = new Vector3(0, 0, 0);
 
 	public Vector3 impulseVector = Vector3.zero;
+
+	public Vector3 jumpPadVel = Vector3.zero;
+
 	public float impulseDampening = 4f;
 	[HideInInspector]
 	public CharacterController controller;
@@ -143,7 +146,7 @@ public class PlayerControls : MonoBehaviour
 
 		//apply move
 		lastPosition = transform.position;
-		controller.Move((playerVelocity + impulseVector) * Time.deltaTime);
+		controller.Move((playerVelocity + impulseVector + jumpPadVel) * Time.deltaTime);
 
 		//Calculate top velocity
 		Vector3 udp = playerVelocity;
@@ -155,8 +158,16 @@ public class PlayerControls : MonoBehaviour
 		if (impulseVector.sqrMagnitude > 0)
 		{
 			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
-			if ((impulseVector).sqrMagnitude < 1f)
+			if (impulseVector.sqrMagnitude < 1f)
 				impulseVector = Vector3.zero;
+		}
+
+		//dampen jump pad impulse
+		if (jumpPadVel.sqrMagnitude > 0)
+		{
+			jumpPadVel.y -= (GameManager.Instance.gravity * Time.deltaTime);
+			if (controller.isGrounded)
+				jumpPadVel = Vector3.zero;
 		}
 
 
@@ -246,6 +257,15 @@ public class PlayerControls : MonoBehaviour
 
 	}
 
+	public void AnimateLegsOnJump()
+	{
+		if (cMove.forwardSpeed >= 0)
+			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.Jump;
+		else if (cMove.forwardSpeed < 0)
+			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
+		playerThing.avatar.enableOffset = false;
+		playerThing.PlayModelSound("jump1");
+	}
 	private void SetMovementDir()
 	{
 		cMove.forwardSpeed = 0f;
@@ -309,14 +329,7 @@ public class PlayerControls : MonoBehaviour
 		if (wishJump)
 		{
 //			if (playerThing.avatar.enableOffset)
-			{
-				if (cMove.forwardSpeed >= 0)
-					playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.Jump;
-				else if (cMove.forwardSpeed < 0)
-					playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
-				playerThing.avatar.enableOffset = false;
-				playerThing.PlayModelSound("jump1");
-			}
+				AnimateLegsOnJump();
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
 		}
@@ -324,7 +337,7 @@ public class PlayerControls : MonoBehaviour
 
 	private void ApplyFriction(float t)
 	{
-		Vector3 vec = playerVelocity; // Equivalent to: VectorCopy();
+		Vector3 vec = playerVelocity;
 		float speed;
 		float newspeed;
 		float control;
@@ -376,6 +389,8 @@ public class PlayerControls : MonoBehaviour
 
 		SetMovementDir();
 
+		playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
+
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
 		wishdir = transform.TransformDirection(wishdir);
 
@@ -404,8 +419,10 @@ public class PlayerControls : MonoBehaviour
 			AirControl(wishdir, wishspeed2);
 
 		// Apply gravity
-
-		playerVelocity.y -= GameManager.Instance.gravity * Time.deltaTime;
+		if(jumpPadVel.sqrMagnitude > 0)
+			playerVelocity.y = 0;
+		else
+			playerVelocity.y -= GameManager.Instance.gravity * Time.deltaTime;
 	}
 
 	private void AirControl(Vector3 wishdir, float wishspeed)
@@ -506,7 +523,6 @@ public class PlayerControls : MonoBehaviour
 		SwapWeapon = weapon;
 		return true;
 	}
-	//gauntlet, machinegun, shotgun, grenade launcher, rocket launcher, lightning gun, railgun, plasma gun, bfg10k
 	public void SwapToBestWeapon()
 	{
 		if (TrySwapWeapon(8)) return; //bfg10k
@@ -519,5 +535,4 @@ public class PlayerControls : MonoBehaviour
 		if (TrySwapWeapon(3)) return; //grenade launcher
 		if (TrySwapWeapon(0)) return; //gauntlet
 	}
-
 }

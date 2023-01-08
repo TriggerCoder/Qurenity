@@ -12,8 +12,6 @@ public static class MapLoader
 
 	private static BinaryReader BSPMap;
 
-	public static EntityLump entityLump;
-
 	public static BSPHeader header;
 
 	public static Transform ColliderGroup;
@@ -35,7 +33,10 @@ public static class MapLoader
 	public static QVisData visData;
 
 	public static HashSet<Collider> noMarks;
-	
+
+	public static GameObject MapMesh;
+	public static GameObject MapColliders;
+
 	public static bool IsSkyTexture(string textureName)
 	{
 		if (textureName.ToUpper().Contains("/SKIES/"))
@@ -62,6 +63,7 @@ public static class MapLoader
 			return false;
 
 		noMarks = new HashSet<Collider>();
+
 		//header
 		{
 			header = new BSPHeader(BSPMap);
@@ -71,8 +73,6 @@ public static class MapLoader
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Entities].Offset, SeekOrigin.Begin);
 			ThingsManager.ReadEntities(BSPMap.ReadBytes(header.Directory[LumpType.Entities].Length));
-			//entityLump = new EntityLump(new string(BSPMap.ReadChars(header.Directory[LumpType.Entities].Length)));
-			//Debug.Log(entityLump.ToString());
 		}
 
 		//shaders (textures)
@@ -142,7 +142,7 @@ public static class MapLoader
 			}
 		}
 
-		//models (rigid geometry)
+		//models (map geometry)
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Models].Offset, SeekOrigin.Begin);
 			int num = header.Directory[LumpType.Models].Length / 40;
@@ -348,6 +348,36 @@ public static class MapLoader
 		}
 	}
 
+	public static void GenerateGeometricCollider(GameObject go, int num)
+	{
+		for (int i = 0; i < models[num].numBrushes; i++)
+		{
+			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go, false);
+			ContentType contentType = go.GetComponent<ContentType>();
+			contentType.JumpPad = true;
+			MeshCollider mc = go.GetComponent<MeshCollider>();
+			mc.isTrigger = true;
+		}
+	}
+
+	public static void GenerateJumpPadCollider(GameObject go, int num)
+	{
+		for (int i = 0; i < models[num].numBrushes; i++)
+		{
+			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go, false);
+			ContentType contentType = go.GetComponent<ContentType>();
+			contentType.JumpPad = true;
+			MeshCollider mc = go.GetComponent<MeshCollider>();
+			Vector3 center = mc.bounds.center;
+			Vector3 extents = mc.bounds.extents;
+			float max = Mathf.Max(extents.x, extents.y, extents.z);
+			GameObject.Destroy(mc);
+			SphereCollider sc = go.AddComponent<SphereCollider>();
+			sc.radius = max;
+			sc.isTrigger = true;
+			go.transform.position = center;
+		}
+	}
 	public static void GetMapTextures()
 	{
 		TextureLoader.LoadJPGTextures(mapTextures);
@@ -356,7 +386,7 @@ public static class MapLoader
 
 	public static void GenerateSurfaces()
 	{
-		GameObject MapMesh = new GameObject("MapMeshes");
+		MapMesh = new GameObject("MapMeshes");
 		MapMesh.layer = GameManager.MapMeshesLayer;
 		Transform holder = MapMesh.transform;
 		Mesher.MapMeshes = holder;

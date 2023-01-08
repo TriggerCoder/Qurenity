@@ -703,23 +703,23 @@ public static class Mesher
 
 		return mesh;
 	}
-	public static void GenerateBrushCollider(QBrush brush, Transform holder, bool isModel = false)
+	public static GameObject GenerateBrushCollider(QBrush brush, Transform holder, GameObject objCollider = null, bool addRigidBody = true)
 	{
 		//Remove brushed used for BSP Generations and for Details
 		uint type = MapLoader.mapTextures[brush.shaderId].contentsFlags;
 
-		if (!isModel)
+		if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
 		{
-			if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
-			{
-	//			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
-				return;
-			}
+//			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
+			return null;
 		}
 
-		GameObject objCollider = new GameObject("Polygon_"+brush.brushSide + "_collider");
+		if (objCollider == null)
+		{
+			objCollider = new GameObject("Polygon_"+brush.brushSide + "_collider");
+			objCollider.transform.SetParent(holder);
+		}
 		objCollider.layer = GameManager.ColliderLayer;
-		objCollider.transform.SetParent(holder);
 
 		List<Vector3> possibleIntersectPoint = new List<Vector3>();
 		List<Vector3> intersectPoint = new List<Vector3>();
@@ -769,13 +769,14 @@ public static class Mesher
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
-		Rigidbody rb = objCollider.AddComponent<Rigidbody>();
-		rb.isKinematic = true;
-		rb.useGravity = false;
-		rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
-		if (isModel)
-			return;
+		if (addRigidBody)
+		{
+			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+		}
 
 		ContentType contentType = objCollider.AddComponent<ContentType>();
 		contentType.Init(type);
@@ -798,6 +799,8 @@ public static class Mesher
 
 //		if ((type & SurfaceFlags.NonSolid) != 0)
 //			Debug.Log("brushSide: " + brush.brushSide + " Surface Type is: " + type);
+
+		return objCollider;
 	}
 
 	public static List<Vector3> RemoveDuplicatedVectors(List<Vector3> test)

@@ -20,6 +20,9 @@ public class ThingController : MonoBehaviour
 		Blocking, //blocking or interactive
 		Item,
 		Teleport,
+		JumpPad,
+		TargetDestination,
+		Trigger,
 		Player
 	}
 
@@ -28,6 +31,7 @@ public class ThingController : MonoBehaviour
 	void OnDisable()
 	{
 		if (GameManager.Instance.ready)
-			ThingsManager.AddItemToRespawn(gameObject, respawnSound, respawnTime);
+			if (respawnTime > 0)
+				ThingsManager.AddItemToRespawn(gameObject, respawnSound, respawnTime);
 	}
 }

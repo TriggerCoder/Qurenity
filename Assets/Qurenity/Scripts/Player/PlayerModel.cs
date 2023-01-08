@@ -387,6 +387,20 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		ownerDead = true;
 	}
+	public void TurnLegsOnJump(float sideMove)
+	{
+		Quaternion rotate = Quaternion.identity;
+
+		if (lowerAnimation != LowerAnimation.Idle)
+			return;
+
+		if (sideMove > 0)
+			rotate = Quaternion.AngleAxis(30f, playerTransform.up);
+		else if (sideMove < 0)
+			rotate = Quaternion.AngleAxis(-30f, playerTransform.up);
+
+		lowerTransform.localRotation = rotate;
+	}
 	public void TurnLegs(float sideMove, float forwardMove)
 	{
 		if (ownerDead)
@@ -847,6 +861,11 @@ public class PlayerModel : MonoBehaviour, Damageable
 	}
 
 	public void Impulse(Vector3 direction, float force)
+	{
+
+	}
+
+	public void JumpPadDest(Vector3 destination)
 	{
 
 	}
