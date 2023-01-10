@@ -348,14 +348,75 @@ public static class MapLoader
 		}
 	}
 
+	public static void GenerateGeometricSurface(GameObject go, int num)
+	{
+		Transform holder = go.transform;
+		List<QSurface> staticGeometry = new List<QSurface>();
+		for (int i = 0; i < models[num].numSurfaces; i++)
+			staticGeometry.Add(surfaces[models[num].firstSurface + i]);
+
+		// Each surface group is its own gameobject
+		var groups = staticGeometry.GroupBy(x => new { x.type, x.shaderId, x.lightMapID });
+		int groupId = 0;
+		foreach (var group in groups)
+		{
+			QSurface[] groupSurfaces = group.ToArray();
+			if (groupSurfaces.Length == 0)
+				continue;
+
+			GameObject modelObject = null;
+			if (groupId == 0)
+				modelObject = go;
+			groupId++;
+
+			switch (group.Key.type)
+			{
+				case QSurfaceType.Patch:
+					Mesher.GenerateBezObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, modelObject, groupSurfaces);
+				break;
+				case QSurfaceType.Polygon:
+				case QSurfaceType.Mesh:
+					Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, modelObject, groupSurfaces);
+				break;
+				case QSurfaceType.Billboard:
+//					Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, modelObject, groupSurfaces);
+				break;
+				default:
+					Debug.LogWarning("Group " + groupId + "Skipped surface because it was not a polygon, mesh, or bez patch (" + group.Key.type + ").");
+				break;
+			}
+		}
+	}
+
+	public static void GenerateGeometricCollider(Transform holder, int num)
+	{
+		GenerateGeometricCollider(null, holder, num);
+	}
 	public static void GenerateGeometricCollider(GameObject go, int num)
+	{
+		Transform holder = go.transform;
+		GenerateGeometricCollider(go, holder, num);
+	}
+
+	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num)
 	{
 		for (int i = 0; i < models[num].numBrushes; i++)
 		{
-			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go, false);
-			ContentType contentType = go.GetComponent<ContentType>();
+			GameObject modelObject;
+			if ((i == 0) && (go != null))
+				modelObject = go;
+			else
+			{
+				modelObject = new GameObject("Collider_" + i);
+				modelObject.layer = GameManager.ColliderLayer;
+				modelObject.transform.SetParent(holder);
+				modelObject.transform.localPosition = Vector3.zero;
+				modelObject.transform.localRotation = Quaternion.identity;
+			}
+			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, false);
+			ContentType contentType = modelObject.GetComponent<ContentType>();
 			contentType.JumpPad = true;
-			MeshCollider mc = go.GetComponent<MeshCollider>();
+			MeshCollider mc = modelObject.GetComponent<MeshCollider>();
 			mc.isTrigger = true;
 		}
 	}
@@ -411,20 +472,18 @@ public static class MapLoader
 			switch (group.Key.type)
 			{
 				case QSurfaceType.Patch:
-						Mesher.GenerateBezObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
-						break;
+					Mesher.GenerateBezObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, groupSurfaces);
+				break;
 				case QSurfaceType.Polygon:
 				case QSurfaceType.Mesh:
-						Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
-						break;
+					Mesher.GeneratePolygonObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, groupSurfaces);
+				break;
 				case QSurfaceType.Billboard:
-//						Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, groupSurfaces);
-					break;
-					
-
+//					Mesher.GenerateBillBoardObject(mapTextures[groupSurfaces[0].shaderId].name, groupSurfaces[0].lightMapID, groupId, holder, groupSurfaces);
+				break;
 				default:
 					Debug.LogWarning("Group "+ groupId + "Skipped surface because it was not a polygon, mesh, or bez patch ("+group.Key.type+").");
-					break;
+				break;
 			}
 		}
 

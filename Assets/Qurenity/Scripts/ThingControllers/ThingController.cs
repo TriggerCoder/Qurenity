@@ -23,6 +23,7 @@ public class ThingController : MonoBehaviour
 		JumpPad,
 		TargetDestination,
 		Trigger,
+		Door,
 		Player
 	}
 

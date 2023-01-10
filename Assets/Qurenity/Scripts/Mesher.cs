@@ -35,7 +35,12 @@ public static class Mesher
 		vertsColor = new List<Color>();
 		BezierMesh.ClearCaches();
 	}
-	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
+
+	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, Transform holder, params QSurface[] surfaces)
+	{
+		GenerateBezObject(textureName, lmIndex, indexId, holder, null, surfaces);
+	}
+	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject bezObj, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 			return;
@@ -104,10 +109,13 @@ public static class Mesher
 		mesh.name = Name;
 		mesh.CombineMeshes(combineDraw, true, false, false);
 
-		GameObject bezObj = new GameObject();
-		bezObj.layer = GameManager.MapMeshesLayer;
-		bezObj.name = "Bezier_" + indexId;
-		bezObj.transform.SetParent(MapMeshes);
+		if (bezObj == null)
+		{
+			bezObj = new GameObject();
+			bezObj.layer = GameManager.MapMeshesLayer;
+			bezObj.name = "Bezier_" + indexId;
+			bezObj.transform.SetParent(holder);
+		}
 
 		//PVS
 		ClusterPVSController cluster = bezObj.AddComponent<ClusterPVSController>();
@@ -263,7 +271,11 @@ public static class Mesher
 
 		return bezPatch;
 	}
-	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
+	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, Transform holder, params QSurface[] surfaces)
+	{
+		GeneratePolygonObject(textureName, lmIndex, indexId, holder, null, surfaces);
+	}
+	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject obj, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 		{
@@ -281,11 +293,14 @@ public static class Mesher
 			Name += "_" + surfaces[i].surfaceId;
 		}
 
-		GameObject obj = new GameObject();
-		obj.layer = GameManager.MapMeshesLayer;
-		obj.name = "Mesh_"+indexId;
-		obj.transform.SetParent(MapMeshes);
-
+		if (obj == null)
+		{
+			obj = new GameObject();
+			obj.layer = GameManager.MapMeshesLayer;
+			obj.name = "Mesh_"+indexId;
+			obj.transform.SetParent(holder);
+		}
+	
 		//PVS
 		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
 		cluster.RegisterClusterAndSurfaces(surfaces);
@@ -310,7 +325,11 @@ public static class Mesher
 		mr.sharedMaterial = material;
 	}
 
-	public static void GenerateBillBoardObject(string textureName, int lmIndex, int indexId, params QSurface[] surfaces)
+	public static void GenerateBillBoardObject(string textureName, int lmIndex, int indexId, Transform holder, params QSurface[] surfaces)
+	{
+		GenerateBillBoardObject(textureName, lmIndex, indexId, holder, null, surfaces);
+	}
+	public static void GenerateBillBoardObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject obj, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 		{
@@ -322,11 +341,15 @@ public static class Mesher
 		if (!TextureLoader.HasTexture(TextureLoader.FlareTexture))
 			TextureLoader.AddNewTexture(TextureLoader.FlareTexture, true);
 
-		GameObject obj = new GameObject();
-		obj.layer = GameManager.CombinesMapMeshesLayer;
-		obj.name = "Billboard_" + indexId;
-		Transform holder = obj.transform;
-		holder.SetParent(MapMeshes);
+		Transform objTransform = holder;
+		if (obj == null)
+		{
+			obj = new GameObject();
+			obj.layer = GameManager.CombinesMapMeshesLayer;
+			obj.name = "Billboard_" + indexId;
+			objTransform = obj.transform;
+			objTransform.SetParent(holder);
+		}
 
 		for (var i = 0; i < surfaces.Length; i++)
 		{
@@ -334,7 +357,7 @@ public static class Mesher
 			GameObject billboard = new GameObject();
 			billboard.layer = GameManager.CombinesMapMeshesLayer;
 			billboard.name = "Billboard_Surface" + surfaces[i].surfaceId;
-			billboard.transform.SetParent(holder);
+			billboard.transform.SetParent(objTransform);
 			billboard.transform.position = surfaces[i].lm_Origin;
 			SpriteAnimation spriteAnimation = billboard.AddComponent<SpriteAnimation>();
 			spriteAnimation.frames = new string[1];

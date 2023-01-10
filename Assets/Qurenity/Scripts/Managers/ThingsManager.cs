@@ -178,6 +178,13 @@ public class ThingsManager : MonoBehaviour
 
 			string strWord = entityData["model"];
 			int model = int.Parse(strWord.Trim('*'));
+
+			if (entityData.TryGetValue("wait", out strWord))
+			{
+				tc.AutoReturn = true;
+				tc.AutoReturnTime = int.Parse(strWord);
+			}
+
 			MapLoader.GenerateGeometricCollider(thingObject, model);
 			triggerToActivate.Add(target, tc);
 			thingObject.transform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
@@ -218,6 +225,60 @@ public class ThingsManager : MonoBehaviour
 			{
 				default:
 					thingObject.transform.position = entity.origin;
+				break;
+				//Door
+				case "func_door":
+				{
+					string strWord = entity.entityData["model"];
+					int model = int.Parse(strWord.Trim('*'));
+
+					DoorController dc = thingObject.GetComponent<DoorController>();
+					if (dc == null)
+						dc = thingObject.AddComponent<DoorController>();
+					if (entity.entityData.TryGetValue("dmg", out strWord))
+						dc.Damage = int.Parse(strWord);
+
+					MapLoader.GenerateGeometricSurface(thingObject, model);
+					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
+
+//					Mesh mesh = thingObject.GetComponent<MeshFilter>().mesh;
+//					Bounds bounds = mesh.bounds;
+
+					if (entity.entityData.ContainsKey("targetname"))
+					{
+						strWord = entity.entityData["targetname"];
+						int target = int.Parse(strWord.Trim('t'));
+
+						TriggerController tc;
+						if (!triggerToActivate.TryGetValue(target, out tc))
+						{
+							tc = thingObject.AddComponent<TriggerController>();
+							triggerToActivate.Add(target, tc);
+						}
+						tc.SetController(0, (p) =>
+						{
+							Debug.Log("Activate Door");
+						});
+					}
+				}
+				break;
+				//Trigger Hurt
+				case "trigger_hurt":
+				{
+					string strWord = entity.entityData["model"];
+					int model = int.Parse(strWord.Trim('*'));
+					strWord = entity.entityData["dmg"];
+					int dmg = int.Parse(strWord);
+					MapLoader.GenerateGeometricCollider(thingObject, model);
+					TriggerController tc = thingObject.GetComponent<TriggerController>();
+					if (tc == null)
+						tc = thingObject.AddComponent<TriggerController>();
+					tc.Repeatable = true;
+					tc.SetController(0, (p) =>
+					{
+						p.Damage(dmg,DamageType.Generic);
+					});
+				}
 				break;
 				//Remove PowerUps
 				case "target_remove_powerups":

@@ -28,7 +28,7 @@ public class TriggerController : MonoBehaviour
 			return false;
 		}
 
-		if (!Repeatable)
+		if ((!Repeatable) || (AutoReturn))
 			if (activated)
 				return false;
 

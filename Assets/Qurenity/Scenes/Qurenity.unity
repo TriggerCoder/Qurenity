@@ -186,7 +186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3dm7
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -202,7 +202,7 @@ MonoBehaviour:
   BulletCase: {fileID: 3778548176006231648, guid: 6b4a985403b517a4c88e5e78ead9a4c3, type: 3}
   ShogunShell: {fileID: 6489570926119005409, guid: fb492697b24919949b25743dbd807e92, type: 3}
   paused: 1
-  gravity: 20
+  gravity: 25
   friction: 6
   terminalVelocity: 100
   barrierVelocity: 1024
@@ -745,9 +745,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc363be69a30a9d4a82456f6c30bb84b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelMusics:
-  - LevelName: q3dm1
-    MusicFile: {fileID: 8300000, guid: de7eb4fa91ca1744b896ef0889b10505, type: 3}
+  levelMusics: []
   audioSource: {fileID: 0}
 --- !u!82 &300009285
 AudioSource:
@@ -876,6 +874,16 @@ MonoBehaviour:
   - {fileID: 6846132397439511784, guid: 726efc834de0af940b313a06928b7717, type: 3}
   - {fileID: 6846132397439511784, guid: 0841107ea5170ab48aff482a9c78f16e, type: 3}
   - {fileID: 7369565480187895123, guid: df31edd0797037b4ab9ad81551df382c, type: 3}
+  - {fileID: 6846132397439511784, guid: 51be67d787c9b8448980a1c53f6b5b6b, type: 3}
+  - {fileID: 6846132397439511784, guid: 08322efeda8ed2442b005cc9d67911f4, type: 3}
+  - {fileID: 6846132397439511784, guid: 5b13b12897f631248ae81f1af03e858a, type: 3}
+  - {fileID: 6846132397439511784, guid: d63dce82c8f386c49a26953dd296474f, type: 3}
+  - {fileID: 6846132397439511784, guid: 52848a8c2dcb60c42841e87b1013a936, type: 3}
+  - {fileID: 6846132397439511784, guid: 9ab842cf0c3374043a1d366d42170ebd, type: 3}
+  - {fileID: 6846132397439511784, guid: a2f10f7098230f7419ae8c2480c52cc7, type: 3}
+  - {fileID: 6846132397439511784, guid: 1af61189703505c46a0d953c66b28030, type: 3}
+  - {fileID: 6846132397439511784, guid: e8005f86ef666c8499ef9738cf383e88, type: 3}
+  - {fileID: 6846132397439511784, guid: 6af3ccbaf89176d45810f63acc45d85b, type: 3}
 --- !u!20 &743958850 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
@@ -1110,7 +1118,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1118,7 +1126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1147,6 +1155,10 @@ PrefabInstance:
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 143113606728799366, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_SkinWidth
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: armor

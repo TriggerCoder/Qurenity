@@ -7,6 +7,12 @@ public class ClusterPVSController : MonoBehaviour
 	public float visibleTime = 0.0f;
 	bool isVisible = false;
 	int lastlayer = GameManager.MapMeshesLayer;
+	GameObject go;
+
+	private void Awake()
+	{
+		go = gameObject;
+	}
 	public void RegisterClusterAndSurfaces(params QSurface[] surfaces)
 	{
 		ClusterPVSManager.Instance.Register(this, surfaces);
@@ -14,20 +20,26 @@ public class ClusterPVSController : MonoBehaviour
 	public void DectivateCluster()
 	{
 		isVisible = false;
-		lastlayer = GameManager.MapMeshesLayer;
-		gameObject.layer = lastlayer;
+		ChangeLayer(GameManager.MapMeshesLayer);
+	}
+
+	public void ChangeLayer(int layer)
+	{
+		lastlayer = layer;
+		go.layer = lastlayer;
 	}
 
 	public void ActivateCluster(int layer)
 	{
+		visibleTime = 2.0f;
 		if (isVisible)
 		{
 			if (lastlayer != layer)
 				layer = GameManager.CombinesMapMeshesLayer;
+			else
+				return;
 		}
-		visibleTime = 2.0f;
-		lastlayer = layer;
-		gameObject.layer = lastlayer;
+		ChangeLayer(layer);
 		isVisible = true;
 	}
 }
