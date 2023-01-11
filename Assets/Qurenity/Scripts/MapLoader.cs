@@ -388,17 +388,17 @@ public static class MapLoader
 		}
 	}
 
-	public static void GenerateGeometricCollider(Transform holder, int num)
+	public static void GenerateGeometricCollider(Transform holder, int num, uint contentFlags = 0, bool isTrigger = false)
 	{
-		GenerateGeometricCollider(null, holder, num);
+		GenerateGeometricCollider(null, holder, num, contentFlags, isTrigger);
 	}
-	public static void GenerateGeometricCollider(GameObject go, int num)
+	public static void GenerateGeometricCollider(GameObject go, int num, uint contentFlags = 0, bool isTrigger = true)
 	{
 		Transform holder = go.transform;
-		GenerateGeometricCollider(go, holder, num);
+		GenerateGeometricCollider(go, holder, num, contentFlags, isTrigger);
 	}
 
-	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num)
+	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num, uint contentFlags, bool isTrigger)
 	{
 		for (int i = 0; i < models[num].numBrushes; i++)
 		{
@@ -414,10 +414,18 @@ public static class MapLoader
 				modelObject.transform.localRotation = Quaternion.identity;
 			}
 			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, false);
-			ContentType contentType = modelObject.GetComponent<ContentType>();
-			contentType.JumpPad = true;
-			MeshCollider mc = modelObject.GetComponent<MeshCollider>();
-			mc.isTrigger = true;
+
+			if (contentFlags != 0)
+			{
+				ContentType contentType = modelObject.GetComponent<ContentType>();
+				contentType.Init(contentType.value | contentFlags);
+			}
+
+			if (isTrigger)
+			{
+				MeshCollider mc = modelObject.GetComponent<MeshCollider>();
+				mc.isTrigger = true;
+			}
 		}
 	}
 
@@ -427,7 +435,7 @@ public static class MapLoader
 		{
 			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go, false);
 			ContentType contentType = go.GetComponent<ContentType>();
-			contentType.JumpPad = true;
+			contentType.Init(contentType.value | ContentFlags.JumpPad);
 			MeshCollider mc = go.GetComponent<MeshCollider>();
 			Vector3 center = mc.bounds.center;
 			Vector3 extents = mc.bounds.extents;

@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 public class TriggerController : MonoBehaviour
 {
-	private int triggerNum = 0;
-	private bool activated = false;
+	public int triggerNum = 0;
+	public bool activated = false;
 	private Action<PlayerThing> OnActivate = new Action<PlayerThing>((p) => { return; });
 
 	public bool Repeatable = false;

@@ -185,7 +185,7 @@ public class ThingsManager : MonoBehaviour
 				tc.AutoReturnTime = int.Parse(strWord);
 			}
 
-			MapLoader.GenerateGeometricCollider(thingObject, model);
+			MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Trigger);
 			triggerToActivate.Add(target, tc);
 			thingObject.transform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
 			thingObject.SetActive(true);
@@ -226,6 +226,64 @@ public class ThingsManager : MonoBehaviour
 				default:
 					thingObject.transform.position = entity.origin;
 				break;
+				//Switch
+				case "func_button":
+				{
+					string strWord = entity.entityData["model"];
+					int model = int.Parse(strWord.Trim('*'));
+					int angle = 0;
+					SwitchController sw = thingObject.GetComponent<SwitchController>();
+					if (sw == null)
+						sw = thingObject.AddComponent<SwitchController>();
+					if (entity.entityData.TryGetValue("health", out strWord))
+						sw.hitpoints = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("angle", out strWord))
+						angle = int.Parse(strWord);
+
+					MapLoader.GenerateGeometricSurface(thingObject, model);
+					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
+
+					MeshFilter[] meshFilterChildren = thingObject.GetComponentsInChildren<MeshFilter>(includeInactive: true);
+					CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
+					for (var i = 0; i < combine.Length; i++)
+						combine[i].mesh = meshFilterChildren[i].mesh;
+
+					var mesh = new Mesh();
+					mesh.CombineMeshes(combine, true, false, false);
+					Bounds bounds = mesh.bounds;
+					float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
+					SphereCollider sc = thingObject.AddComponent<SphereCollider>();
+					sc.radius = max;
+					sc.isTrigger = true;
+
+					sw.Init(angle, bounds);
+
+					if (entity.entityData.ContainsKey("target"))
+					{
+						strWord = entity.entityData["target"];
+						int target = int.Parse(strWord.Trim('t'));
+
+						TriggerController tc;
+						if (!triggerToActivate.TryGetValue(target, out tc))
+							tc = null;
+						sw.tc = tc;
+
+						sw.SetController(target, (p) =>
+						{
+							if (sw.tc == null)
+							{
+								TriggerController swTrigger;
+								if (!triggerToActivate.TryGetValue(sw.triggerNum, out swTrigger))
+									return;
+								sw.tc = swTrigger;
+							}
+							sw.CurrentState = SwitchController.State.Opening;
+							Debug.Log("Activate Button");
+							sw.tc.Activate(null);
+						});
+					}
+				}
+				break;
 				//Door
 				case "func_door":
 				{
@@ -241,8 +299,8 @@ public class ThingsManager : MonoBehaviour
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
 
-//					Mesh mesh = thingObject.GetComponent<MeshFilter>().mesh;
-//					Bounds bounds = mesh.bounds;
+					Mesh mesh = thingObject.GetComponent<MeshFilter>().mesh;
+					dc.bounds = mesh.bounds;
 
 					if (entity.entityData.ContainsKey("targetname"))
 					{
@@ -255,7 +313,7 @@ public class ThingsManager : MonoBehaviour
 							tc = thingObject.AddComponent<TriggerController>();
 							triggerToActivate.Add(target, tc);
 						}
-						tc.SetController(0, (p) =>
+						tc.SetController(target, (p) =>
 						{
 							Debug.Log("Activate Door");
 						});
@@ -269,7 +327,7 @@ public class ThingsManager : MonoBehaviour
 					int model = int.Parse(strWord.Trim('*'));
 					strWord = entity.entityData["dmg"];
 					int dmg = int.Parse(strWord);
-					MapLoader.GenerateGeometricCollider(thingObject, model);
+					MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Trigger);
 					TriggerController tc = thingObject.GetComponent<TriggerController>();
 					if (tc == null)
 						tc = thingObject.AddComponent<TriggerController>();
@@ -332,7 +390,7 @@ public class ThingsManager : MonoBehaviour
 					strWord = entity.entityData["target"];
 					int target = int.Parse(strWord.Trim('t'));
 					Vector3 destination = targetsOnMap[target];
-					MapLoader.GenerateGeometricCollider(thingObject, model);
+					MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Teleporter);
 					thing.Init(destination);
 				}
 				break;

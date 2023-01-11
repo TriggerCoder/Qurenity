@@ -338,11 +338,14 @@ public class ContentFlags
 	public const uint AreaPortal	= 0x008000;		// Trigger Teleporter
 	public const uint PlayerClip	= 0x010000;      
 	public const uint MonsterClip	= 0x020000;
+
 	public const uint Teleporter	= 0x040000;		// Bots info
 	public const uint JumpPad		= 0x080000;		// Jump Pad
 	public const uint ClusterPortal	= 0x100000;		// Bots info
 	public const uint BotsNotEnter	= 0x200000;     // Restricter area for Bots
+
 	public const uint Origin		= 0x1000000;
+
 	public const uint Body			= 0x2000000;    // Never on BSP
 	public const uint Corpse		= 0x4000000;    
 	public const uint Details		= 0x8000000;   // Not used on BSP

@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8223384032887834687}
   - component: {fileID: 6846132397439511784}
-  - component: {fileID: 5263093456070513284}
-  m_Layer: 16
-  m_Name: Door
+  - component: {fileID: 8036243224729044624}
+  m_Layer: 0
+  m_Name: Switch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,11 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   location: {x: 0, y: 0, z: 0}
   angularrotation: {x: 0, y: 0, z: 0, w: 0}
-  thingName: func_door
+  thingName: func_button
   respawnSound: 
   respawnTime: 0
-  thingType: 7
---- !u!114 &5263093456070513284
+  thingType: 6
+--- !u!114 &8036243224729044624
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -60,17 +60,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 33660320433956289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5753dac5e262e34984fbf5851b20035, type: 3}
+  m_Script: {fileID: 11500000, guid: 68cbf5bc463f8a54192f216af774f212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startSound: movers/doors/dr1_strt
-  endSound: movers/doors/dr1_end
-  Damage: 2
-  Lip: 0.25
+  triggerNum: 0
+  activated: 0
   Repeatable: 1
   AutoReturn: 1
-  AutoReturnTime: 3
-  bounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
+  AutoReturnTime: 1
   time: 0
+  activateSound: movers/switches/butn2
+  hitpoints: 0
+  Lip: 0.125
+  tc: {fileID: 0}
+  openWaitTime: 0
+  currentState: 1

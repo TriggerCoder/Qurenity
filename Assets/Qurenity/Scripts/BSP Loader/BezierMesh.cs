@@ -69,7 +69,6 @@ public class BezierMesh
 			vertexCache.Add(BezCurve(m, control[0], control[1], control[2]));
 			vertexCache.Add(BezCurve(f, control[0], control[1], control[2]));
 
-
 			//Middle row
 			vertexCache.Add(BezCurve(s, control[3], control[4], control[5]));
 			vertexCache.Add(BezCurve(m, control[3], control[4], control[5]));

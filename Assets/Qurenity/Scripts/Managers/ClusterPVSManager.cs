@@ -75,7 +75,7 @@ public class ClusterPVSManager : MonoBehaviour
 		ClusterPVSController cluster = SurfaceToCluster[surface];
 		if (cluster == null)
 		{
-			Debug.LogWarning("Cluster not found for surface: " + surface);
+//			Debug.LogWarning("Cluster not found for surface: " + surface);
 			return;
 		}
 		cluster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
