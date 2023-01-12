@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8223384032887834687}
   - component: {fileID: 6846132397439511784}
   - component: {fileID: 8036243224729044624}
+  - component: {fileID: 6371347112400024671}
   m_Layer: 0
   m_Name: Switch
   m_TagString: Untagged
@@ -63,15 +64,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68cbf5bc463f8a54192f216af774f212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  doorOn: 0
+  playSoundClose: 0
+  startSound: movers/switches/butn2
+  endSound: 
+  tc: {fileID: 0}
+  audioSource: {fileID: 0}
+  currentState: 1
+  internalSwitch: {fileID: 6371347112400024671}
+--- !u!114 &6371347112400024671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33660320433956289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dad44f18ba1e564fa430671cd415d91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   triggerNum: 0
   activated: 0
-  Repeatable: 1
-  AutoReturn: 1
+  Repeatable: 0
+  AutoReturn: 0
   AutoReturnTime: 1
   time: 0
-  activateSound: movers/switches/butn2
-  hitpoints: 0
-  Lip: 0.125
-  tc: {fileID: 0}
-  openWaitTime: 0
-  currentState: 1

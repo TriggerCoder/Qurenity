@@ -258,7 +258,7 @@ public class ThingsManager : MonoBehaviour
 					mesh.CombineMeshes(combine, true, false, false);
 					Bounds bounds = mesh.bounds;
 					sw.Init(angle, hitpoints, speed, wait, lip, bounds);
-
+						
 					//If it's not damagable, then create trigger collider
 					if (hitpoints == 0)
 					{
@@ -278,16 +278,16 @@ public class ThingsManager : MonoBehaviour
 							tc = null;
 						sw.tc = tc;
 
-						sw.SetController(target, (p) =>
+						sw.internalSwitch.SetController(target, (p) =>
 						{
 							if (sw.tc == null)
 							{
 								TriggerController swTrigger;
-								if (!triggerToActivate.TryGetValue(sw.triggerNum, out swTrigger))
+								if (!triggerToActivate.TryGetValue(sw.internalSwitch.triggerNum, out swTrigger))
 									return;
 								sw.tc = swTrigger;
 							}
-							sw.CurrentState = SwitchController.State.Opening;
+							sw.CurrentState = DoorController.State.Opening;
 							sw.tc.Activate(null);
 						});
 					}
@@ -337,18 +337,29 @@ public class ThingsManager : MonoBehaviour
 							tc = thingObject.AddComponent<TriggerController>();
 							triggerToActivate.Add(target, tc);
 						}
+						tc.Repeatable = true;
+						tc.AutoReturn = true;
+						tc.AutoReturnTime = wait;
 						tc.SetController(target, (p) =>
 						{
-							if (!door.activated)
-								door.CurrentState = DoorController.State.Opening;
+							door.CurrentState = DoorController.State.Opening;
 						});
 					}
-					else if (hitpoints == 0) //If it's not external trigger not damagable, then create trigger collider
+					else if (hitpoints == 0) //If it's not external trigger not damagable, then create a trigger and collider
 					{
 						float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
 						SphereCollider sc = thingObject.AddComponent<SphereCollider>();
 						sc.radius = max;
 						sc.isTrigger = true;
+
+						TriggerController tc = thingObject.AddComponent<TriggerController>();
+						tc.Repeatable = true;
+						tc.AutoReturn = true;
+						tc.AutoReturnTime = wait;
+						tc.SetController(0, (p) =>
+						{
+							door.CurrentState = DoorController.State.Opening;
+						});
 					}
 				}
 				break;

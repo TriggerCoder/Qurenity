@@ -5,18 +5,23 @@ using UnityEngine;
 
 public class DoorController : MonoBehaviour, Damageable
 {
-	public bool activated = false;
+	public bool doorOn = false;
+	public bool playSoundClose = true;
 	public string startSound;
 	public string endSound;
+	public TriggerController tc;
 	private int hitpoints = 0;
 	private float lip;
 	private Bounds bounds;
 	private float speed;
 
-	private float waitTime = 2;
+	private float wait = 2;
 	private float openWaitTime = 0;
 	private Vector3 openPosition, closedPosition;
 	private Vector3 dirVector = Vector3.right;
+
+	public virtual float waitTime { get { return wait; } set { wait = value; } }
+	public virtual bool Activated { get { return doorOn; } set { doorOn = value; } }
 	public int Hitpoints { get { return hitpoints; } }
 	public bool Dead { get { return hitpoints <= 0; } }
 	public bool Bleed { get { return false; } }
@@ -63,27 +68,42 @@ public class DoorController : MonoBehaviour, Damageable
 		{
 			if (value == State.Open)
 			{
+				if (!string.IsNullOrEmpty(endSound))
+				{
+					audioSource.AudioClip = SoundLoader.LoadSound(endSound);
+					audioSource.Play();
+				}
 				openWaitTime = waitTime;
-				audioSource.AudioClip = SoundLoader.LoadSound(endSound);
-				audioSource.Play();
 			}
 			else if (value == State.Opening)
 			{
-				activated = true;
-				audioSource.AudioClip = SoundLoader.LoadSound(startSound);
-				audioSource.Play();
+				if (!string.IsNullOrEmpty(startSound))
+				{
+					audioSource.AudioClip = SoundLoader.LoadSound(startSound);
+					audioSource.Play();
+				}
+				Activated = true;
 				enabled = true;
 			}
 			else if (value == State.Closing)
 			{
-				audioSource.AudioClip = SoundLoader.LoadSound(startSound);
-				audioSource.Play();
+				if (playSoundClose)
+					if (!string.IsNullOrEmpty(startSound))
+					{
+						audioSource.AudioClip = SoundLoader.LoadSound(startSound);
+						audioSource.Play();
+					}
 				enabled = true;
 			}
 			else if (value == State.Closed)
 			{
-				audioSource.AudioClip = SoundLoader.LoadSound(endSound);
-				activated = false;
+				if (playSoundClose)
+					if (!string.IsNullOrEmpty(endSound))
+					{
+						audioSource.AudioClip = SoundLoader.LoadSound(endSound);
+						audioSource.Play();
+					}
+				Activated = false;
 				enabled = false;
 			}
 			currentState = value;
@@ -102,7 +122,6 @@ public class DoorController : MonoBehaviour, Damageable
 		lip = openlip * GameManager.sizeDividor;
 		SetBounds(swBounds);
 
-
 		audioSource = GetComponentInChildren<MultiAudioSource>();
 		if (audioSource == null)
 		{
@@ -113,12 +132,6 @@ public class DoorController : MonoBehaviour, Damageable
 			audioSource.PlayOnAwake = false;
 		}
 	}
-	void Update()
-	{
-		if (GameManager.Paused)
-			return;
-	}
-
 	void FixedUpdate()
 	{
 		if (GameManager.Paused)
@@ -169,7 +182,6 @@ public class DoorController : MonoBehaviour, Damageable
 				break;
 		}
 	}
-
 	public void SetAngle(int angle)
 	{
 		if (angle < 0)
@@ -206,20 +218,5 @@ public class DoorController : MonoBehaviour, Damageable
 	public void JumpPadDest(Vector3 destination)
 	{
 
-	}
-
-	void OnTriggerEnter(Collider other)
-	{
-		if (GameManager.Paused)
-			return;
-
-		if (activated)
-			return;
-
-		PlayerThing playerThing = other.GetComponent<PlayerThing>();
-		if (playerThing == null)
-			return;
-
-		CurrentState = State.Opening;
 	}
 }
