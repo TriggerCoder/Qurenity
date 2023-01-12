@@ -5,23 +5,22 @@ using UnityEngine;
 public class SwitchController : TriggerController, Damageable
 {
 	public string activateSound;
-	public int hitpoints = 0;
-	public float Lip = 4 * GameManager.sizeDividor;
+	private int hitpoints = 0;
+	private float lip;
 	public TriggerController tc;
 	private Bounds bounds;
-	private float speed = 40 * GameManager.sizeDividor;
+	private float speed;
 
-	public float openWaitTime = 0;
+	private float openWaitTime = 0;
 	private Vector3 openPosition, closedPosition;
-	private Vector3 dirVector = Vector3.forward;
-	public float Speed { get { return speed; } set { speed = value * GameManager.sizeDividor; } }
+	private Vector3 dirVector = Vector3.right;
 	public int Hitpoints { get { return hitpoints; } }
 	public bool Dead { get { return hitpoints <= 0; } }
 	public bool Bleed { get { return false; } }
 	public BloodType BloodColor { get { return BloodType.None; } }
 
 	Transform cTransform;
-	MultiAudioSource audioSource;
+	public MultiAudioSource audioSource;
 	private float openSqrMagnitude;
 
 	[System.Serializable]
@@ -76,13 +75,19 @@ public class SwitchController : TriggerController, Damageable
 			currentState = value;
 		}
 	}
-	public void Init(int angle, Bounds swBounds)
+	public void Init(int angle, int hp, int sp, int wait, int openlip, Bounds swBounds)
 	{
 		cTransform = transform;
 
 		if (angle != 0)
 			SetAngle(angle);
+
+		hitpoints = hp;
+		speed = sp * GameManager.sizeDividor;
+		AutoReturnTime = wait;
+		lip = openlip * GameManager.sizeDividor;
 		SetBounds(swBounds);
+
 
 		audioSource = GetComponentInChildren<MultiAudioSource>();
 		if (audioSource == null)
@@ -154,7 +159,15 @@ public class SwitchController : TriggerController, Damageable
 
 	public void SetAngle (int angle)
 	{
-		Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.up);
+		if (angle < 0)
+		{
+			if (angle == -1)
+				dirVector = Vector3.up;
+			else
+				dirVector = Vector3.down;
+			return;
+		}
+		Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.down);
 		Quaternion forwardRotation = Quaternion.LookRotation(Vector3.left);
 		Quaternion finalRotation = rotation * forwardRotation;
 		dirVector = finalRotation * Vector3.forward;
@@ -164,7 +177,7 @@ public class SwitchController : TriggerController, Damageable
 	{
 		bounds = swBounds;
 		closedPosition = cTransform.position;
-		Vector3 extension = new Vector3(dirVector.x * ((2 * bounds.extents.x) - Lip), dirVector.y * ((2 * bounds.extents.y) - Lip), dirVector.z * ((2 * bounds.extents.z) - Lip));
+		Vector3 extension = new Vector3(dirVector.x * ((2 * bounds.extents.x) - lip), dirVector.y * ((2 * bounds.extents.y) - lip), dirVector.z * ((2 * bounds.extents.z) - lip));
 		openPosition = closedPosition + extension;
 		openSqrMagnitude = (openPosition - closedPosition).sqrMagnitude;
 	}

@@ -231,15 +231,21 @@ public class ThingsManager : MonoBehaviour
 				{
 					string strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0;
+					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4;
 					SwitchController sw = thingObject.GetComponent<SwitchController>();
 					if (sw == null)
 						sw = thingObject.AddComponent<SwitchController>();
-					if (entity.entityData.TryGetValue("health", out strWord))
-						sw.hitpoints = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("angle", out strWord))
 						angle = int.Parse(strWord);
-
+					if (entity.entityData.TryGetValue("health", out strWord))
+						hitpoints = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("speed", out strWord))
+						speed = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("wait", out strWord))
+						wait = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("lip", out strWord))
+						lip = int.Parse(strWord);
+					
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
 
@@ -251,12 +257,16 @@ public class ThingsManager : MonoBehaviour
 					var mesh = new Mesh();
 					mesh.CombineMeshes(combine, true, false, false);
 					Bounds bounds = mesh.bounds;
-					float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
-					SphereCollider sc = thingObject.AddComponent<SphereCollider>();
-					sc.radius = max;
-					sc.isTrigger = true;
+					sw.Init(angle, hitpoints, speed, wait, lip, bounds);
 
-					sw.Init(angle, bounds);
+					//If it's not damagable, then create trigger collider
+					if (hitpoints == 0)
+					{
+						float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
+						SphereCollider sc = thingObject.AddComponent<SphereCollider>();
+						sc.radius = max;
+						sc.isTrigger = true;
+					}
 
 					if (entity.entityData.ContainsKey("target"))
 					{
@@ -278,7 +288,6 @@ public class ThingsManager : MonoBehaviour
 								sw.tc = swTrigger;
 							}
 							sw.CurrentState = SwitchController.State.Opening;
-							Debug.Log("Activate Button");
 							sw.tc.Activate(null);
 						});
 					}
@@ -289,18 +298,33 @@ public class ThingsManager : MonoBehaviour
 				{
 					string strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-
-					DoorController dc = thingObject.GetComponent<DoorController>();
-					if (dc == null)
-						dc = thingObject.AddComponent<DoorController>();
-					if (entity.entityData.TryGetValue("dmg", out strWord))
-						dc.Damage = int.Parse(strWord);
-
+					int angle = 0, hitpoints = 0, speed = 200, wait = 2, lip = 8;
+					DoorController door = thingObject.GetComponent<DoorController>();
+					if (door == null)
+						door = thingObject.AddComponent<DoorController>();
+					if (entity.entityData.TryGetValue("angle", out strWord))
+						angle = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("health", out strWord))
+						hitpoints = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("speed", out strWord))
+						speed = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("wait", out strWord))
+						wait = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("lip", out strWord))
+						lip = int.Parse(strWord);
+					
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
 
-					Mesh mesh = thingObject.GetComponent<MeshFilter>().mesh;
-					dc.bounds = mesh.bounds;
+					MeshFilter[] meshFilterChildren = thingObject.GetComponentsInChildren<MeshFilter>(includeInactive: true);
+					CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
+					for (var i = 0; i < combine.Length; i++)
+						combine[i].mesh = meshFilterChildren[i].mesh;
+
+					var mesh = new Mesh();
+					mesh.CombineMeshes(combine, true, false, false);
+					Bounds bounds = mesh.bounds;
+					door.Init(angle, hitpoints, speed, wait, lip, bounds);
 
 					if (entity.entityData.ContainsKey("targetname"))
 					{
@@ -315,8 +339,16 @@ public class ThingsManager : MonoBehaviour
 						}
 						tc.SetController(target, (p) =>
 						{
-							Debug.Log("Activate Door");
+							if (!door.activated)
+								door.CurrentState = DoorController.State.Opening;
 						});
+					}
+					else if (hitpoints == 0) //If it's not external trigger not damagable, then create trigger collider
+					{
+						float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
+						SphereCollider sc = thingObject.AddComponent<SphereCollider>();
+						sc.radius = max;
+						sc.isTrigger = true;
 					}
 				}
 				break;

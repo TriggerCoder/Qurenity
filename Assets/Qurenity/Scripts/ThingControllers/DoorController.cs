@@ -3,66 +3,223 @@ using System.Collections.Generic;
 using Assets.MultiAudioListener;
 using UnityEngine;
 
-public class DoorController : MonoBehaviour
+public class DoorController : MonoBehaviour, Damageable
 {
-	private bool activated = false;
-
+	public bool activated = false;
 	public string startSound;
 	public string endSound;
-	public int Damage = 2;
-	public float Lip = 8 * GameManager.sizeDividor;
-	public bool Repeatable = true;
-	public bool AutoReturn = true;
-	public float AutoReturnTime = 3f;
-	public Bounds bounds;
+	private int hitpoints = 0;
+	private float lip;
+	private Bounds bounds;
+	private float speed;
 
-	public float time = 0f;
+	private float waitTime = 2;
+	private float openWaitTime = 0;
+	private Vector3 openPosition, closedPosition;
+	private Vector3 dirVector = Vector3.right;
+	public int Hitpoints { get { return hitpoints; } }
+	public bool Dead { get { return hitpoints <= 0; } }
+	public bool Bleed { get { return false; } }
+	public BloodType BloodColor { get { return BloodType.None; } }
 
 	Transform cTransform;
-	MultiAudioSource audioSource;
-	void Awake()
+	public MultiAudioSource audioSource;
+	private float openSqrMagnitude;
+
+	[System.Serializable]
+	public enum State
+	{
+		None,
+		Closed,
+		Closing,
+		Open,
+		Opening
+	}
+
+	public State currentState = State.Closed;
+	public void SetInitialState(State initial)
+	{
+		if (currentState == State.None)
+		{
+			switch (initial)
+			{
+				default:
+					Debug.LogWarning("Initial DoorState must be only Open/Closed");
+					break;
+				case State.Open:
+					currentState = initial;
+					break;
+				case State.Closed:
+					currentState = initial;
+					break;
+			}
+		}
+	}
+
+	public State CurrentState
+	{
+		get { return currentState; }
+		set
+		{
+			if (value == State.Open)
+			{
+				openWaitTime = waitTime;
+				audioSource.AudioClip = SoundLoader.LoadSound(endSound);
+				audioSource.Play();
+			}
+			else if (value == State.Opening)
+			{
+				activated = true;
+				audioSource.AudioClip = SoundLoader.LoadSound(startSound);
+				audioSource.Play();
+				enabled = true;
+			}
+			else if (value == State.Closing)
+			{
+				audioSource.AudioClip = SoundLoader.LoadSound(startSound);
+				audioSource.Play();
+				enabled = true;
+			}
+			else if (value == State.Closed)
+			{
+				audioSource.AudioClip = SoundLoader.LoadSound(endSound);
+				activated = false;
+				enabled = false;
+			}
+			currentState = value;
+		}
+	}
+	public void Init(int angle, int hp, int sp, int wait, int openlip, Bounds swBounds)
 	{
 		cTransform = transform;
-		audioSource = GetComponent<MultiAudioSource>();
+
+		if (angle != 0)
+			SetAngle(angle);
+
+		hitpoints = hp;
+		speed = sp * GameManager.sizeDividor;
+		waitTime = wait;
+		lip = openlip * GameManager.sizeDividor;
+		SetBounds(swBounds);
+
+
+		audioSource = GetComponentInChildren<MultiAudioSource>();
 		if (audioSource == null)
-			audioSource = gameObject.AddComponent<MultiAudioSource>();
+		{
+			GameObject audioPosition = new GameObject("Audio Position");
+			audioPosition.transform.position = bounds.center;
+			audioPosition.transform.SetParent(transform, true);
+			audioSource = audioPosition.AddComponent<MultiAudioSource>();
+			audioSource.PlayOnAwake = false;
+		}
 	}
-
-	private void MoveDoor(bool open)
-	{
-		if (activated != open)
-			return;
-
-		activated = !activated;
-	}
-	public bool Activate()
-	{
-		if ((!Repeatable) || (AutoReturn))
-			if (activated)
-				return false;
-
-		if (AutoReturn)
-			time = AutoReturnTime;
-
-		MoveDoor(true);
-
-		return true;
-	}
-
 	void Update()
 	{
 		if (GameManager.Paused)
 			return;
+	}
 
-		if (time <= 0)
+	void FixedUpdate()
+	{
+		if (GameManager.Paused)
 			return;
-		else
+
+		switch (CurrentState)
 		{
-			time -= Time.deltaTime;
-			if (time <= 0)
-			{
-				MoveDoor(false);
-			}
+			default:
+				break;
+
+			case State.Open:
+				if (openWaitTime > 0)
+				{
+					openWaitTime -= Time.fixedDeltaTime;
+					if (openWaitTime <= 0)
+						CurrentState = State.Closing;
+				}
+				break;
+
+			case State.Closing:
+				{
+					float newDistance = Time.fixedDeltaTime * speed;
+					Vector3 newPosition = cTransform.position - dirVector * newDistance;
+					float sqrMagnitude = (openPosition - newPosition).sqrMagnitude;
+					if (sqrMagnitude > openSqrMagnitude)
+					{
+						newPosition = closedPosition;
+						CurrentState = State.Closed;
+					}
+					transform.position = newPosition;
+				}
+				break;
+			case State.Closed:
+				break;
+
+			case State.Opening:
+				{
+					float newDistance = Time.fixedDeltaTime * speed;
+					Vector3 newPosition = cTransform.position + dirVector * newDistance;
+					float sqrMagnitude = (newPosition - closedPosition).sqrMagnitude;
+					if (sqrMagnitude > openSqrMagnitude)
+					{
+						newPosition = openPosition;
+						CurrentState = State.Open;
+					}
+					transform.position = newPosition;
+				}
+				break;
 		}
+	}
+
+	public void SetAngle(int angle)
+	{
+		if (angle < 0)
+		{
+			if (angle == -1)
+				dirVector = Vector3.up;
+			else
+				dirVector = Vector3.down;
+			return;
+		}
+		Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.down);
+		Quaternion forwardRotation = Quaternion.LookRotation(Vector3.left);
+		Quaternion finalRotation = rotation * forwardRotation;
+		dirVector = finalRotation * Vector3.forward;
+	}
+
+	public void SetBounds(Bounds swBounds)
+	{
+		bounds = swBounds;
+		closedPosition = cTransform.position;
+		Vector3 extension = new Vector3(dirVector.x * ((2 * bounds.extents.x) - lip), dirVector.y * ((2 * bounds.extents.y) - lip), dirVector.z * ((2 * bounds.extents.z) - lip));
+		openPosition = closedPosition + extension;
+		openSqrMagnitude = (openPosition - closedPosition).sqrMagnitude;
+	}
+	public void Damage(int amount, DamageType damageType = DamageType.Generic, GameObject attacker = null)
+	{
+		if (Dead)
+			return;
+	}
+	public void Impulse(Vector3 direction, float force)
+	{
+
+	}
+	public void JumpPadDest(Vector3 destination)
+	{
+
+	}
+
+	void OnTriggerEnter(Collider other)
+	{
+		if (GameManager.Paused)
+			return;
+
+		if (activated)
+			return;
+
+		PlayerThing playerThing = other.GetComponent<PlayerThing>();
+		if (playerThing == null)
+			return;
+
+		CurrentState = State.Opening;
 	}
 }
