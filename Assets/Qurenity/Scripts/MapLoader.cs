@@ -390,7 +390,7 @@ public static class MapLoader
 
 	public static void GenerateGeometricCollider(Transform holder, int num, uint contentFlags = 0, bool isTrigger = false)
 	{
-		GenerateGeometricCollider(null, holder, num, contentFlags, isTrigger);
+		GenerateGeometricCollider(null, holder, num, contentFlags, isTrigger, !isTrigger);
 	}
 	public static void GenerateGeometricCollider(GameObject go, int num, uint contentFlags = 0, bool isTrigger = true)
 	{
@@ -398,7 +398,7 @@ public static class MapLoader
 		GenerateGeometricCollider(go, holder, num, contentFlags, isTrigger);
 	}
 
-	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num, uint contentFlags, bool isTrigger)
+	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num, uint contentFlags, bool isTrigger, bool addRigidbody = false)
 	{
 		for (int i = 0; i < models[num].numBrushes; i++)
 		{
@@ -413,7 +413,7 @@ public static class MapLoader
 				modelObject.transform.localPosition = Vector3.zero;
 				modelObject.transform.localRotation = Quaternion.identity;
 			}
-			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, false);
+			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, addRigidbody);
 
 			if (contentFlags != 0)
 			{

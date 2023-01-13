@@ -864,9 +864,4 @@ public class PlayerModel : MonoBehaviour, Damageable
 	{
 
 	}
-
-	public void JumpPadDest(Vector3 destination)
-	{
-
-	}
 }

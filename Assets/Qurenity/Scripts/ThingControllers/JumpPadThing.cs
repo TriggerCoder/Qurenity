@@ -19,13 +19,13 @@ public class JumpPadThing : MonoBehaviour
 		if (GameManager.Paused)
 			return;
 
-		Damageable d = other.GetComponent<Damageable>();
-		if (d == null)
+		PlayerThing p = other.GetComponent<PlayerThing>();
+		if (p == null)
 			return;
 
 		if (!string.IsNullOrEmpty(BoingSound))
 			AudioManager.Create3DSound(position, BoingSound, 1f);
 
-		d.JumpPadDest(destination);
+		p.JumpPadDest(destination);
 	}
 }

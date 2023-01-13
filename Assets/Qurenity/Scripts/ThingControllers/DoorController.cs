@@ -10,6 +10,8 @@ public class DoorController : MonoBehaviour, Damageable
 	public string startSound;
 	public string endSound;
 	public TriggerController tc;
+	public int damage = 4;
+	public bool crusher = false;
 	private int hitpoints = 0;
 	private float lip;
 	private Bounds bounds;
@@ -109,7 +111,7 @@ public class DoorController : MonoBehaviour, Damageable
 			currentState = value;
 		}
 	}
-	public void Init(int angle, int hp, int sp, int wait, int openlip, Bounds swBounds)
+	public void Init(int angle, int hp, int sp, int wait, int openlip, Bounds swBounds, int dmg = 0)
 	{
 		cTransform = transform;
 
@@ -120,7 +122,10 @@ public class DoorController : MonoBehaviour, Damageable
 		speed = sp * GameManager.sizeDividor;
 		waitTime = wait;
 		lip = openlip * GameManager.sizeDividor;
-		SetBounds(swBounds);
+/*		damage = dmg;
+		if (dmg > 100)
+			crusher = true;
+*/		SetBounds(swBounds);
 
 		audioSource = GetComponentInChildren<MultiAudioSource>();
 		if (audioSource == null)
@@ -206,16 +211,15 @@ public class DoorController : MonoBehaviour, Damageable
 		openPosition = closedPosition + extension;
 		openSqrMagnitude = (openPosition - closedPosition).sqrMagnitude;
 	}
-	public void Damage(int amount, DamageType damageType = DamageType.Generic, GameObject attacker = null)
+	public virtual void Damage(int amount, DamageType damageType = DamageType.Generic, GameObject attacker = null)
 	{
 		if (Dead)
 			return;
+
+		if (!Activated)
+			CurrentState = State.Opening;
 	}
 	public void Impulse(Vector3 direction, float force)
-	{
-
-	}
-	public void JumpPadDest(Vector3 destination)
 	{
 
 	}

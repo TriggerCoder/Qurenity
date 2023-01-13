@@ -231,7 +231,7 @@ public class ThingsManager : MonoBehaviour
 				{
 					string strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4;
+					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4, dmg = 4;
 					SwitchController sw = thingObject.GetComponent<SwitchController>();
 					if (sw == null)
 						sw = thingObject.AddComponent<SwitchController>();
@@ -245,19 +245,21 @@ public class ThingsManager : MonoBehaviour
 						wait = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("lip", out strWord))
 						lip = int.Parse(strWord);
-					
+					if (entity.entityData.TryGetValue("dmg", out strWord))
+						dmg = int.Parse(strWord);
+
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
 
 					MeshFilter[] meshFilterChildren = thingObject.GetComponentsInChildren<MeshFilter>(includeInactive: true);
 					CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
-					for (var i = 0; i < combine.Length; i++)
+					for (int i = 0; i < combine.Length; i++)
 						combine[i].mesh = meshFilterChildren[i].mesh;
 
 					var mesh = new Mesh();
 					mesh.CombineMeshes(combine, true, false, false);
 					Bounds bounds = mesh.bounds;
-					sw.Init(angle, hitpoints, speed, wait, lip, bounds);
+					sw.Init(angle, hitpoints, speed, wait, lip, bounds, dmg);
 						
 					//If it's not damagable, then create trigger collider
 					if (hitpoints == 0)
@@ -266,6 +268,16 @@ public class ThingsManager : MonoBehaviour
 						SphereCollider sc = thingObject.AddComponent<SphereCollider>();
 						sc.radius = max;
 						sc.isTrigger = true;
+					}
+					//If it is, then we need to create a damage interface for the colliders
+					else
+					{
+						Collider[] collidersChildren = thingObject.GetComponentsInChildren<Collider>(includeInactive: true);
+						for (var i = 0; i < collidersChildren.Length; i++)
+						{
+							ParentIsDamageable parentIsDamageable = collidersChildren[i].gameObject.AddComponent<ParentIsDamageable>();
+							parentIsDamageable.parent = sw;
+						}
 					}
 
 					if (entity.entityData.ContainsKey("target"))
@@ -326,6 +338,17 @@ public class ThingsManager : MonoBehaviour
 					Bounds bounds = mesh.bounds;
 					door.Init(angle, hitpoints, speed, wait, lip, bounds);
 
+					//Need to change the rb to non kinematics in order for collision detection to work
+					Rigidbody[] rigidbodiesChildren = thingObject.GetComponentsInChildren<Rigidbody>(includeInactive: true);
+					for (int i = 0; i < rigidbodiesChildren.Length; i++)
+					{
+						rigidbodiesChildren[i].useGravity = false;
+						rigidbodiesChildren[i].isKinematic = false;
+						rigidbodiesChildren[i].constraints = RigidbodyConstraints.FreezeAll;
+						DoorCollider doorCollider = rigidbodiesChildren[i].gameObject.AddComponent<DoorCollider>();
+						doorCollider.door = door;
+					}
+
 					if (entity.entityData.ContainsKey("targetname"))
 					{
 						strWord = entity.entityData["targetname"];
@@ -345,21 +368,32 @@ public class ThingsManager : MonoBehaviour
 							door.CurrentState = DoorController.State.Opening;
 						});
 					}
-					else if (hitpoints == 0) //If it's not external trigger not damagable, then create a trigger and collider
+					else //If it's not external trigger
 					{
-						float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
-						SphereCollider sc = thingObject.AddComponent<SphereCollider>();
-						sc.radius = max;
-						sc.isTrigger = true;
-
-						TriggerController tc = thingObject.AddComponent<TriggerController>();
-						tc.Repeatable = true;
-						tc.AutoReturn = true;
-						tc.AutoReturnTime = wait;
-						tc.SetController(0, (p) =>
+						if (hitpoints == 0)//If  not damagable, then create a trigger and collider
 						{
-							door.CurrentState = DoorController.State.Opening;
-						});
+							float max = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z);
+							SphereCollider sc = thingObject.AddComponent<SphereCollider>();
+							sc.radius = max;
+							sc.isTrigger = true;
+							
+							TriggerController tc = thingObject.AddComponent<TriggerController>();
+							tc.Repeatable = true;
+							tc.AutoReturn = true;
+							tc.AutoReturnTime = wait;
+							tc.SetController(0, (p) =>
+							{
+								door.CurrentState = DoorController.State.Opening;
+							});
+						}
+						else //If it is, then we need to create a damage interface for the colliders
+						{
+							for (int i = 0; i < rigidbodiesChildren.Length; i++)
+							{
+								ParentIsDamageable parentIsDamageable = rigidbodiesChildren[i].gameObject.AddComponent<ParentIsDamageable>();
+								parentIsDamageable.parent = door;
+							}
+						}
 					}
 				}
 				break;

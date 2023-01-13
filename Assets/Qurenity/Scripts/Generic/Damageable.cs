@@ -32,5 +32,4 @@ public interface Damageable
 	BloodType BloodColor { get; }
 	void Damage(int amount, DamageType damageType = DamageType.Generic, GameObject attacker = null);
 	void Impulse(Vector3 direction, float force);
-	void JumpPadDest(Vector3 destination);
 }
