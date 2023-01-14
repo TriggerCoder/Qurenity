@@ -50,7 +50,16 @@ MonoBehaviour:
   location: {x: 0, y: 0, z: 0}
   angularrotation: {x: 0, y: 0, z: 0, w: 0}
   thingName: weapon_rocketlauncher
+  respawnSound: items/respawn1
   respawnTime: 30
+  modelsToCache:
+  - modelName: weapons2/rocketl/rocketl
+    isTextureTransparent: 0
+  - modelName: weapons2/rocketl/rocketl_flash
+    isTextureTransparent: 1
+  poolObjectsToCache:
+  - go: {fileID: 9108129251432354766, guid: 0e8cecd77d9f2b44f8e48281681be182, type: 3}
+    poolName: RocketProjectile
   thingType: 2
 --- !u!114 &3069971105422698728
 MonoBehaviour:

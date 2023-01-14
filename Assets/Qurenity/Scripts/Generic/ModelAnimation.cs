@@ -56,10 +56,7 @@ public class ModelAnimation : MonoBehaviour
 			Destroy(gameObject);
 			return;
 		}
-	}
 
-	void Start()
-	{
 		md3Model = ModelsManager.GetModel(modelName, isTransparent);
 		if (md3Model == null)
 		{
@@ -107,12 +104,15 @@ public class ModelAnimation : MonoBehaviour
 				textures.Add(i, frames);
 			}
 		}
+		cTransform = currentObject.transform;
+	}
 
+	void Start()
+	{
 		//If no vertex animation nor texture animation, disable the animation
 		if ((modelAnim.Count == 0) && (textureAnim.Count == 0) && (!localAnimation.rotEnable) && (!localAnimation.posEnable))
 			enabled = false;
 
-		cTransform = currentObject.transform;
 		currentOrigin = cTransform.position;
 		height = currentOrigin.y;
 	}

@@ -12,6 +12,18 @@ public class ModelsManager : MonoBehaviour
 		Instance = this;	
 	}
 
+	public static void CacheModel(string modelName, bool forceSkinAlpha = false)
+	{
+		if (Models.ContainsKey(modelName))
+			return;
+
+		MD3 model = MD3.ImportModel(modelName, forceSkinAlpha);
+		if (model == null)
+			return;
+
+		Models.Add(modelName, model);
+		return;
+	}
 	public static MD3 GetModel(string modelName, bool forceSkinAlpha = false)
 	{
 		if (Models.ContainsKey(modelName))

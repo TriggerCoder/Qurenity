@@ -115,6 +115,7 @@ public class MaterialManager : MonoBehaviour
 				anim.frames = mo.animation[i].textureFrames;
 				anim.frameTime = mo.animation[i].fps;
 				anim.textureType = i;
+				anim.Init();
 			}
 			mat.SetFloat(rgbGenBase[i], mo.animation[i].Base);
 			mat.SetFloat(rgbGenAmp[i], mo.animation[i].Amp);

@@ -5,7 +5,7 @@ public class TextureAnimation : MonoBehaviour
 	public static readonly string[] texture = { "_S_Texture", "_W_Texture", "_IW_Texture" };
 
 	public float frameTime = 1f;
-	public string[] frames;
+	public string[] frames = new string[0];
 	private Texture[] _frames;
 	public int direction = 1;
 	public int textureType;
@@ -17,9 +17,24 @@ public class TextureAnimation : MonoBehaviour
 	{
 		mr = GetComponent<MeshRenderer>();
 		materialParameters = new MaterialPropertyBlock();
+		if (frames.Length == 0)
+			return;
+
+		_frames = new Texture[frames.Length];
+
+		for (int i = 0; i < frames.Length; i++)
+		{
+			_frames[i] = TextureLoader.Instance.GetTexture(frames[i]);
+		}
+
+		SetFirstFrame();
+		if (frameTime == 0)
+			enabled = false;
+
+		frameTime = 1 / frameTime;
 	}
 
-	void Start()
+	public void Init()
 	{
 		if (frames.Length == 0)
 			enabled = false;
@@ -44,6 +59,7 @@ public class TextureAnimation : MonoBehaviour
 		materialParameters.SetTexture(texture[textureType], _frames[0]);
 		mr.SetPropertyBlock(materialParameters);
 	}
+
 	bool lastflip = false;
 	int index = 0;
 

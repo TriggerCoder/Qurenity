@@ -122,10 +122,10 @@ public class DoorController : MonoBehaviour, Damageable
 		speed = sp * GameManager.sizeDividor;
 		waitTime = wait;
 		lip = openlip * GameManager.sizeDividor;
-/*		damage = dmg;
+		damage = dmg;
 		if (dmg > 100)
 			crusher = true;
-*/		SetBounds(swBounds);
+		SetBounds(swBounds);
 
 		audioSource = GetComponentInChildren<MultiAudioSource>();
 		if (audioSource == null)

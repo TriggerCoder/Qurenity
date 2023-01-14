@@ -231,7 +231,7 @@ public class ThingsManager : MonoBehaviour
 				{
 					string strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4, dmg = 4;
+					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4;
 					SwitchController sw = thingObject.GetComponent<SwitchController>();
 					if (sw == null)
 						sw = thingObject.AddComponent<SwitchController>();
@@ -245,8 +245,6 @@ public class ThingsManager : MonoBehaviour
 						wait = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("lip", out strWord))
 						lip = int.Parse(strWord);
-					if (entity.entityData.TryGetValue("dmg", out strWord))
-						dmg = int.Parse(strWord);
 
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
@@ -259,7 +257,7 @@ public class ThingsManager : MonoBehaviour
 					var mesh = new Mesh();
 					mesh.CombineMeshes(combine, true, false, false);
 					Bounds bounds = mesh.bounds;
-					sw.Init(angle, hitpoints, speed, wait, lip, bounds, dmg);
+					sw.Init(angle, hitpoints, speed, wait, lip, bounds);
 						
 					//If it's not damagable, then create trigger collider
 					if (hitpoints == 0)
@@ -310,7 +308,7 @@ public class ThingsManager : MonoBehaviour
 				{
 					string strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0, hitpoints = 0, speed = 200, wait = 2, lip = 8;
+					int angle = 0, hitpoints = 0, speed = 200, wait = 2, lip = 8, dmg = 4;
 					DoorController door = thingObject.GetComponent<DoorController>();
 					if (door == null)
 						door = thingObject.AddComponent<DoorController>();
@@ -324,7 +322,9 @@ public class ThingsManager : MonoBehaviour
 						wait = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("lip", out strWord))
 						lip = int.Parse(strWord);
-					
+					if (entity.entityData.TryGetValue("dmg", out strWord))
+						dmg = int.Parse(strWord);
+
 					MapLoader.GenerateGeometricSurface(thingObject, model);
 					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
 
@@ -336,7 +336,7 @@ public class ThingsManager : MonoBehaviour
 					var mesh = new Mesh();
 					mesh.CombineMeshes(combine, true, false, false);
 					Bounds bounds = mesh.bounds;
-					door.Init(angle, hitpoints, speed, wait, lip, bounds);
+					door.Init(angle, hitpoints, speed, wait, lip, bounds, dmg);
 
 					//Need to change the rb to non kinematics in order for collision detection to work
 					Rigidbody[] rigidbodiesChildren = thingObject.GetComponentsInChildren<Rigidbody>(includeInactive: true);

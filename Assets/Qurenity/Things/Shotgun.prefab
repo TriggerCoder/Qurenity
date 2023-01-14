@@ -50,7 +50,14 @@ MonoBehaviour:
   location: {x: 0, y: 0, z: 0}
   angularrotation: {x: 0, y: 0, z: 0, w: 0}
   thingName: weapon_shotgun
+  respawnSound: items/respawn1
   respawnTime: 30
+  modelsToCache:
+  - modelName: weapons2/shotgun/shotgun
+    isTextureTransparent: 0
+  - modelName: weapons2/shotgun/shotgun_flash
+    isTextureTransparent: 1
+  spritesToCache: []
   thingType: 2
 --- !u!114 &3069971105422698728
 MonoBehaviour:

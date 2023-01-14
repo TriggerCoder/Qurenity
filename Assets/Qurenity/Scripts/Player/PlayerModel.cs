@@ -231,9 +231,9 @@ public class PlayerModel : MonoBehaviour, Damageable
 				for (int i = 0; i < upper.meshes.Count; i++)
 				{
 					MD3Mesh currentMesh = upper.meshes[i];
-					Vector3[] currentVect = currentMesh.verts[currentFrameUpper].ToArray();
-					Vector3[] nextVect = currentMesh.verts[nextFrameUpper].ToArray();
-					for (int j = 0; j < currentVect.Length; j++)
+					List<Vector3> currentVect = currentMesh.verts[currentFrameUpper];
+					List<Vector3> nextVect = currentMesh.verts[nextFrameUpper];
+					for (int j = 0; j < currentVect.Count; j++)
 					{
 						currentVect[j] = currentRotation * Vector3.Lerp(currentVect[j], nextVect[j], upperCurrentLerpTime);
 						currentVect[j] += currentOffset;
@@ -265,10 +265,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 				for (int i = 0; i < lower.meshes.Count; i++)
 				{
 					MD3Mesh currentMesh = lower.meshes[i];
-					Vector3[] currentVect = currentMesh.verts[currentFrameLower].ToArray();
-					Vector3[] nextVect = currentMesh.verts[nextFrameLower].ToArray();
+					List<Vector3> currentVect = currentMesh.verts[currentFrameLower];
+					List<Vector3> nextVect = currentMesh.verts[nextFrameLower];
 
-					for (int j = 0; j < currentVect.Length; j++)
+					for (int j = 0; j < currentVect.Count; j++)
 					{
 						currentVect[j] = currentRotation * Vector3.Lerp(currentVect[j], nextVect[j], lowerCurrentLerpTime);
 						currentVect[j] += currentOffset;

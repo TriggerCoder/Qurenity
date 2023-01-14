@@ -50,7 +50,16 @@ MonoBehaviour:
   location: {x: 0, y: 0, z: 0}
   angularrotation: {x: 0, y: 0, z: 0, w: 0}
   thingName: weapon_railgun
+  respawnSound: items/respawn1
   respawnTime: 120
+  modelsToCache:
+  - modelName: weapons2/railgun/railgun
+    isTextureTransparent: 0
+  - modelName: weapons2/railgun/railgun_flash
+    isTextureTransparent: 1
+  poolObjectsToCache:
+  - go: {fileID: 1119050559316812250, guid: c615e3602e744c6439bb6ecacdfb9aef, type: 3}
+    poolName: Railtrace
   thingType: 2
 --- !u!114 &3069971105422698728
 MonoBehaviour:

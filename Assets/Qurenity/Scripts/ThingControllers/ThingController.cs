@@ -13,6 +13,23 @@ public class ThingController : MonoBehaviour
 	public string respawnSound = "items/respawn1";
 	public float respawnTime;
 
+	public ModelCache[] modelsToCache = new ModelCache[0];
+	public PoolObjectCache[] poolObjectsToCache = new PoolObjectCache[0];
+
+	[System.Serializable]
+	public struct ModelCache
+	{
+		public string modelName;
+		public bool isTextureTransparent;
+	}
+
+	[System.Serializable]
+	public struct PoolObjectCache
+	{
+		public GameObject go;
+		public string poolName;
+	}
+
 	[System.Serializable]
 	public enum ThingType
 	{
@@ -28,6 +45,18 @@ public class ThingController : MonoBehaviour
 	}
 
 	public ThingType thingType = ThingType.Decor;
+
+	void Awake()
+	{
+		foreach (var model in modelsToCache)
+			ModelsManager.CacheModel(model.modelName,model.isTextureTransparent);
+
+		foreach (var poolObject in poolObjectsToCache)
+		{
+			if (!PoolManager.HasObjectPool(poolObject.poolName))
+				PoolManager.CreateProjectilePool(poolObject.poolName, poolObject.go, 10);
+		}
+	}
 
 	void OnDisable()
 	{
