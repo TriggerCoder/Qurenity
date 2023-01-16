@@ -227,6 +227,9 @@ public class PlayerModel : MonoBehaviour, Damageable
 			Vector3 weaponOrigin = Vector3.Lerp(upper.tagsbyName["tag_weapon"][currentFrameUpper].origin, upper.tagsbyName["tag_weapon"][nextFrameUpper].origin, upperCurrentLerpTime);
 
 			{
+				/*
+				 * Multiplying a vector by a Quaternion, rotates the vector by eulerangles
+				 */
 				Vector3 currentOffset = lowerTorsoRotation * upperTorsoOrigin;
 				Quaternion currentRotation = lowerTorsoRotation * upperTorsoRotation;
 
@@ -335,7 +338,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		Vector3 forward = playerTransform.forward;
 		int angle = (int)Mathf.Round((Mathf.Atan2(direction.x, direction.z)) / (Mathf.PI * 2) * 8) % 8;
 
-		//Player Models are rotated 90º
+		//Player Models are rotated 90ï¿½
 		angle += 2;
 		direction = Quaternion.Euler(0f, angle * 45f, 0f) * Vector3.forward;
 
@@ -437,8 +440,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 			else if (sideMove < 0)
 				rotate = Quaternion.AngleAxis(-50f, playerTransform.up);
 		}
-		else if (lowerAnimation != LowerAnimation.Turn)
-			lowerAnimation = LowerAnimation.Idle;
+		// else if (lowerAnimation != LowerAnimation.Turn)
+		// 	lowerAnimation = LowerAnimation.Idle;
 
 		lowerTransform.localRotation = rotate;
 	}
