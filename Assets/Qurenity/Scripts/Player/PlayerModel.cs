@@ -125,6 +125,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 	public bool Bleed { get { return true; } }
 	public BloodType BloodColor { get { return BloodType.Red; } }
 
+	List<Vector3> currentVect = new List<Vector3>();
+	List<Vector3> nextVect = new List<Vector3>();
 	private void Update()
 	{
 		if (!loaded)
@@ -231,8 +233,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 				for (int i = 0; i < upper.meshes.Count; i++)
 				{
 					MD3Mesh currentMesh = upper.meshes[i];
-					List<Vector3> currentVect = currentMesh.verts[currentFrameUpper];
-					List<Vector3> nextVect = currentMesh.verts[nextFrameUpper];
+					currentVect.Clear();
+					nextVect.Clear();
+					currentVect.AddRange(currentMesh.verts[currentFrameUpper]);
+					nextVect.AddRange(currentMesh.verts[nextFrameUpper]);
 					for (int j = 0; j < currentVect.Count; j++)
 					{
 						currentVect[j] = currentRotation * Vector3.Lerp(currentVect[j], nextVect[j], upperCurrentLerpTime);
@@ -265,8 +269,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 				for (int i = 0; i < lower.meshes.Count; i++)
 				{
 					MD3Mesh currentMesh = lower.meshes[i];
-					List<Vector3> currentVect = currentMesh.verts[currentFrameLower];
-					List<Vector3> nextVect = currentMesh.verts[nextFrameLower];
+					currentVect.Clear();
+					nextVect.Clear();
+					currentVect.AddRange(currentMesh.verts[currentFrameLower]);
+					nextVect.AddRange(currentMesh.verts[nextFrameLower]);
 
 					for (int j = 0; j < currentVect.Count; j++)
 					{
