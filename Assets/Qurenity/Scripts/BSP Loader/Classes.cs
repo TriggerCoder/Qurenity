@@ -2,6 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public static class QuakeToUnity
+{
+	public static Vector3 Vect3(Vector3 inV3, bool scale = true)
+	{
+		Vector3 outV3 = new Vector3(-inV3.x, inV3.z, -inV3.y);
+		if (scale)
+			outV3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		return outV3;
+	}
+	public static Vector3 Vect3(Vector3Int inV3, bool scale = true)
+	{
+		Vector3 outV3 = new Vector3(-inV3.x, inV3.z, -inV3.y);
+		if (scale)
+			outV3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		return outV3;
+	}
+}
 public class QShader
 {
 
@@ -39,16 +56,8 @@ public class QNode
 		this.front = front;
 		this.back = back;
 		this.front = front;
-		this.bb_Min = Vector3.zero;
-		this.bb_Max = Vector3.zero;
-		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
-		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
-	}
-	private Vector3 QuakeToUnityCoordSystem(Vector3Int vect3i)
-	{
-		Vector3 vect3 = new Vector3(-vect3i.x, vect3i.z, -vect3i.y);
-		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-		return vect3;
+		this.bb_Min = QuakeToUnity.Vect3(bb_Min);
+		this.bb_Max = QuakeToUnity.Vect3(bb_Max);
 	}
 }
 public class QPlane
@@ -59,14 +68,8 @@ public class QPlane
 	public float distance;              // The plane distance from origin
 	public QPlane(Vector3 normal, float distance)
 	{
-		this.normal = normal;
-		this.distance = distance;
-		QuakeToUnityCoordSystem();
-	}
-	private void QuakeToUnityCoordSystem()
-	{
-		normal = new Vector3(-normal.x, normal.z, -normal.y);
-		distance *= GameManager.sizeDividor;
+		this.normal = QuakeToUnity.Vect3(normal, false);
+		this.distance = distance * GameManager.sizeDividor;
 	}
 	public bool GetSide(Vector3 vect, CheckPointPlane check = CheckPointPlane.IsOnOrFront)
 	{
@@ -135,16 +138,8 @@ public class QLeaf
 		this.numOfLeafFaces = numOfLeafFaces;
 		this.leafBrush = leafBrush;
 		this.numOfLeafBrushes = numOfLeafBrushes;
-		this.bb_Min = Vector3.zero;
-		this.bb_Max = Vector3.zero;
-		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
-		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
-	}
-	private Vector3 QuakeToUnityCoordSystem(Vector3Int vect3i)
-	{
-		Vector3 vect3 = new Vector3(-vect3i.x, vect3i.z, -vect3i.y);
-		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-		return vect3;
+		this.bb_Min = QuakeToUnity.Vect3(bb_Min);
+		this.bb_Max = QuakeToUnity.Vect3(bb_Max);
 	}
 };
 
@@ -163,16 +158,8 @@ public class QModel
 		this.numSurfaces = numSurfaces;
 		this.firstBrush = firstBrush;
 		this.numBrushes = numBrushes;
-		this.bb_Min = Vector3.zero;
-		this.bb_Max = Vector3.zero;
-		this.bb_Min = QuakeToUnityCoordSystem(bb_Min);
-		this.bb_Max = QuakeToUnityCoordSystem(bb_Max);
-	}
-	private Vector3 QuakeToUnityCoordSystem(Vector3 vect)
-	{
-		Vector3 vect3 = new Vector3(-vect.x, vect.z, -vect.y);
-		vect3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-		return vect3;
+		this.bb_Min = QuakeToUnity.Vect3(bb_Min);
+		this.bb_Max = QuakeToUnity.Vect3(bb_Max);
 	}
 };
 
@@ -224,8 +211,8 @@ public class QVertex
 	public QVertex(int vertId, Vector3 position, float texX, float texY, float lmX, float lmY, Vector3 normal, byte[] color)
 	{
 		this.vertId = vertId;
-		this.position = position;
-		this.normal = normal;
+		this.position = QuakeToUnity.Vect3(position);
+		this.normal = QuakeToUnity.Vect3(normal,false);
 
 		this.color = new Color32(color[0], color[1], color[2], color[3]);
 
@@ -238,16 +225,6 @@ public class QVertex
 		// Lightmaps are created dynamically
 		lightmapCoord.x = lmX;
 		lightmapCoord.y = lmY;
-
-		QuakeToUnityCoordSystem();
-	}
-
-	private void QuakeToUnityCoordSystem()
-	{
-		position = new Vector3(-position.x, position.z, -position.y);
-		normal = new Vector3(-normal.x, normal.z, -normal.y);
-
-		position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
 	}
 }
 public class QSurface
@@ -283,19 +260,10 @@ public class QSurface
 		this.lightMapID = lightMapID;
 		this.lm_Corner = lm_Corner;
 		this.lm_Size = lm_Size;
-		this.lm_Origin = lm_Origin;
+		this.lm_Origin = QuakeToUnity.Vect3(lm_Origin);
 		this.lm_vecs = lm_vecs;
-		this.normal = normal;
+		this.normal = QuakeToUnity.Vect3(normal,false);
 		this.size = size;
-
-		QuakeToUnityCoordSystem();
-	}
-	private void QuakeToUnityCoordSystem()
-	{
-		lm_Origin = new Vector3(-lm_Origin.x, lm_Origin.z, -lm_Origin.y);
-		normal = new Vector3(-normal.x, normal.z, -normal.y);
-
-		lm_Origin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
 	}
 }
 public class QSurfaceType

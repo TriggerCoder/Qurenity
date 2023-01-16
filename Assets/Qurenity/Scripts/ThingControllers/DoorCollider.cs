@@ -18,7 +18,7 @@ public class DoorCollider : MonoBehaviour
 		if (playerThing == null)
 			return;
 
-		playerThing.Damage(Damage);
+		playerThing.Damage(Damage, DamageType.Crusher);
 		if (!door.crusher)
 			door.CurrentState = DoorController.State.Opening;
 	}
