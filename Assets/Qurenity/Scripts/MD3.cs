@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
+using ExtensionMethods;
 
 public class MD3UnityConverted
 {
@@ -118,6 +119,7 @@ public class MD3
 
 		md3Model.tags = new List<MD3Tag>();
 		Md3ModelFile.BaseStream.Seek(ofsTags, SeekOrigin.Begin);
+
 		for (int i = 0; i < md3Model.numFrames * md3Model.numTags; i++)
 		{
 			MD3Tag tag = new MD3Tag();
@@ -126,6 +128,7 @@ public class MD3
 			float x = Md3ModelFile.ReadSingle();
 			float y = Md3ModelFile.ReadSingle();
 			float z = Md3ModelFile.ReadSingle();
+
 			tag.origin = new Vector3(x, y, z);
 
 			float m00 = Md3ModelFile.ReadSingle();
@@ -145,18 +148,13 @@ public class MD3
 			Vector4 column2 = new Vector4(m02, m12, m22, 0);
 			Vector4 column3 = new Vector4(0, 0, 0, 0);
 
-
-			Matrix4x4 orientation = new Matrix4x4(column0, column1, column2, column3);
-			tag.rotation = orientation.ExtractRotation();
+			//https://math.stackexchange.com/questions/3882851/convert-rotation-matrix-between-coordinate-systems
+			//We need to convert the rotation to the new coordinate system, the new coordinate system conversion is given by T (Quakt To Unity Conversion)
+			//If the two coordinate system are in the same space and they are related by T, with the old rotation Ra then the new rotation Rb is given by 
+			//Rb = TRaT^-1
+			tag.orientation = tag.orientation.QuakeToUnityConversion().inverse * new Matrix4x4(column0, column1, column2, column3) * tag.orientation.QuakeToUnityConversion();
+			tag.rotation = tag.orientation.ExtractRotation();
 			
-
-			// tag.orientation = new Matrix4x4(-1 * column0, column2, -1 * column1, column3);
-			// tag.rotation = Quaternion.Inverse(new Quaternion(m21, 0.0f, -m20, 1 + m22));
-//			tag.rotation = Quaternion.Euler(0f, 0f, 90f) * new Quaternion(m21, 0.0f, -m20, 1 + m22);
-//			tag.rotation = new Quaternion(90 * m21 - m20, 90 * m21, -90 * m20 + 90 + 90 * m22, 90 + 90 * m22);
-
-			// tag.rotation.Normalize();
-
 			tag.QuakeToUnityCoordSystem();
 			if (!md3Model.tagsbyName.ContainsKey(tag.name))
 			{
@@ -205,7 +203,7 @@ public class MD3Tag
 {
 	public string name;					// The name of the tag
 	public Vector3 origin;              // The origin of the tag in 3D space
-	// public Matrix4x4 orientation;       // The orientation of the tag in 3D space
+	public Matrix4x4 orientation;       // The orientation of the tag in 3D space
 	public Quaternion rotation;         // The rotation of the tag in 3D space
 	public void QuakeToUnityCoordSystem()
 	{
