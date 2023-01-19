@@ -44,6 +44,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private int currentFrameLower;
 
 	private bool loaded = false;
+
 	private bool ownerDead = false;
 	public class ModelAnimation
 	{
@@ -149,26 +150,27 @@ public class PlayerModel : MonoBehaviour, Damageable
 				nextFrameUpper = currentFrameUpper + 1;
 				if (nextFrameUpper >= currentUpper.endFrame)
 				{
-					switch (nextUpper.index)
+					switch ((UpperAnimation)nextUpper.index)
 					{
 						default:
 							nextUpper = upperAnim[(int)upperAnimation];
-							nextFrameUpper = currentUpper.startFrame;
+							nextFrameUpper = nextUpper.startFrame;
 						break;
-						case (int)UpperAnimation.Death3:
-							upperAnimation = UpperAnimation.Dead3;
+						case UpperAnimation.Death1:
+						case UpperAnimation.Death2:
+						case UpperAnimation.Death3:
+							upperAnimation++;
 							nextUpper = upperAnim[(int)upperAnimation];
-							nextFrameUpper = currentUpper.startFrame;
+							nextFrameUpper = nextUpper.startFrame;
 							ChangeToRagDoll();
 							return;
-						break;
-						case (int)UpperAnimation.Attack:
-						case (int)UpperAnimation.Raise:
+						case UpperAnimation.Attack:
+						case UpperAnimation.Raise:
 							upperAnimation = UpperAnimation.Stand;
 							nextUpper = upperAnim[(int)upperAnimation];
-							nextFrameUpper = currentUpper.startFrame;
-						break;
-						case (int)UpperAnimation.Drop:
+							nextFrameUpper = nextUpper.startFrame;
+							break;
+						case UpperAnimation.Drop:
 							nextFrameUpper = currentUpper.endFrame;
 						break;
 					}
@@ -182,23 +184,25 @@ public class PlayerModel : MonoBehaviour, Damageable
 				nextFrameLower = currentFrameLower + 1;
 				if (nextFrameLower >= currentLower.endFrame)
 				{
-					switch (nextLower.index)
+					switch ((LowerAnimation)nextLower.index)
 					{
 						default:
 							
 						break;
-						case (int)LowerAnimation.Death3:
-							lowerAnimation = LowerAnimation.Dead3;
+						case LowerAnimation.Death1:
+						case LowerAnimation.Death2:
+						case LowerAnimation.Death3:
+							lowerAnimation++;
 						break;
-						case (int)LowerAnimation.Jump:
+						case LowerAnimation.Jump:
 							lowerAnimation = LowerAnimation.Land;
 						break;
-						case (int)LowerAnimation.JumpBack:
+						case LowerAnimation.JumpBack:
 							lowerAnimation = LowerAnimation.LandBack;
 						break;
-						case (int)LowerAnimation.Turn:
-						case (int)LowerAnimation.Land:
-						case (int)LowerAnimation.LandBack:
+						case LowerAnimation.Turn:
+						case LowerAnimation.Land:
+						case LowerAnimation.LandBack:
 							if (turnTo.sqrMagnitude > 0)
 							{
 								playerTransform.forward = turnTo;
@@ -257,8 +261,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 				weaponTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
-//Need to check for death animation
-				if (_enableOffset)
+
+				if ((_enableOffset) || (ownerDead))
 					playerTransform.localPosition = lowerTorsoOrigin;
 				else
 					playerTransform.localPosition = Vector3.zero;
@@ -312,22 +316,18 @@ public class PlayerModel : MonoBehaviour, Damageable
 		if (ownerDead)
 			return;
 
+		//In order to keep proper animation and not offset it by looking at target, otherwise head could go Exorcist-like
 		if (!_enableOffset)
 			return;
 
 		float vView = viewDirection.x;
 		float hView = viewDirection.y;
-/*
-		int vAngle = (int)Mathf.Round((vView) / (360) * 16) % 16;
-		int hAngle = (int)Mathf.Round((hView + 90) / (360) * 16) % 16;
-		headTransform.rotation = Quaternion.Slerp(headTransform.rotation, Quaternion.Euler(0, 22.5f * hAngle, 20 * vAngle), rotationFPS * deltaTime);
-*/
+
 		headTransform.rotation = Quaternion.Slerp(headTransform.rotation, Quaternion.Euler(0, hView + 90, vView), rotationFPS * deltaTime);
 
 		int vAngle = (int)Mathf.Round((vView) / (360) * 32) % 32;
 		int hAngle = (int)Mathf.Round((hView + 90) / (360) * 32) % 32;
 
-//		upperTransform.rotation = Quaternion.Slerp(upperTransform.rotation, Quaternion.Euler(0, hView, .7f * vView), rotationFPS * deltaTime);
 		upperTransform.rotation = Quaternion.Slerp(upperTransform.rotation, Quaternion.Euler(0, 11.25f * hAngle, 7.5f * vAngle), rotationFPS * deltaTime);
 	}
 
@@ -364,8 +364,30 @@ public class PlayerModel : MonoBehaviour, Damageable
 	{
 		Vector3 currentPosition = playerTransform.position;
 		Quaternion currentRotation = playerTransform.rotation;
+
+		//Need to change head mesh from transform position and rotation offsets to vertex to get a correct collider
+		Vector3 headOffset = tagHeadTransform.localPosition;
+		Quaternion headRotation = tagHeadTransform.localRotation;
+
+		for (int i = 0; i < head.meshes.Count; i++)
+		{
+			MD3Mesh currentMesh = head.meshes[i];
+			currentVect.Clear();
+			nextVect.Clear();
+			//Head has only 1 frame
+			currentVect.AddRange(currentMesh.verts[0]);
+			for (int j = 0; j < currentVect.Count; j++)
+			{
+				currentVect[j] = headRotation * currentVect[j];
+				currentVect[j] += headOffset;
+			}
+
+			headModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+		}
+
 		playerTransform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
 		playerTransform.SetPositionAndRotation(currentPosition, currentRotation);
+		tagHeadTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
 		gameObject.layer = GameManager.DefaultLayer;
 
 		var transformChildren = playerTransform.GetComponentsInChildren<Transform>(includeInactive: true);
@@ -392,8 +414,13 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 	public void Die()
 	{
-		upperAnimation = UpperAnimation.Death3;
-		lowerAnimation = LowerAnimation.Death3;
+		//Need to reset the torso and head view
+		headTransform.localRotation = Quaternion.identity;
+		upperTransform.localRotation = Quaternion.identity;
+
+		int deathNum = 2 * UnityEngine.Random.Range(0, 3);
+		upperAnimation = (UpperAnimation)deathNum;
+		lowerAnimation = (LowerAnimation)deathNum;
 
 		ownerDead = true;
 	}
@@ -614,26 +641,26 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 			upperBody = new GameObject("Upper Body");
 			upperTransform = upperBody.transform;
-			upperBody.transform.SetParent(playerModel.transform);
+			upperTransform.SetParent(playerModel.transform);
 
 			GameObject tag_head = new GameObject("tag_head");
 			tagHeadTransform = tag_head.transform;
-			tagHeadTransform.SetParent(upperBody.transform);
+			tagHeadTransform.SetParent(upperTransform);
 
 			GameObject tag_weapon = new GameObject("tag_weapon");
 			weaponTransform = tag_weapon.transform;
-			weaponTransform.SetParent(upperBody.transform);
+			weaponTransform.SetParent(upperTransform);
 
 			headBody = new GameObject("Head");
 			headTransform = headBody.transform;
-			headBody.transform.SetParent(tag_head.transform);
+			headTransform.SetParent(tag_head.transform);
 
 			if (upper.readyMeshes.Count == 0)
 				upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin);
 			else
 				upperModel = Mesher.FillModelFromProcessedData(upper, meshToSkin);
 			upperModel.go.name = "upper_body";
-			upperModel.go.transform.SetParent(upperBody.transform);
+			upperModel.go.transform.SetParent(upperTransform);
 
 			if (head.readyMeshes.Count == 0)
 				headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin);
@@ -641,7 +668,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 				headModel = Mesher.FillModelFromProcessedData(head, meshToSkin);
 
 			headModel.go.name = "head";
-			headModel.go.transform.SetParent(headBody.transform);
+			headModel.go.transform.SetParent(headTransform);
 
 			if (lower.readyMeshes.Count == 0)
 				lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin);
@@ -690,7 +717,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		string strWord;
 		int currentAnim = 0;
 		int torsoOffset = 0;
-		int legsOffset = 7;
+		int legsOffset = (int)LowerAnimation.WalkCR + 1;
 		char[]	separators = new char[2] { '\t', '(' };
 		while (!animFile.EndOfStream)
 		{
@@ -754,7 +781,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 			else if (IsInString(animations[currentAnim].strName, "LEGS"))
 			{
 				if (torsoOffset == 0)
-					torsoOffset = animations[13].startFrame - animations[6].startFrame;
+					torsoOffset = animations[(int)UpperAnimation.Stand2 + 1].startFrame - animations[(int)LowerAnimation.WalkCR].startFrame;
 
 				animations[currentAnim].startFrame -= torsoOffset;
 				animations[currentAnim].endFrame -= torsoOffset;

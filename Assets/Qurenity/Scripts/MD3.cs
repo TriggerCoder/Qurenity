@@ -152,8 +152,8 @@ public class MD3
 			//We need to convert the rotation to the new coordinate system, the new coordinate system conversion is given by T (Quakt To Unity Conversion)
 			//If the two coordinate system are in the same space and they are related by T, with the old rotation Ra then the new rotation Rb is given by 
 			//Rb = TRaT^-1
-			tag.orientation = tag.orientation.QuakeToUnityConversion().inverse * new Matrix4x4(column0, column1, column2, column3) * tag.orientation.QuakeToUnityConversion();
-			tag.rotation = tag.orientation.ExtractRotation();
+			tag.orientation = tag.orientation.QuakeToUnityConversion() * new Matrix4x4(column0, column1, column2, column3) * tag.orientation.QuakeToUnityConversion().inverse;
+			tag.rotation = Quaternion.Inverse(tag.orientation.ExtractRotation());
 			
 			tag.QuakeToUnityCoordSystem();
 			if (!md3Model.tagsbyName.ContainsKey(tag.name))

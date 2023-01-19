@@ -45,6 +45,7 @@ public class PlayerControls : MonoBehaviour
 	private bool wishJump = false;
 
 	private float deathTime = 0;
+	private float respawnDelay = 1.7f;
 	struct currentMove
 	{
 		public float forwardSpeed;
@@ -78,7 +79,7 @@ public class PlayerControls : MonoBehaviour
 
 		if (playerThing.Dead)
 		{
-			if (deathTime < 3f)
+			if (deathTime < respawnDelay)
 				deathTime += Time.deltaTime;
 			else
 			{

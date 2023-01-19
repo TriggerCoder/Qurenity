@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 743958849}
   - component: {fileID: 743958850}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: ThirdPersonCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39,7 +39,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 743958848}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -66,7 +66,7 @@ Camera:
     m_Bits: 2147483607
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 1
+  m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -138,7 +138,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 6
+  m_ChildAlignment: 7
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 143113606728799366}
   - component: {fileID: 6906618912183216077}
   - component: {fileID: 4338069678295091742}
+  - component: {fileID: 41184706}
   m_Layer: 10
   m_Name: Player
   m_TagString: Player
@@ -198,9 +199,9 @@ CharacterController:
   m_Radius: 0.5
   m_SlopeLimit: 90
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.05
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.2, z: 0}
 --- !u!114 &6906618912183216077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,13 +248,28 @@ MonoBehaviour:
   modelName: sarge
   player: {fileID: 0}
   avatar: {fileID: 0}
-  hitpoints: 200
-  armor: 200
+  hitpoints: 100
+  armor: 0
   painTime: 0
   lookTime: 0.5
   finished: 0
   radsuit: 0
   invul: 0
+  ready: 0
+--- !u!136 &41184706
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.55
+  m_Height: 2.05
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.2, z: 0}
 --- !u!1 &1351247977468658
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +402,8 @@ MonoBehaviour:
   playerCamera: {fileID: 0}
   pickupTexture: {fileID: 2800000, guid: 5e3a691264d240945ae8a6fdc965dac4, type: 3}
   painTexture: {fileID: 2800000, guid: 39a425f272a7b2c4fab06634c08c7f7c, type: 3}
-  GuiFont: {fileID: 12800000, guid: dd2ac53fc1310a548a5c58b7876738c6, type: 3}
+  GuiFont: {fileID: 12800000, guid: 0eb590edc5a27d5428ecbc1263940d46, type: 3}
+  FontMat: {fileID: 2100000, guid: cc288c801454ef9449e9914099f3c2b9, type: 2}
   pickupFlashTime: 0
   painFlashTime: 0
 --- !u!1 &1626833134530822
@@ -590,7 +607,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1746486306332202}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -619,6 +636,7 @@ MonoBehaviour:
   viewDirection: {x: 0, y: 0}
   lastPosition: {x: 0, y: 0, z: 0}
   impulseVector: {x: 0, y: 0, z: 0}
+  jumpPadVel: {x: 0, y: 0, z: 0}
   impulseDampening: 4
   controller: {fileID: 0}
   moveSpeed: 7
@@ -654,8 +672,8 @@ MonoBehaviour:
   player: {fileID: 0}
   UICanvas: {fileID: 223332192906287930}
   WeaponHand: {fileID: 120263213280996051}
-  Ammo: 10270000e8030000000000008813000000000000e80300001027000000000000
-  Weapon: 000101000100010100
+  Ammo: 6400000000000000000000000000000000000000640000000000000000000000
+  Weapon: 000100000000010000
   MaxAmmo: c8000000c8000000c8000000c8000000c8000000c8000000c8000000c8000000
   godMode: 0
   MaxHealth: 100
@@ -824,6 +842,7 @@ MonoBehaviour:
   SkyboxCamera: {fileID: 0}
   SkyholeCamera: {fileID: 0}
   UICamera: {fileID: 0}
+  ThirdPerson: {fileID: 743958850}
   playerControls: {fileID: 0}
 --- !u!1 &2926129904374761625
 GameObject:

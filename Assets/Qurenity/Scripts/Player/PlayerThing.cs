@@ -178,7 +178,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 				playerControls.playerWeapon.putAway = true;
 
 			playerCamera.ChangeThirdPersonCamera(true);
-			PlayModelSound("death" + Random.Range(0, 4));
+			PlayModelSound("death" + Random.Range(1, 4));
 			avatar.Die();
 			ready = false;
 		}

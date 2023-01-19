@@ -24,6 +24,7 @@ namespace ExtensionMethods
 			return new Matrix4x4(column0, column1, column2, column3);
 		}
 
+		//http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 		public static Quaternion ExtractRotation(this Matrix4x4 matrix)
 		{
 			Quaternion rotation = new Quaternion();

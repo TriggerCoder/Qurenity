@@ -123,25 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &41184701 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-  m_PrefabInstance: {fileID: 2071567870}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &41184706
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 41184701}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.55
-  m_Height: 2.05
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &111704871 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
@@ -904,11 +885,6 @@ MonoBehaviour:
   - {fileID: 6846132397439511784, guid: e8005f86ef666c8499ef9738cf383e88, type: 3}
   - {fileID: 6846132397439511784, guid: 6af3ccbaf89176d45810f63acc45d85b, type: 3}
   - {fileID: 6846132397439511784, guid: 3f5a3291d9bdf7745a81b7468f998121, type: 3}
---- !u!20 &743958850 stripped
-Camera:
-  m_CorrespondingSourceObject: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-  m_PrefabInstance: {fileID: 2071567870}
-  m_PrefabAsset: {fileID: 0}
 --- !u!850595691 &1245000655
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -1040,94 +1016,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[0]
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[1]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[3]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[5]
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Ammo.Array.data[6]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[2]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[4]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: Weapon.Array.data[7]
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 743958848, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_Name
-      value: ThirdPersonCamera
-      objectReference: {fileID: 0}
-    - target: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_TargetDisplay
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1441192285, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: ThirdPerson
-      value: 
-      objectReference: {fileID: 743958850}
-    - target: {fileID: 1902460034, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: FontMat
-      value: 
-      objectReference: {fileID: 2100000, guid: cc288c801454ef9449e9914099f3c2b9, type: 2}
-    - target: {fileID: 1902460034, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: GuiFont
-      value: 
-      objectReference: {fileID: 12800000, guid: 0eb590edc5a27d5428ecbc1263940d46, type: 3}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildAlignment
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildScaleWidth
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildScaleHeight
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildControlWidth
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildControlHeight
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ReverseArrangement
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildForceExpandWidth
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1945245720, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_ChildForceExpandHeight
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1176,17 +1064,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 143113606728799366, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_SkinWidth
-      value: 0.05
-      objectReference: {fileID: 0}
     - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: armor
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: hitpoints
-      value: 100
+      propertyPath: modelName
+      value: sarge
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
