@@ -17,10 +17,13 @@ public class PlayerModel : MonoBehaviour, Damageable
 	public UpperAnimation upperAnimation = UpperAnimation.Stand;
 	public LowerAnimation lowerAnimation = LowerAnimation.Idle;
 
+	private int airFrames = 0;
+	private const int readyToLand = 25;
 	public bool enableOffset { get { return _enableOffset; } set { _enableOffset = value; } }
+	public bool isGrounded { get { return _isGrounded; } set { if ((!_isGrounded) && (!value)) { airFrames++; if (airFrames > readyToLand) airFrames = readyToLand; } else airFrames = 0; _isGrounded = value; } }
 
 	private bool _enableOffset = true;
-
+	private bool _isGrounded = true;
 	private List<ModelAnimation> upperAnim = new List<ModelAnimation>();
 	private List<ModelAnimation> lowerAnim = new List<ModelAnimation>();
 
@@ -98,7 +101,9 @@ public class PlayerModel : MonoBehaviour, Damageable
 		IdleCR,
 		Turn,
 		WalkCRBack,
+		Fall,
 		WalkBack,
+		FallBack
 	}
 
 	public MoveType currentMoveType = MoveType.Run;
@@ -109,7 +114,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		Walk,
 		Run
 	}
-	private const int TotalAnimation = 27;
+	private const int TotalAnimation = 29;
 
 	private GameObject upperBody;
 	private GameObject headBody;
@@ -217,16 +222,23 @@ public class PlayerModel : MonoBehaviour, Damageable
 						case LowerAnimation.JumpBack:
 							lowerAnimation = LowerAnimation.LandBack;
 						break;
-						case LowerAnimation.Turn:
 						case LowerAnimation.Land:
 						case LowerAnimation.LandBack:
-							if (turnTo.sqrMagnitude > 0)
+							lowerAnimation += 7;
+						break;
+						case LowerAnimation.Turn:
+						case LowerAnimation.Fall:
+						case LowerAnimation.FallBack:
+							if (_isGrounded)
 							{
-								playerTransform.forward = turnTo;
-								turnTo = Vector3.zero;
+								if (turnTo.sqrMagnitude > 0)
+								{
+									playerTransform.forward = turnTo;
+									turnTo = Vector3.zero;
+								}
+								lowerAnimation = LowerAnimation.Idle;
+								_enableOffset = true;
 							}
-							lowerAnimation = LowerAnimation.Idle;
-							_enableOffset = true;
 						break;
 					}
 					nextLower = lowerAnim[(int)lowerAnimation];
@@ -441,12 +453,39 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		ownerDead = true;
 	}
+
 	public void TurnLegsOnJump(float sideMove)
 	{
 		Quaternion rotate = Quaternion.identity;
 
-		if (lowerAnimation != LowerAnimation.Idle)
+		if (airFrames < readyToLand)
 			return;
+
+		switch(lowerAnimation)
+		{
+			default:
+				return;
+			break;
+			case LowerAnimation.Idle:
+			case LowerAnimation.IdleCR:
+			case LowerAnimation.Run:
+			case LowerAnimation.Walk:
+			case LowerAnimation.WalkCR:
+				lowerAnimation = LowerAnimation.Land;
+				return;
+			break;
+			case LowerAnimation.RunBack:
+			case LowerAnimation.WalkBack:
+			case LowerAnimation.WalkCRBack:
+				lowerAnimation = LowerAnimation.LandBack;
+				return;
+			break;
+			case LowerAnimation.Land:
+			case LowerAnimation.LandBack:
+			case LowerAnimation.Fall:
+			case LowerAnimation.FallBack:
+			break;
+		}
 
 		if (sideMove > 0)
 			rotate = Quaternion.AngleAxis(30f, playerTransform.up);
@@ -859,6 +898,14 @@ public class PlayerModel : MonoBehaviour, Damageable
 		animations[currentAnim].nextFrame = -1;
 		lower.Add(animations[currentAnim++]);
 
+		//Add Fall
+		animations[currentAnim] = new ModelAnimation((int)LowerAnimation.Fall);
+		animations[currentAnim].startFrame = lowerAnim[(int)LowerAnimation.Land].endFrame - 1;
+		animations[currentAnim].endFrame = lowerAnim[(int)LowerAnimation.Land].endFrame;
+		animations[currentAnim].loopingFrames = 0;
+		animations[currentAnim].fps = lowerAnim[(int)LowerAnimation.Land].fps;
+		lower.Add(animations[currentAnim++]);
+
 		//Add Walk Back
 		animations[currentAnim] = new ModelAnimation((int)LowerAnimation.WalkBack);
 		animations[currentAnim].startFrame = lowerAnim[(int)LowerAnimation.Walk].endFrame - 1;
@@ -866,6 +913,14 @@ public class PlayerModel : MonoBehaviour, Damageable
 		animations[currentAnim].loopingFrames = lowerAnim[(int)LowerAnimation.Walk].loopingFrames;
 		animations[currentAnim].fps = lowerAnim[(int)LowerAnimation.Walk].fps;
 		animations[currentAnim].nextFrame = -1;
+		lower.Add(animations[currentAnim++]);
+
+		//Add Fall Back
+		animations[currentAnim] = new ModelAnimation((int)LowerAnimation.FallBack);
+		animations[currentAnim].startFrame = lowerAnim[(int)LowerAnimation.LandBack].endFrame - 1;
+		animations[currentAnim].endFrame = lowerAnim[(int)LowerAnimation.LandBack].endFrame;
+		animations[currentAnim].loopingFrames = 0;
+		animations[currentAnim].fps = lowerAnim[(int)LowerAnimation.LandBack].fps;
 		lower.Add(animations[currentAnim]);
 
 		animFile.Close();

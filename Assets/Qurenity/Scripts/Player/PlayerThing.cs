@@ -59,7 +59,6 @@ public class PlayerThing : MonoBehaviour, Damageable
 		transform.position = SpawnerManager.FindSpawnLocation();
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
-		playerControls.gravityAccumulator = 0f;
 
 		playerCamera.SkyholeCamera.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
 								(1 << (GameManager.RagdollLayer & 0x1f)) |

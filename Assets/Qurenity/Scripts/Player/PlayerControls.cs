@@ -12,7 +12,10 @@ public class PlayerControls : MonoBehaviour
 	[HideInInspector]
 	public PlayerThing playerThing;
 
-	public float centerHeight = .88f; // character controller height/2 + skin.width
+	private Vector2 centerHeight = new Vector2(0.2f, -.05f); // character controller center height, x standing, y crouched
+	private Vector2 height = new Vector2(2.0f, 1.5f); // character controller height, x standing, y crouched
+	private float camerasHeight = .15f;
+	private float ccHeight = .05f;
 
 	public Vector2 viewDirection = new Vector2(0, 0);
 
@@ -81,10 +84,6 @@ public class PlayerControls : MonoBehaviour
 		moveSpeed = runSpeed;
 		currentMoveType = MoveType.Run;
 	}
-
-	public float gravityAccumulator;
-
-
 	void Update()
 	{
 		if (GameManager.Paused)
@@ -161,6 +160,7 @@ public class PlayerControls : MonoBehaviour
 				oldSpeed = moveSpeed;
 			moveSpeed = crouchSpeed;
 			currentMoveType = MoveType.Crouch;
+			ChangeHeight(false);
 		}
 		else if (Input.GetKeyUp(KeyCode.C))
 		{
@@ -169,6 +169,7 @@ public class PlayerControls : MonoBehaviour
 				currentMoveType = MoveType.Walk;
 			else
 				currentMoveType = MoveType.Run;
+			ChangeHeight(true);
 			oldSpeed = 0;
 		}
 		else //CheckRun
@@ -203,6 +204,8 @@ public class PlayerControls : MonoBehaviour
 				}
 			}
 		}
+
+		playerThing.avatar.isGrounded = controller.isGrounded;
 
 		//Movement Checks
 		if (currentMoveType != MoveType.Crouch)
@@ -318,6 +321,24 @@ public class PlayerControls : MonoBehaviour
 
 	}
 
+	public void ChangeHeight(bool Standing)
+	{
+		float newCenter = centerHeight.y;
+		float newHeight = height.y;
+
+		if (Standing)
+		{
+			newCenter = centerHeight.x;
+			newHeight = height.x;
+		}
+		controller.center = new Vector3(0, newCenter, 0);
+		controller.height = newHeight;
+
+		capsuleCollider.center = controller.center;
+		capsuleCollider.height = newHeight + ccHeight;
+
+		playerCamera.MainCamera.transform.localPosition = new Vector3(0, newCenter + camerasHeight, 0);
+	}
 	public void AnimateLegsOnJump()
 	{
 		if (cMove.forwardSpeed >= 0)
