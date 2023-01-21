@@ -25,23 +25,28 @@ public class PlayerControls : MonoBehaviour
 	public float impulseDampening = 4f;
 	[HideInInspector]
 	public CharacterController controller;
+	[HideInInspector]
+	public CapsuleCollider capsuleCollider;
 
 	// Movement stuff
-	public float moveSpeed = 7.0f;                // Ground move speed
-	public float runAcceleration = 14.0f;         // Ground accel
-	public float runDeacceleration = 10.0f;       // Deacceleration that occurs when running on the ground
-	public float airAcceleration = 2.0f;          // Air accel
-	public float airDecceleration = 2.0f;         // Deacceleration experienced when ooposite strafing
-	public float airControl = 0.3f;               // How precise air control is
-	public float sideStrafeAcceleration = 50.0f;  // How fast acceleration occurs to get up to sideStrafeSpeed when
-	public float sideStrafeSpeed = 1.0f;          // What the max speed to generate when side strafing
-	public float jumpSpeed = 8.0f;                // The speed at which the character's up axis gains when hitting jump
-	public bool holdJumpToBhop = false;           // When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
+	public float crouchSpeed = 3.0f;                // Crouch speed
+	public float walkSpeed = 5.0f;					// Walk speed
+	public float runSpeed = 7.0f;                   // Run speed
+	private float oldSpeed = 0;						// Previous move speed
 
-	private Vector3 moveDirectionNorm = Vector3.zero;
+	public float moveSpeed;							// Ground move speed
+	public float runAcceleration = 14.0f;			// Ground accel
+	public float runDeacceleration = 10.0f;			// Deacceleration that occurs when running on the ground
+	public float airAcceleration = 2.0f;			// Air accel
+	public float airDecceleration = 2.0f;			// Deacceleration experienced when ooposite strafing
+	public float airControl = 0.3f;					// How precise air control is
+	public float sideStrafeAcceleration = 50.0f;	// How fast acceleration occurs to get up to sideStrafeSpeed when
+	public float sideStrafeSpeed = 1.0f;			// What the max speed to generate when side strafing
+	public float jumpSpeed = 8.0f;					// The speed at which the character's up axis gains when hitting jump
+	public bool holdJumpToBhop = false;				// When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
+
 	public Vector3 playerVelocity = Vector3.zero;
-	private float playerTopVelocity = 0.0f;
-	private float playerFriction = 0.0f;
+
 	private bool wishJump = false;
 
 	private float deathTime = 0;
@@ -56,14 +61,25 @@ public class PlayerControls : MonoBehaviour
 
 	public int CurrentWeapon = -1;
 	public int SwapWeapon = -1;
+
+	public MoveType currentMoveType = MoveType.Run;
+	public enum MoveType
+	{
+		Crouch,
+		Walk,
+		Run
+	}
 	void Awake()
 	{
 		controller = GetComponentInParent<CharacterController>();
+		capsuleCollider = GetComponentInParent<CapsuleCollider>();
 		audioSource = GetComponentInParent<MultiAudioSource>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
 		playerInfo = GetComponent<PlayerInfo>();
 		playerThing = GetComponentInParent<PlayerThing>();
 		playerWeapon = null;
+		moveSpeed = runSpeed;
+		currentMoveType = MoveType.Run;
 	}
 
 	public float gravityAccumulator;
@@ -138,22 +154,67 @@ public class PlayerControls : MonoBehaviour
 		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
 		playerThing.avatar.CheckLegTurn(playerCamera.MainCamera.transform.forward);
 
+		
+		if (Input.GetKey(KeyCode.C))
+		{
+			if (oldSpeed == 0)
+				oldSpeed = moveSpeed;
+			moveSpeed = crouchSpeed;
+			currentMoveType = MoveType.Crouch;
+		}
+		else if (Input.GetKeyUp(KeyCode.C))
+		{
+			moveSpeed = oldSpeed;
+			if (moveSpeed == walkSpeed)
+				currentMoveType = MoveType.Walk;
+			else
+				currentMoveType = MoveType.Run;
+			oldSpeed = 0;
+		}
+		else //CheckRun
+		{
+			if (GameOptions.runToggle)
+			{
+				if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
+				{
+					if (moveSpeed == walkSpeed)
+					{
+						moveSpeed = runSpeed;
+						currentMoveType = MoveType.Run;
+					}
+					else
+					{
+						moveSpeed = walkSpeed;
+						currentMoveType = MoveType.Walk;
+					}
+				}
+			}
+			else
+			{
+				if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+				{
+					moveSpeed = runSpeed;
+					currentMoveType = MoveType.Run;
+				}
+				else
+				{
+					moveSpeed = walkSpeed;
+					currentMoveType = MoveType.Walk;
+				}
+			}
+		}
+
 		//Movement Checks
-		QueueJump();
+		if (currentMoveType != MoveType.Crouch)
+			QueueJump();
 		if (controller.isGrounded)
 			GroundMove();
-		else if (!controller.isGrounded)
+		else
 			AirMove();
 
 		//apply move
 		lastPosition = transform.position;
 		controller.Move((playerVelocity + impulseVector + jumpPadVel) * Time.deltaTime);
-
-		//Calculate top velocity
-		Vector3 udp = playerVelocity;
-		udp.y = 0.0f;
-		if (udp.magnitude > playerTopVelocity)
-			playerTopVelocity = udp.magnitude;
 
 		//dampen impulse
 		if (impulseVector.sqrMagnitude > 0)
@@ -170,7 +231,6 @@ public class PlayerControls : MonoBehaviour
 			if (controller.isGrounded)
 				jumpPadVel = Vector3.zero;
 		}
-
 
 		if (playerCamera.MainCamera.activeSelf)
 		{
@@ -311,26 +371,24 @@ public class PlayerControls : MonoBehaviour
 
 		if (playerThing.avatar.enableOffset)
 		{
-			playerThing.avatar.TurnLegs(cMove.sidewaysSpeed, cMove.forwardSpeed);
+			playerThing.avatar.TurnLegs((int)currentMoveType,cMove.sidewaysSpeed, cMove.forwardSpeed);
 		}
 
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
 		wishdir = transform.TransformDirection(wishdir);
 		wishdir.Normalize();
-		moveDirectionNorm = wishdir;
 
 		var wishspeed = wishdir.magnitude;
 		wishspeed *= moveSpeed;
 
-		Accelerate(wishdir, wishspeed, runAcceleration);
+		Accelerate(wishdir, wishspeed, runAcceleration, runSpeed);
 
 		// Reset the gravity velocity
 		playerVelocity.y = -GameManager.Instance.gravity * Time.deltaTime;
 
 		if (wishJump)
 		{
-//			if (playerThing.avatar.enableOffset)
-				AnimateLegsOnJump();
+			AnimateLegsOnJump();
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
 		}
@@ -356,7 +414,7 @@ public class PlayerControls : MonoBehaviour
 		}
 
 		newspeed = speed - drop;
-		playerFriction = newspeed;
+
 		if (newspeed < 0)
 			newspeed = 0;
 		if (speed > 0)
@@ -365,7 +423,7 @@ public class PlayerControls : MonoBehaviour
 		playerVelocity.x *= newspeed;
 		playerVelocity.z *= newspeed;
 	}
-	private void Accelerate(Vector3 wishdir, float wishspeed, float accel)
+	private void Accelerate(Vector3 wishdir, float wishspeed, float accel, float wishaccel = 0)
 	{
 		float addspeed;
 		float accelspeed;
@@ -375,7 +433,9 @@ public class PlayerControls : MonoBehaviour
 		addspeed = wishspeed - currentspeed;
 		if (addspeed <= 0)
 			return;
-		accelspeed = accel * Time.deltaTime * wishspeed;
+		if (wishaccel == 0)
+			wishaccel = wishspeed;
+		accelspeed = accel * Time.deltaTime * wishaccel;
 		if (accelspeed > addspeed)
 			accelspeed = addspeed;
 
@@ -399,7 +459,6 @@ public class PlayerControls : MonoBehaviour
 		wishspeed *= moveSpeed;
 
 		wishdir.Normalize();
-		moveDirectionNorm = wishdir;
 
 		//Aircontrol
 		float wishspeed2 = wishspeed;
@@ -454,7 +513,6 @@ public class PlayerControls : MonoBehaviour
 			playerVelocity.z = playerVelocity.z * speed + wishdir.z * k;
 
 			playerVelocity.Normalize();
-			moveDirectionNorm = playerVelocity;
 		}
 
 		playerVelocity.x *= speed;

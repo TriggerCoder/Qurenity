@@ -54,6 +54,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		public int loopingFrames;
 		public int fps;
 		public string strName;
+		public int nextFrame = 1;
 		public ModelAnimation(int index)
 		{
 			this.index = index;
@@ -87,7 +88,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		WalkCR,
 		Walk,
 		Run,
-		Back,
+		RunBack,
 		Swim,
 		Jump,
 		Land,
@@ -95,8 +96,20 @@ public class PlayerModel : MonoBehaviour, Damageable
 		LandBack,
 		Idle,
 		IdleCR,
-		Turn
+		Turn,
+		WalkCRBack,
+		WalkBack,
 	}
+
+	public MoveType currentMoveType = MoveType.Run;
+	private MoveType nextMoveType = MoveType.Run;
+	public enum MoveType
+	{
+		Crouch,
+		Walk,
+		Run
+	}
+	private const int TotalAnimation = 27;
 
 	private GameObject upperBody;
 	private GameObject headBody;
@@ -181,8 +194,12 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 			if (nextLower.index == currentLower.index)
 			{
-				nextFrameLower = currentFrameLower + 1;
-				if (nextFrameLower >= currentLower.endFrame)
+				nextFrameLower = currentFrameLower + currentLower.nextFrame;
+				//Need to check if correct end frame depending on start frame
+				if (((currentLower.nextFrame > 0)
+				 && (nextFrameLower >= currentLower.endFrame)) ||
+				 ((currentLower.nextFrame < 0)
+				 && (nextFrameLower <= currentLower.endFrame)))
 				{
 					switch ((LowerAnimation)nextLower.index)
 					{
@@ -348,7 +365,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		if (angle != 0)
 		{
 			turnTo = direction;
-			if (_enableOffset)
+			if (lowerAnimation == LowerAnimation.Idle)
 				lowerAnimation = LowerAnimation.Turn;
 		}
 	}
@@ -438,15 +455,29 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		lowerTransform.localRotation = rotate;
 	}
-	public void TurnLegs(float sideMove, float forwardMove)
+	public void TurnLegs(int moveType, float sideMove, float forwardMove)
 	{
 		if (ownerDead)
 			return;
 
+		nextMoveType = (MoveType)moveType;
+
 		Quaternion rotate = Quaternion.identity;
 		if (forwardMove > 0)
 		{
-			lowerAnimation = LowerAnimation.Run;
+			switch (nextMoveType)
+			{
+				default:
+				case MoveType.Run:
+					lowerAnimation = LowerAnimation.Run;
+				break;
+				case MoveType.Walk:
+					lowerAnimation = LowerAnimation.Walk;
+					break;
+				case MoveType.Crouch:
+					lowerAnimation = LowerAnimation.WalkCR;
+				break;
+			}
 			if (sideMove > 0)
 				rotate = Quaternion.AngleAxis(30f, playerTransform.up);
 			else if (sideMove < 0)
@@ -454,7 +485,19 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 		else if (forwardMove < 0)
 		{
-			lowerAnimation = LowerAnimation.Back;
+			switch (nextMoveType)
+			{
+				default:
+				case MoveType.Run:
+					lowerAnimation = LowerAnimation.RunBack;
+					break;
+				case MoveType.Walk:
+					lowerAnimation = LowerAnimation.WalkBack;
+					break;
+				case MoveType.Crouch:
+					lowerAnimation = LowerAnimation.WalkCRBack;
+					break;
+			}
 			if (sideMove > 0)
 				rotate = Quaternion.AngleAxis(-30f, playerTransform.up);
 			else if (sideMove < 0)
@@ -462,14 +505,31 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 		else if (sideMove != 0)
 		{
-			lowerAnimation = LowerAnimation.Run;
+			switch (nextMoveType)
+			{
+				default:
+				case MoveType.Run:
+					lowerAnimation = LowerAnimation.Run;
+					break;
+				case MoveType.Walk:
+					lowerAnimation = LowerAnimation.Walk;
+					break;
+				case MoveType.Crouch:
+					lowerAnimation = LowerAnimation.WalkCR;
+					break;
+			}
 			if (sideMove > 0)
 				rotate = Quaternion.AngleAxis(50f, playerTransform.up);
 			else if (sideMove < 0)
 				rotate = Quaternion.AngleAxis(-50f, playerTransform.up);
 		}
 		else if (lowerAnimation != LowerAnimation.Turn)
-			lowerAnimation = LowerAnimation.Idle;
+		{
+			if (nextMoveType == MoveType.Crouch)
+				lowerAnimation = LowerAnimation.IdleCR;
+			else
+				lowerAnimation = LowerAnimation.Idle;
+		}
 
 		lowerTransform.localRotation = rotate;
 	}
@@ -707,7 +767,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 
 		animFile.BaseStream.Seek(0, SeekOrigin.Begin);
-		ModelAnimation[] animations = new ModelAnimation[25];
+		ModelAnimation[] animations = new ModelAnimation[TotalAnimation];
 
 		if (animFile.EndOfStream)
 		{
@@ -790,6 +850,23 @@ public class PlayerModel : MonoBehaviour, Damageable
 			}
 			currentAnim++;
 		}
+		//Add Walk Crounched Back 
+		animations[currentAnim] = new ModelAnimation((int)LowerAnimation.WalkCRBack);
+		animations[currentAnim].startFrame = lowerAnim[(int)LowerAnimation.WalkCR].endFrame - 1;
+		animations[currentAnim].endFrame = lowerAnim[(int)LowerAnimation.WalkCR].startFrame - 1;
+		animations[currentAnim].loopingFrames = lowerAnim[(int)LowerAnimation.WalkCR].loopingFrames;
+		animations[currentAnim].fps = lowerAnim[(int)LowerAnimation.WalkCR].fps;
+		animations[currentAnim].nextFrame = -1;
+		lower.Add(animations[currentAnim++]);
+
+		//Add Walk Back
+		animations[currentAnim] = new ModelAnimation((int)LowerAnimation.WalkBack);
+		animations[currentAnim].startFrame = lowerAnim[(int)LowerAnimation.Walk].endFrame - 1;
+		animations[currentAnim].endFrame = lowerAnim[(int)LowerAnimation.Walk].startFrame - 1;
+		animations[currentAnim].loopingFrames = lowerAnim[(int)LowerAnimation.Walk].loopingFrames;
+		animations[currentAnim].fps = lowerAnim[(int)LowerAnimation.Walk].fps;
+		animations[currentAnim].nextFrame = -1;
+		lower.Add(animations[currentAnim]);
 
 		animFile.Close();
 		return true;
