@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 743958849}
   - component: {fileID: 743958850}
+  - component: {fileID: 1038530172}
   m_Layer: 0
   m_Name: ThirdPersonCamera
   m_TagString: Untagged
@@ -24,14 +25,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 743958848}
-  m_LocalRotation: {x: -0.18301274, y: 0.6830127, z: -0.18301274, w: -0.6830127}
-  m_LocalPosition: {x: 1.8, y: 1.7, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4911946283159206}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 30, y: 270, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &743958850
 Camera:
   m_ObjectHideFlags: 0
@@ -42,7 +43,7 @@ Camera:
   m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -57,7 +58,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 70
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -75,6 +76,24 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1038530172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743958848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c7f859228508504395b4ed4223861d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainCamera: {fileID: 4530601570485014}
+  playerControls: {fileID: 111704870}
+  cameraOffset: {x: 0.28, y: 0.25, z: -1.7}
+  clipDistance: 0.5
+  distance: 0.8
+  turnRate: 510
 --- !u!1 &1945245718
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,7 +651,6 @@ MonoBehaviour:
   playerWeapon: {fileID: 0}
   playerCamera: {fileID: 0}
   playerThing: {fileID: 0}
-  centerHeight: 0.88
   viewDirection: {x: 0, y: 0}
   lastPosition: {x: 0, y: 0, z: 0}
   impulseVector: {x: 0, y: 0, z: 0}
@@ -657,7 +675,6 @@ MonoBehaviour:
   CurrentWeapon: -1
   SwapWeapon: -1
   currentMoveType: 2
-  gravityAccumulator: 0
 --- !u!114 &111704871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -849,6 +866,10 @@ MonoBehaviour:
   UICamera: {fileID: 0}
   ThirdPerson: {fileID: 743958850}
   playerControls: {fileID: 0}
+  yOffset: 0.35
+  vBob: 0.01
+  hBob: 0.05
+  bopActive: 0
 --- !u!1 &2926129904374761625
 GameObject:
   m_ObjectHideFlags: 0

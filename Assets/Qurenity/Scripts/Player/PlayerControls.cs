@@ -94,6 +94,9 @@ public class PlayerControls : MonoBehaviour
 
 		if (playerThing.Dead)
 		{
+			if (playerCamera != null)
+				playerCamera.bopActive = false;
+
 			if (deathTime < respawnDelay)
 				deathTime += Time.deltaTime;
 			else
@@ -237,6 +240,14 @@ public class PlayerControls : MonoBehaviour
 
 		if (playerCamera.MainCamera.activeSelf)
 		{
+			if ((transform.position - lastPosition).sqrMagnitude > .0001f)
+			{
+				if (playerCamera != null)
+					playerCamera.bopActive = true;
+			}
+			else if (playerCamera != null)
+				playerCamera.bopActive = false;
+
 			//use weapon
 			if (Input.GetMouseButton(0))
 				if (playerWeapon.Fire())
@@ -337,7 +348,7 @@ public class PlayerControls : MonoBehaviour
 		capsuleCollider.center = controller.center;
 		capsuleCollider.height = newHeight + ccHeight;
 
-		playerCamera.MainCamera.transform.localPosition = new Vector3(0, newCenter + camerasHeight, 0);
+		playerCamera.yOffset = newCenter + camerasHeight;
 	}
 	public void AnimateLegsOnJump()
 	{

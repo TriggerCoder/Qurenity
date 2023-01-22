@@ -45,11 +45,6 @@ public class PlayerWeapon : MonoBehaviour
 
 	public int Noise = 0;
 
-	public bool bopActive = false;
-	float interp;
-	float Coef;
-	public float vBob = .08f;
-
 	public bool putAway = false;
 	public void PutAway() { if (Instance != null) Instance.putAway = true; }
 
@@ -197,7 +192,7 @@ public class PlayerWeapon : MonoBehaviour
 		else
 		{
 			fireTime -= Time.deltaTime;
-			bopActive = false;
+
 			if (fireTime <= 0)
 			{
 				coolTimer = 0;
@@ -231,12 +226,7 @@ public class PlayerWeapon : MonoBehaviour
 		else
 			LowerAmount = Mathf.Lerp(LowerAmount, 0, Time.deltaTime * swapSpeed);
 
-		if (bopActive)
-			interp = Mathf.Lerp(interp, 1, Time.deltaTime * 2);
-		else
-			interp = Mathf.Lerp(interp, 0, Time.deltaTime * 4);
-		Coef = Mathf.Abs(Mathf.Cos(Time.time * 3)) * interp;
-		transform.localPosition = new Vector3(0, -Coef * vBob + LowerOffset * LowerAmount, 0);
+		transform.localPosition = new Vector3(0, LowerOffset * LowerAmount, 0);
 
 		OnUpdate();
 	}
