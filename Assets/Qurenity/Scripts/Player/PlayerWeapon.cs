@@ -137,6 +137,11 @@ public class PlayerWeapon : MonoBehaviour
 					Mesher.FillModelFromProcessedData(model, muzzleObject);
 			}
 			muzzleObject.SetActive(false);
+			if (muzzleLight != null)
+			{
+				muzzleLight.transform.SetParent(muzzleObject.transform);
+				muzzleLight.transform.localPosition = new Vector3(0, 0, .05f);
+			}
 		}
 
 		oldMousePosition.x = Input.GetAxis("Mouse X");

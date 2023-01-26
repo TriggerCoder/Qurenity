@@ -249,12 +249,14 @@ public class PlayerControls : MonoBehaviour
 				playerCamera.bopActive = false;
 
 			//use weapon
-			if (Input.GetMouseButton(0))
+			if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl))
+			{
 				if (playerWeapon.Fire())
 				{
 					playerInfo.playerHUD.HUDUpdateAmmoNum();
 					playerThing.avatar.Attack();
 				}
+			}
 		}
 
 		//swap weapon
