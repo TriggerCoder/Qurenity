@@ -265,6 +265,7 @@ MonoBehaviour:
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
   modelName: sarge
+  skinName: default
   player: {fileID: 0}
   avatar: {fileID: 0}
   hitpoints: 100

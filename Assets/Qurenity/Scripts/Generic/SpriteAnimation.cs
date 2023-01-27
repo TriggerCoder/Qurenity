@@ -124,6 +124,7 @@ public class SpriteAnimation : MonoBehaviour
 			mr.material.SetTexture(MaterialManager.opaqueTexPropertyId, _frames[index]);
 		}
 	}
+/*
 	void OnWillRenderObject()
 	{
 		Transform camera = Camera.current.transform;
@@ -160,5 +161,5 @@ public class SpriteAnimation : MonoBehaviour
 			return false;
 		return true;
 	}
-
+*/
 }

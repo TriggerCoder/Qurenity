@@ -289,6 +289,49 @@ MonoBehaviour:
       Amp: 1
       Phase: 0
       Freq: 10
+  - overrideName: textures/sfx/flame1dark
+    opaque: 0
+    opaqueTextureName: 
+    material: {fileID: 2100000, guid: 3e28c6a807e46a143a8b4573c0273106, type: 2}
+    animation:
+    - textureFrames:
+      - textures/sfx/flameball
+      addAlpha: 1
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+    - textureFrames:
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      - textures/sfx/flame1
+      addAlpha: 1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
+    - textureFrames:
+      - textures/sfx/flame1
+      - textures/sfx/flame2
+      - textures/sfx/flame3
+      - textures/sfx/flame4
+      - textures/sfx/flame5
+      - textures/sfx/flame6
+      - textures/sfx/flame7
+      - textures/sfx/flame8
+      addAlpha: 1
+      fps: 10
+      Base: 0
+      Amp: 1
+      Phase: 0
+      Freq: 10
   - overrideName: textures/sfx/flame2
     opaque: 0
     opaqueTextureName: 
@@ -388,6 +431,71 @@ MonoBehaviour:
       Amp: 0.2
       Phase: 0
       Freq: 0.6
+  - overrideName: textures/gothic_light/pentagram_light1_5K
+    opaque: 1
+    opaqueTextureName: textures/gothic_light/pentagram_light1
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/gothic_light/pentagram_light1_blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.8
+      Amp: 0.2
+      Phase: 0
+      Freq: 1
+  - overrideName: textures/gothic_light/pentagram_light1_2K
+    opaque: 1
+    opaqueTextureName: textures/gothic_light/pentagram_light1
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/gothic_light/pentagram_light1_blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.8
+      Amp: 0.2
+      Phase: 0
+      Freq: 1
+  - overrideName: textures/gothic_light/ironcrosslt2_2000
+    opaque: 1
+    opaqueTextureName: textures/gothic_light/ironcrosslt2
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/gothic_light/ironcrosslt2.blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+  - overrideName: textures/gothic_light/ironcrosslt2_10000
+    opaque: 1
+    opaqueTextureName: textures/gothic_light/ironcrosslt2
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/gothic_light/ironcrosslt2.blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.6
+      Amp: 0.2
+      Phase: 0
+      Freq: 0.6
+  - overrideName: textures/base_light/light1_1500
+    opaque: 1
+    opaqueTextureName: textures/base_light/light1
+    material: {fileID: 2100000, guid: 5f7c42b64e557304ead82df3c1a467ee, type: 2}
+    animation:
+    - textureFrames:
+      - textures/base_light/light1.blend
+      addAlpha: 1
+      fps: 0
+      Base: 0.5
+      Amp: 0.5
+      Phase: 0
+      Freq: 3
   - overrideName: textures/sfx/computer_blocks17
     opaque: 1
     opaqueTextureName: textures/sfx/computer_blocks17
@@ -424,6 +532,32 @@ MonoBehaviour:
       Phase: 0
       Freq: 2
   - overrideName: textures/liquids/lavahell
+    opaque: 1
+    opaqueTextureName: textures/liquids/lavahell
+    material: {fileID: 2100000, guid: bd3577391ab9ad545b34ddb0d9265c6e, type: 2}
+    animation:
+    - textureFrames:
+      - textures/liquids/lavahell
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.1
+  - overrideName: textures/liquids/lavahelldark
+    opaque: 1
+    opaqueTextureName: textures/liquids/lavahell
+    material: {fileID: 2100000, guid: bd3577391ab9ad545b34ddb0d9265c6e, type: 2}
+    animation:
+    - textureFrames:
+      - textures/liquids/lavahell
+      addAlpha: 0
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.1
+  - overrideName: textures/liquids/lavahell_1000
     opaque: 1
     opaqueTextureName: textures/liquids/lavahell
     material: {fileID: 2100000, guid: bd3577391ab9ad545b34ddb0d9265c6e, type: 2}
@@ -482,6 +616,32 @@ MonoBehaviour:
       Amp: 0.06
       Phase: 0.1
       Freq: 0.7
+  - overrideName: textures/sfx/hellfogdense
+    opaque: 0
+    opaqueTextureName: textures/skies/killsky_1
+    material: {fileID: 2100000, guid: 21507c4f5a6cbde479e326b82816a154, type: 2}
+    animation:
+    - textureFrames:
+      - textures/skies/killsky_1
+      addAlpha: 1
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.7
+  - overrideName: textures/sfx/fog_intel
+    opaque: 0
+    opaqueTextureName: textures/skies/killsky_1
+    material: {fileID: 2100000, guid: 21507c4f5a6cbde479e326b82816a154, type: 2}
+    animation:
+    - textureFrames:
+      - textures/skies/killsky_1
+      addAlpha: 1
+      fps: 0
+      Base: 0.1
+      Amp: 0.06
+      Phase: 0.1
+      Freq: 0.7
   - overrideName: models/weapons2/railgun/railgun2
     opaque: 0
     opaqueTextureName: models/weapons2/railgun/railgun2.glow
@@ -498,6 +658,11 @@ MonoBehaviour:
     opaque: 0
     opaqueTextureName: models/weapons2/railgun/railgun4
     material: {fileID: 2100000, guid: f1bc8d258044ec84e89aed2e50b17fb5, type: 2}
+    animation: []
+  - overrideName: models/mapobjects/lamplight_y
+    opaque: 0
+    opaqueTextureName: textures/effects/envmapmach
+    material: {fileID: 2100000, guid: 0a5a4e43a613d604d921690ac8963421, type: 2}
     animation: []
   - overrideName: models/powerups/health/green_sphere
     opaque: 0
@@ -689,6 +854,11 @@ MonoBehaviour:
   - overrideName: models/powerups/ammo/railammo2
     opaque: 1
     opaqueTextureName: models/powerups/ammo/railammo2
+    material: {fileID: 2100000, guid: 2a17e28db41587e429ba56b6828ffeb9, type: 2}
+    animation: []
+  - overrideName: textures/gothic_trim/column2c
+    opaque: 1
+    opaqueTextureName: textures/gothic_trim/column2c_test
     material: {fileID: 2100000, guid: 2a17e28db41587e429ba56b6828ffeb9, type: 2}
     animation: []
   applyLightmaps: 1
@@ -1063,6 +1233,10 @@ PrefabInstance:
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: modelName
+      value: major
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0607bb188534d754db77d3cf1a751561, type: 3}

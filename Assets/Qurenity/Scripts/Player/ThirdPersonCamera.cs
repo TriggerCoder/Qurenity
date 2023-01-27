@@ -18,6 +18,8 @@ public class ThirdPersonCamera : MonoBehaviour
 	private Quaternion rotX;
 	private Transform cTransform;
 
+	private RaycastHit[] hits = new RaycastHit[10];
+
 	private void Start()
 	{
 		originMatrix = MainCamera.localToWorldMatrix;
@@ -43,7 +45,23 @@ public class ThirdPersonCamera : MonoBehaviour
 
 		RaycastHit hit;
 		if (Physics.Raycast(MainCamera.position, dir, out hit, mag, (1 << GameManager.ColliderLayer), QueryTriggerInteraction.Ignore))
-			cameraPosition = hit.point + (dir * .5f);
+		{
+			float nearest = float.MaxValue;
+			int max = Physics.SphereCastNonAlloc(MainCamera.position, .2f, dir, hits, mag, (1 << GameManager.ColliderLayer), QueryTriggerInteraction.Ignore);
+
+			if (max > hits.Length)
+				max = hits.Length;
+
+			for (int i = 0; i < max; i++)
+			{
+				hit = hits[i];
+				if (hit.distance < nearest)
+				{
+					nearest = hit.distance;
+					cameraPosition = hit.point + (dir * .5f);
+				}
+			}
+		}
 
 		cTransform.position = cameraPosition;
 		cTransform.forward = MainCamera.forward;

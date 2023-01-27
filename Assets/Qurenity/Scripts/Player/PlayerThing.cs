@@ -16,6 +16,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 	MultiAudioSource audioSource;
 
 	public string modelName = "sarge";
+	public string skinName = "default";
 	public GameObject player;
 	public PlayerModel avatar;
 
@@ -52,7 +53,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 		player = new GameObject();
 		avatar = player.AddComponent<PlayerModel>();
 		player.transform.SetParent(transform);
-		avatar.LoadPlayer(modelName);
+		avatar.LoadPlayer(modelName, skinName);
 
 		gameObject.layer = GameManager.PlayerLayer;
 		playerControls.enabled = true;

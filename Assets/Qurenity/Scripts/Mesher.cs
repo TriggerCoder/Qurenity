@@ -124,7 +124,13 @@ public static class Mesher
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
 
-		Material material = MaterialManager.GetMaterials(textureName, lmIndex);
+		Material material = null;
+		if (MaterialManager.GetOverrideMaterials(textureName, lmIndex, ref material, ref bezObj))
+		{
+//			Debug.LogWarning("Found Material");
+		}
+		else
+			material = MaterialManager.GetMaterials(textureName, lmIndex);
 		meshRenderer.sharedMaterial = material;
 	}
 	public static BezierMesh GenerateBezMesh(QSurface surface, int patchNumber)
