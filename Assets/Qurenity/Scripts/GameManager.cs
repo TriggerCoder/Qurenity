@@ -13,8 +13,9 @@ public class GameManager : MonoBehaviour
 	public Transform TemporaryObjectsHolder;
 	public Transform BaseThingsHolder;
 
-	public PlayerInfo[] Player = new PlayerInfo[1];
+	public PlayerInfo[] Player = new PlayerInfo[4];
 
+	public int numPlayers = 0;
 	public GameObject Blood;
 	public GameObject BulletHit;
 	public GameObject BulletMark;
@@ -164,9 +165,52 @@ public class GameManager : MonoBehaviour
 				if (skipFrames == 0)
 				{
 					paused = false;
-					Player[0].playerThing.InitPlayer(0);
+					Player[0].playerThing.InitPlayer(numPlayers++);
 				}
 			}
+		}
+	}
+
+	//There must be a better way to assign this
+	public void UpdatePlayers()
+	{
+		if (numPlayers == 1)
+		{
+			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 1, 1));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 1, 1));
+		}
+		else if (numPlayers == 2)
+		{
+			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+
+			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 1, 0.5f));
+			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 1, 0.5f));
+		}
+		else if (numPlayers == 3)
+		{
+			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+
+			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
+			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
+
+			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
+			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f),true);
+		}
+		else if (numPlayers == 4)
+		{
+			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 0.5f, 0.5f));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 0.5f, 0.5f),true);
+
+			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
+			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
+
+			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
+			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f),true);
+
+			Player[3].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 1, 0.5f, 0.5f));
+			Player[3].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 1, 0.5f, 0.5f),true);
 		}
 	}
 }

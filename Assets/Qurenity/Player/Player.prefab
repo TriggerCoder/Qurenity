@@ -128,10 +128,10 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 75}
-  m_SizeDelta: {x: 0, y: 150}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!222 &1945245721
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 6906618912183216077}
   - component: {fileID: 4338069678295091742}
   - component: {fileID: 41184706}
+  - component: {fileID: 2043769949}
   m_Layer: 10
   m_Name: Player
   m_TagString: Player
@@ -264,7 +265,7 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
-  modelName: sarge
+  modelName: major
   skinName: default
   player: {fileID: 0}
   avatar: {fileID: 0}
@@ -290,6 +291,36 @@ CapsuleCollider:
   m_Height: 2.05
   m_Direction: 1
   m_Center: {x: 0, y: 0.2, z: 0}
+--- !u!114 &2043769949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: ae89b455781d42c4b84390199ead569a, type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 20329405279158884}
 --- !u!1 &1351247977468658
 GameObject:
   m_ObjectHideFlags: 0
@@ -642,7 +673,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1746486306332202}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 04fee26d1557ba04594e2da723e9f94c, type: 3}
   m_Name: 
@@ -659,6 +690,7 @@ MonoBehaviour:
   impulseDampening: 4
   controller: {fileID: 0}
   capsuleCollider: {fileID: 0}
+  playerInput: {fileID: 0}
   crouchSpeed: 3
   walkSpeed: 5
   runSpeed: 7
@@ -695,8 +727,8 @@ MonoBehaviour:
   player: {fileID: 0}
   UICanvas: {fileID: 223332192906287930}
   WeaponHand: {fileID: 120263213280996051}
-  Ammo: 6400000000000000000000000000000000000000640000000000000000000000
-  Weapon: 000100000000010000
+  Ammo: 6400000000000000000000000000000000000000000000000000000000000000
+  Weapon: 000100000000000000
   MaxAmmo: c8000000c8000000c8000000c8000000c8000000c8000000c8000000c8000000
   godMode: 0
   MaxHealth: 100

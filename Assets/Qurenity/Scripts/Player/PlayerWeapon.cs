@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Assets.MultiAudioListener;
 
 public class PlayerWeapon : MonoBehaviour
@@ -144,8 +145,8 @@ public class PlayerWeapon : MonoBehaviour
 			}
 		}
 
-		oldMousePosition.x = Input.GetAxis("Mouse X");
-		oldMousePosition.y = Input.GetAxis("Mouse Y");
+		oldMousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x;
+		oldMousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y;
 
 		playerInfo.playerHUD.HUDUpdateAmmoNum();
 		OnInit();
@@ -213,8 +214,8 @@ public class PlayerWeapon : MonoBehaviour
 			}
 		}
 
-		MousePosition.x = Input.GetAxis("Mouse X") + playerInfo.playerControls.playerVelocity.x;
-		MousePosition.y = Input.GetAxis("Mouse Y") + playerInfo.playerControls.playerVelocity.y;
+		MousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x + playerInfo.playerControls.playerVelocity.x;
+		MousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y + playerInfo.playerControls.playerVelocity.y;
 
 		ApplyRotation(GetRotation((MousePosition - oldMousePosition) * Sensitivity));
 		oldMousePosition = Vector2.Lerp(oldMousePosition,MousePosition, rotateSpeed * Time.deltaTime);

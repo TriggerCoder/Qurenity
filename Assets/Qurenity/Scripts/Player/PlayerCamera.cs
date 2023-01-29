@@ -50,6 +50,13 @@ public class PlayerCamera : MonoBehaviour
 		cTransform = transform;
 	}
 
+	public void UpdateRect(Rect viewRect)
+	{
+		SkyholeCamera.rect = viewRect;
+		SkyboxCamera.rect = viewRect;
+		UICamera.rect = viewRect;
+		ThirdPerson.rect = viewRect;
+	}
 	public void ChangeThirdPersonCamera(bool enable)
 	{
 		ThirdPerson.enabled = enable;

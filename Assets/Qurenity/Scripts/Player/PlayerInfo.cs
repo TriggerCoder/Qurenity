@@ -41,6 +41,16 @@ public class PlayerInfo : MonoBehaviour
 		player = playerThing.gameObject;
 	}
 
+	void Start()
+	{
+		if (GameManager.Instance.numPlayers != 0)
+		{
+			GameManager.Instance.Player[GameManager.Instance.numPlayers] = this;
+			GameManager.Instance.Player[GameManager.Instance.numPlayers].playerThing.InitPlayer(GameManager.Instance.numPlayers++);
+			GameManager.Instance.UpdatePlayers();
+		}
+	}
+
 	public void Reset()
 	{
 		Ammo = new int[8] { 100, 0, 0, 0, 0, 100, 0, 0 };

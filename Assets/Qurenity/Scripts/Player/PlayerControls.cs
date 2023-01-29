@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Assets.MultiAudioListener;
 public class PlayerControls : MonoBehaviour
 {
@@ -30,6 +31,8 @@ public class PlayerControls : MonoBehaviour
 	public CharacterController controller;
 	[HideInInspector]
 	public CapsuleCollider capsuleCollider;
+	[HideInInspector]
+	public PlayerInput playerInput;
 
 	// Movement stuff
 	public float crouchSpeed = 3.0f;                // Crouch speed
@@ -74,6 +77,7 @@ public class PlayerControls : MonoBehaviour
 	}
 	void Awake()
 	{
+		playerInput = GetComponentInParent<PlayerInput>();
 		controller = GetComponentInParent<CharacterController>();
 		capsuleCollider = GetComponentInParent<CapsuleCollider>();
 		audioSource = GetComponentInParent<MultiAudioSource>();
@@ -89,7 +93,7 @@ public class PlayerControls : MonoBehaviour
 		if (GameManager.Paused)
 			return;
 
-		if (Input.GetKeyDown(KeyCode.Escape))
+		if (playerInput.actions["Close"].WasPressedThisFrame())
 			Application.Quit();
 
 		if (playerThing.Dead)
@@ -101,7 +105,7 @@ public class PlayerControls : MonoBehaviour
 				deathTime += Time.deltaTime;
 			else
 			{
-				if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+				if (playerInput.actions["Jump"].WasPressedThisFrame() || playerInput.actions["Fire"].WasPressedThisFrame())
 				{
 					deathTime = 0;
 					viewDirection = Vector2.zero;
@@ -122,26 +126,17 @@ public class PlayerControls : MonoBehaviour
 		if (!playerThing.ready)
 			return;
 
-		if (Input.GetKeyDown(KeyCode.Q))
+		if (playerInput.actions["CameraSwitch"].WasPressedThisFrame())
 			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
 
-		viewDirection.y += Input.GetAxis("Mouse X") * GameOptions.MouseSensitivity.x;
-		viewDirection.x -= Input.GetAxis("Mouse Y") * GameOptions.MouseSensitivity.y;
+		viewDirection.y += playerInput.actions["Look"].ReadValue<Vector2>().x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
+		viewDirection.x -= playerInput.actions["Look"].ReadValue<Vector2>().y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
 
 		//so you don't fall when no-clipping
 		bool outerSpace = false;
 
 		if (gameObject.layer != GameManager.PlayerLayer)
 			outerSpace = true;
-
-
-
-		//read input
-		if (Input.GetKey(KeyCode.LeftArrow))
-			viewDirection.y -= Time.deltaTime * 90;
-
-		if (Input.GetKey(KeyCode.RightArrow))
-			viewDirection.y += Time.deltaTime * 90;
 
 		if (viewDirection.y < -180) viewDirection.y += 360;
 		if (viewDirection.y > 180) viewDirection.y -= 360;
@@ -157,7 +152,7 @@ public class PlayerControls : MonoBehaviour
 		playerThing.avatar.CheckLegTurn(playerCamera.MainCamera.transform.forward);
 
 		
-		if (Input.GetKey(KeyCode.C))
+		if (playerInput.actions["Crouch"].WasPressedThisFrame())
 		{
 			if (oldSpeed == 0)
 				oldSpeed = moveSpeed;
@@ -165,7 +160,7 @@ public class PlayerControls : MonoBehaviour
 			currentMoveType = MoveType.Crouch;
 			ChangeHeight(false);
 		}
-		else if (Input.GetKeyUp(KeyCode.C))
+		else if (playerInput.actions["Crouch"].WasReleasedThisFrame())
 		{
 			moveSpeed = oldSpeed;
 			if (moveSpeed == walkSpeed)
@@ -179,7 +174,7 @@ public class PlayerControls : MonoBehaviour
 		{
 			if (GameOptions.runToggle)
 			{
-				if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
+				if (playerInput.actions["Run"].WasReleasedThisFrame())
 				{
 					if (moveSpeed == walkSpeed)
 					{
@@ -195,7 +190,7 @@ public class PlayerControls : MonoBehaviour
 			}
 			else
 			{
-				if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+				if (playerInput.actions["Run"].IsPressed())
 				{
 					moveSpeed = runSpeed;
 					currentMoveType = MoveType.Run;
@@ -249,7 +244,7 @@ public class PlayerControls : MonoBehaviour
 				playerCamera.bopActive = false;
 
 			//use weapon
-			if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl))
+			if (playerInput.actions["Fire"].IsPressed())
 			{
 				if (playerWeapon.Fire())
 				{
@@ -273,9 +268,9 @@ public class PlayerControls : MonoBehaviour
 				SwapWeapon = -1;
 			}
 		}
-		float wheel = Input.GetAxis("Mouse ScrollWheel");
+		float wheel = playerInput.actions["WeaponSwitch"].ReadValue<float>();
 
-		if ((wheel > 0) || (Input.GetKeyDown(KeyCode.Plus)))
+		if (wheel > 0)
 		{
 			bool gotWeapon = false;
 			for (int NextWeapon = CurrentWeapon + 1; NextWeapon < 9; NextWeapon++)
@@ -288,7 +283,7 @@ public class PlayerControls : MonoBehaviour
 				TrySwapWeapon(0);
 		}
 
-		if ((wheel < 0) || (Input.GetKeyDown(KeyCode.Minus)))
+		if (wheel < 0)
 		{
 			bool gotWeapon = false;
 			for (int NextWeapon = CurrentWeapon - 1; NextWeapon >= 0; NextWeapon--)
@@ -301,37 +296,14 @@ public class PlayerControls : MonoBehaviour
 				SwapToBestWeapon();
 		}
 
-
-		if (Input.GetKeyDown(KeyCode.Alpha0))
-			TrySwapWeapon(0);
-
-		if (Input.GetKeyDown(KeyCode.Alpha1))
-			TrySwapWeapon(1);
-
-		if (Input.GetKeyDown(KeyCode.Alpha2))
-			TrySwapWeapon(2);
-
-		if (Input.GetKeyDown(KeyCode.Alpha3))
-			TrySwapWeapon(3);
-
-		if (Input.GetKeyDown(KeyCode.Alpha4))
-			TrySwapWeapon(4);
-
-		if (Input.GetKeyDown(KeyCode.Alpha5))
-			TrySwapWeapon(5);
-
-		if (Input.GetKeyDown(KeyCode.Alpha6))
-			TrySwapWeapon(6);
-
-		if (Input.GetKeyDown(KeyCode.Alpha7))
-			TrySwapWeapon(7);
-
-		if (Input.GetKeyDown(KeyCode.Alpha8))
-			TrySwapWeapon(8);
-
-		if (Input.GetKeyDown(KeyCode.Alpha9))
-			TrySwapWeapon(9);
-
+		for (int i = 0; i < 10; i++)
+		{
+			if (playerInput.actions["Weapon" + i].WasPressedThisFrame())
+			{
+				TrySwapWeapon(i);
+				break;
+			}
+		}
 	}
 
 	public void ChangeHeight(bool Standing)
@@ -363,31 +335,22 @@ public class PlayerControls : MonoBehaviour
 	}
 	private void SetMovementDir()
 	{
-		cMove.forwardSpeed = 0f;
-		cMove.sidewaysSpeed = 0f;
+		Vector2 Move = playerInput.actions["Move"].ReadValue<Vector2>();
 
-		//qwerty and dvorak combatible =^-^=
-		if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Comma) || Input.GetKey(KeyCode.UpArrow))
-			cMove.forwardSpeed += 1f;
-		if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.O) || Input.GetKey(KeyCode.DownArrow))
-			cMove.forwardSpeed -= 1f;
-
-		if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.E))
-			cMove.sidewaysSpeed += 1f;
-		if (Input.GetKey(KeyCode.A))
-			cMove.sidewaysSpeed -= 1f;
+		cMove.forwardSpeed = Move.y;
+		cMove.sidewaysSpeed = Move.x;
 	}
 	private void QueueJump()
 	{
 		if (holdJumpToBhop)
 		{
-			wishJump = Input.GetKey(KeyCode.Space);
+			wishJump = playerInput.actions["Jump"].IsPressed();
 			return;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Space) && !wishJump)
+		if (playerInput.actions["Jump"].WasPressedThisFrame() && !wishJump)
 			wishJump = true;
-		if (Input.GetKeyUp(KeyCode.Space))
+		if (playerInput.actions["Jump"].WasReleasedThisFrame())
 			wishJump = false;
 	}
 

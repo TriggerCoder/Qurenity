@@ -76,6 +76,14 @@ public class HUD : MonoBehaviour
 		ArmorBar.gameObject.SetActive(true);
 	}
 
+	public void UpdateRect(Rect viewRect, bool scale = false)
+	{
+		RectTransform trans = statusBar.GetComponent<RectTransform>();
+		trans.anchorMin = new Vector2(viewRect.x, viewRect.y);
+		trans.anchorMax = new Vector2(viewRect.width, viewRect.height);
+		if (scale)
+			trans.localScale.Set(.5f, .5f, 1);
+	}
 	public void DisableLayout()
 	{
 		HorizontalLayoutGroup horizontalLayout = statusBar.GetComponent<HorizontalLayoutGroup>();
