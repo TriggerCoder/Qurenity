@@ -232,11 +232,6 @@ public class Projectile : MonoBehaviour
 							index = 0;
 						int max = Physics.RaycastNonAlloc(r, hitRays, 300, ~((1 << GameManager.InvisibleBlockerLayer) |
 																		   (1 << GameManager.ThingsLayer) |
-																		   (1 << GameManager.CombinesThingsLayer) |
-																		   (1 << GameManager.ThingsPlayer1Layer) |
-																		   (1 << GameManager.ThingsPlayer2Layer) |
-																		   (1 << GameManager.ThingsPlayer3Layer) |
-																		   (1 << GameManager.ThingsPlayer4Layer) |
 																		   (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
 						if (max > hitRays.Length)
 							max = hitRays.Length;

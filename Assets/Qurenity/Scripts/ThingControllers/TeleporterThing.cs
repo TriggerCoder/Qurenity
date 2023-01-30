@@ -13,17 +13,15 @@ public class TeleporterThing : MonoBehaviour
 	{
 		destination = dest;
 	}
-	public void TelefragEverything()
+	public static void TelefragEverything(Vector3 position, GameObject go)
 	{
 		Collider[] hits = new Collider[10];
 
-		int max = Physics.OverlapSphereNonAlloc(destination, 2, hits, ((1 << GameManager.PlayerLayer) |
-													(1 << GameManager.DamageablesLayer) |
-													(1 << GameManager.CombinesDamageablesLayer) |
-													(1 << GameManager.DamageablesPlayer1Layer) |
-													(1 << GameManager.DamageablesPlayer2Layer) |
-													(1 << GameManager.DamageablesPlayer3Layer) |
-													(1 << GameManager.DamageablesPlayer4Layer)), QueryTriggerInteraction.Ignore);
+		int max = Physics.OverlapSphereNonAlloc(position, 2, hits, ((1 << GameManager.DamageablesLayer) |
+													(1 << GameManager.Player1Layer) |
+													(1 << GameManager.Player2Layer) |
+													(1 << GameManager.Player3Layer) |
+													(1 << GameManager.Player4Layer)), QueryTriggerInteraction.Ignore);
 
 		if (max > hits.Length)
 			max = hits.Length;
@@ -31,12 +29,12 @@ public class TeleporterThing : MonoBehaviour
 		for (int i = 0; i < max; i++)
 		{
 			Collider hit = hits[i];
-			if (hit.gameObject == gameObject)
+			if (hit.gameObject == go)
 				continue;
 
 			Damageable d = hit.GetComponent<Damageable>();
 			if (d != null)
-				d.Damage(10000, DamageType.Telefrag, gameObject);
+				d.Damage(10000, DamageType.Telefrag, go);
 		}
 		return;
 	}
@@ -85,7 +83,7 @@ public class TeleporterThing : MonoBehaviour
 				AudioManager.Create3DSound(otherTransform.position, TeleportOutSound, 1f);
 		
 			playerThing.playerInfo.CheckPVS(Time.frameCount, destination);
-			TelefragEverything();
+			TelefragEverything(destination,gameObject);
 			TeleportToDestination(otherTransform);
 
 			if (!string.IsNullOrEmpty(TeleportInSound))

@@ -16,7 +16,7 @@ public class UIHelper
 	public const float virtualWidth = 1280.0f;
 	public const float virtualHeight = 720.0f;
 
-	public static UIItem CreateUIObject(string objectName, Transform parent)
+	public static UIItem CreateUIObject(string objectName, Transform parent, bool fullsize = true)
 	{
 		UIItem uiItem = new UIItem();
 		uiItem.gameObject = new GameObject();
@@ -26,9 +26,16 @@ public class UIHelper
 
 		RectTransform trans = uiItem.gameObject.AddComponent<RectTransform>();
 		trans.anchoredPosition = new Vector2(0.5f, 0.5f);
-		trans.localPosition = new Vector3(0, 0, 0);
-		trans.sizeDelta = new Vector2(virtualWidth, virtualHeight);
-
+		if (fullsize)
+		{
+			trans.localPosition = new Vector3(0, 0, 0);
+			trans.sizeDelta = new Vector2(virtualWidth, virtualHeight);
+		}
+		else
+		{
+			trans.anchorMin = new Vector2(0, 0);
+			trans.anchorMax = new Vector2(1, 1);
+		}
 		uiItem.canvas = uiItem.gameObject.GetComponent<CanvasRenderer>();
 		if (uiItem.canvas == null)
 			uiItem.canvas = uiItem.gameObject.AddComponent<CanvasRenderer>();
@@ -49,7 +56,7 @@ public class UIHelper
 	}
 	public static UIItem CreateUIObject(string objectName, Transform parent, Texture2D scrTex)
 	{
-		UIItem uiItem = CreateUIObject(objectName, parent);
+		UIItem uiItem = CreateUIObject(objectName, parent, false);
 		uiItem.image = uiItem.gameObject.AddComponent<Image>();
 		uiItem.image.raycastTarget = false;
 		uiItem.image.sprite = CreateFromTexture2D(scrTex);

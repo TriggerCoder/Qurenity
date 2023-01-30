@@ -14,7 +14,8 @@ public class PlayerInfo : MonoBehaviour
 	public HUD playerHUD;
 	[HideInInspector]
 	public GameObject player;
-
+	[HideInInspector]
+	public int playerLayer = GameManager.Player1Layer;
 	public Canvas UICanvas;
 	public Transform WeaponHand;
 
@@ -43,12 +44,13 @@ public class PlayerInfo : MonoBehaviour
 
 	void Start()
 	{
+		playerLayer += GameManager.Instance.numPlayers;
 		if (GameManager.Instance.numPlayers != 0)
 		{
-			GameManager.Instance.Player[GameManager.Instance.numPlayers] = this;
-			GameManager.Instance.Player[GameManager.Instance.numPlayers].playerThing.InitPlayer(GameManager.Instance.numPlayers++);
-			GameManager.Instance.UpdatePlayers();
+			GameManager.Instance.Player.Add(this);
+			playerThing.InitPlayer(GameManager.Instance.numPlayers++);
 		}
+		GameManager.Instance.UpdatePlayers();
 	}
 
 	public void Reset()
@@ -157,15 +159,21 @@ public class PlayerInfo : MonoBehaviour
 			{
 				int surfaceId = MapLoader.leafsSurfaces[leaf.leafSurface + surfaceCount];
 
-				// Check if the surface has already been rendered in the current frame
-				if (MapLoader.leafRenderFrame[surfaceId] == currentFrame)
+				// Check if the surface has already been rendered in the current frame and that the layer is not the same
+				if ((MapLoader.leafRenderFrame[surfaceId] == currentFrame) && ((MapLoader.leafRenderLayer[surfaceId] == playerLayer - 5) || (MapLoader.leafRenderLayer[surfaceId] == GameManager.CombinesMapMeshesLayer)))
 					continue;
 
+				// Check if the surface has already been rendered in the current frame, assign layer
+				if (MapLoader.leafRenderFrame[surfaceId] == currentFrame)
+					MapLoader.leafRenderLayer[surfaceId] = GameManager.CombinesMapMeshesLayer;
+				else
+					MapLoader.leafRenderLayer[surfaceId] = playerLayer - 5;
+			
 				// Set the surface as rendered in the current frame
 				MapLoader.leafRenderFrame[surfaceId] = currentFrame;
 
 				// Activate the cluster associated with the surface
-				ClusterPVSManager.Instance.ActivateClusterBySurface(surfaceId);
+				ClusterPVSManager.Instance.ActivateClusterBySurface(surfaceId, playerLayer - 5);
 			}
 		}
 	}

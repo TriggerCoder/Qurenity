@@ -20,6 +20,7 @@ public class HUD : MonoBehaviour
 
 	public Texture2D pickupTexture;
 	public Texture2D painTexture;
+	public Texture2D crosshairTexture;
 
 	public Font GuiFont;
 	public Material FontMat;
@@ -36,9 +37,13 @@ public class HUD : MonoBehaviour
 
 	private UIItem pickupEffect;
 	private UIItem painEffect;
+	private UIItem crosshair;
 	private UIItem AmmoBar;
 	private UIItem HealthBar;
 	private UIItem ArmorBar;
+
+	Rect viewRect;
+	bool changeSize = false;
 
 	void Awake()
 	{
@@ -49,6 +54,7 @@ public class HUD : MonoBehaviour
 
 		pickupEffect = UIHelper.CreateUIObject("pickupEffect", transform, pickupTexture);
 		painEffect = UIHelper.CreateUIObject("painEffect", transform, painTexture);
+		crosshair = UIHelper.CreateUIObject("crosshairObject", transform, crosshairTexture);
 
 		AmmoBar = UIHelper.CreateUIObject("AmmoBar", statusBar.transform, GuiFont, 100, new Color(1, 1, 1, .5f), TextAnchor.LowerLeft);
 		AmmoBar.text.material = FontMat;
@@ -74,19 +80,51 @@ public class HUD : MonoBehaviour
 		AmmoBar.gameObject.SetActive(true);
 		HealthBar.gameObject.SetActive(true);
 		ArmorBar.gameObject.SetActive(true);
+//		crosshair.gameObject.SetActive(true);
 	}
 
-	public void UpdateRect(Rect viewRect, bool scale = false)
+	void ChangeSizeAllObject()
 	{
-		RectTransform trans = statusBar.GetComponent<RectTransform>();
+		ChangeSize(statusBar);
+		ChangeSize(pickupEffect.gameObject);
+		ChangeSize(painEffect.gameObject);
+		ChangeSize(crosshair.gameObject);
+		changeSize = false;
+	}
+
+	public void ChangeSize(GameObject go)
+	{
+		RectTransform trans = go.GetComponent<RectTransform>();
 		trans.anchorMin = new Vector2(viewRect.x, viewRect.y);
 		trans.anchorMax = new Vector2(viewRect.width, viewRect.height);
+	}
+
+	public void UpdateRect(Rect rect, bool scale = false)
+	{
+		EnableLayout();
+		viewRect = rect;
+		RectTransform trans = statusBar.GetComponent<RectTransform>();
+		trans.anchorMin = new Vector2(0, 0);
+		trans.anchorMax = new Vector2(1, 1);
 		if (scale)
-			trans.localScale.Set(.5f, .5f, 1);
+			trans.localScale = new Vector3(.5f, .5f, 1);
+		changeSize = true;
+		skipFrames = 10;
+	}
+
+	public void EnableLayout()
+	{
+		HorizontalLayoutGroup horizontalLayout = statusBar.GetComponent<HorizontalLayoutGroup>();
+		horizontalLayout.childControlHeight = true;
+		horizontalLayout.childControlWidth = true;
+		horizontalLayout.childForceExpandHeight = true;
+		horizontalLayout.childForceExpandWidth = true;
 	}
 	public void DisableLayout()
 	{
 		HorizontalLayoutGroup horizontalLayout = statusBar.GetComponent<HorizontalLayoutGroup>();
+		horizontalLayout.childScaleHeight = false;
+		horizontalLayout.childScaleWidth = false;
 		horizontalLayout.childControlHeight = false;
 		horizontalLayout.childControlWidth = false;
 		horizontalLayout.childForceExpandHeight = false;
@@ -110,6 +148,8 @@ public class HUD : MonoBehaviour
 			if (skipFrames == 0)
 			{
 				playerInfo.playerHUD.DisableLayout();
+				if (changeSize)
+					ChangeSizeAllObject();
 			}
 		}
 		

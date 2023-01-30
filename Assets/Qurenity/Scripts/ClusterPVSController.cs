@@ -8,7 +8,7 @@ public class ClusterPVSController : MonoBehaviour
 	bool isVisible = false;
 	int lastlayer = GameManager.MapMeshesLayer;
 	GameObject go;
-
+	float lastCombineTime = 0;
 	private void Awake()
 	{
 		go = gameObject;
@@ -34,10 +34,15 @@ public class ClusterPVSController : MonoBehaviour
 		visibleTime = 2.0f;
 		if (isVisible)
 		{
-			if (lastlayer != layer)
-				layer = GameManager.CombinesMapMeshesLayer;
+			if ((lastCombineTime > 0) && (lastCombineTime + 2f < Time.time))
+				lastCombineTime = 0;
 			else
-				return;
+			{
+				if ((lastlayer == layer) || (lastlayer == GameManager.CombinesMapMeshesLayer))
+					return;
+				layer = GameManager.CombinesMapMeshesLayer;
+				lastCombineTime = Time.time;
+			}
 		}
 		ChangeLayer(layer);
 		isVisible = true;

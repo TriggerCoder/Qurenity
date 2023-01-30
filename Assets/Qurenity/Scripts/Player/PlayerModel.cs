@@ -439,6 +439,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		rb.isKinematic = true;
 
 		loaded = false;
+		GameManager.SetLayerAllChildren(playerTransform, GameManager.ThingsLayer);
 	}
 
 	public void Die()
@@ -589,7 +590,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		barrel.transform.localRotation = Quaternion.Slerp(barrel.transform.localRotation, rotation, speed);
 	}
 
-	public void LoadWeapon(MD3 newWeapon, string completeModelName, string muzzleModelName)
+	public void LoadWeapon(MD3 newWeapon, string completeModelName, string muzzleModelName, int layer)
 	{
 		if (ownerDead)
 			return;
@@ -676,6 +677,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 			muzzleFlash.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
 			muzzleFlash.SetActive(false);
 		}
+
+		GameManager.SetLayerAllChildren(weaponTransform, layer);
 	}
 
 	public void UnloadWeapon()
@@ -696,7 +699,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		
 		upperAnimation = UpperAnimation.Drop;
 	}
-	public bool LoadPlayer(string modelName, string SkinName = "default")
+	public bool LoadPlayer(string modelName, string SkinName, int layer)
 	{
 		string playerModelPath = "players/" + modelName;
 
@@ -779,6 +782,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 			loaded = true;
 		}
+
+		GameManager.SetLayerAllChildren(playerTransform, layer);
 		return true;
 	}
 

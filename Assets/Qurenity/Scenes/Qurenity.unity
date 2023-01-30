@@ -194,9 +194,6 @@ MonoBehaviour:
   BaseThingsHolder: {fileID: 2028868021}
   Player:
   - {fileID: 111704871}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   numPlayers: 0
   Blood: {fileID: 8145336117116166367, guid: fb114cce993c9a34bab563ddc4b13c72, type: 3}
   BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0, type: 3}
@@ -1073,7 +1070,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_NotificationBehavior: 0
-  m_MaxPlayerCount: -1
+  m_MaxPlayerCount: 4
   m_AllowJoining: 1
   m_JoinBehavior: 0
   m_PlayerJoinedEvent:

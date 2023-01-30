@@ -12,31 +12,31 @@ TagManager:
   - 
   - Water
   - UI
-  - Reserved 6
-  - Reserved 7
-  - Map  Meshes
+  - UI P2
+  - UI P3
+  - UI P4
+  - Collider
   - Invisible Blocker
-  - Player
-  - Damageables
   - Things
+  - Map Meshes
+  - Comb Map Meshes
+  - Map Meshes P1
+  - Map Meshes P2
+  - Map Meshes P3
+  - Map Meshes P4
+  - Damageables
+  - Player 1
+  - Player 2
+  - Player 3
+  - Player 4
   - Walk Trigger
   - Ragdoll
-  - ColliderLayer
-  - CombMapMeshes
-  - MapMeshes_P1
-  - MapMeshes_P2
-  - MapMeshes_P3
-  - MapMeshes_P4
-  - CombThings
-  - Things_P1
-  - Things_P2
-  - Things_P3
-  - Things_P4
-  - CombDamageables
-  - Damageables_P1
-  - Damageables_P2
-  - Damageables_P3
-  - Damageables_P4
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
   - 
   m_SortingLayers:
   - name: Default

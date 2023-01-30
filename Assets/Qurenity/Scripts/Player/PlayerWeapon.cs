@@ -104,7 +104,7 @@ public class PlayerWeapon : MonoBehaviour
 				Mesher.FillModelFromProcessedData(model,gameObject);
 
 			if (playerInfo.playerThing.avatar != null)
-				playerInfo.playerThing.avatar.LoadWeapon(model, CompleteModelName, MuzzleModelName);
+				playerInfo.playerThing.avatar.LoadWeapon(model, CompleteModelName, MuzzleModelName, playerInfo.playerLayer);
 		}
 
 		foreach (MD3Tag tag in model.tags)
@@ -126,7 +126,6 @@ public class PlayerWeapon : MonoBehaviour
 		if (!string.IsNullOrEmpty(MuzzleModelName))
 		{
 			muzzleObject = new GameObject("Muzzle");
-			muzzleObject.layer = GameManager.UILayer;
 			muzzleObject.transform.SetParent(transform);
 			muzzleObject.transform.localPosition = MuzzleOffset;
 			model = ModelsManager.GetModel(MuzzleModelName, true);
@@ -144,6 +143,8 @@ public class PlayerWeapon : MonoBehaviour
 				muzzleLight.transform.localPosition = new Vector3(0, 0, .05f);
 			}
 		}
+		
+		GameManager.SetLayerAllChildren(transform, playerInfo.playerLayer - 14);
 
 		oldMousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x;
 		oldMousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y;

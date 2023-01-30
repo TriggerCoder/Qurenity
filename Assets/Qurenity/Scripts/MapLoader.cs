@@ -25,6 +25,7 @@ public static class MapLoader
 	public static List<QLeaf> leafs;
 	public static List<int> leafsSurfaces;
 	public static int[] leafRenderFrame;
+	public static int[] leafRenderLayer;
 	public static List<QModel> models;
 	public static List<QBrush> brushes;
 	public static List<int> leafsBrushes;
@@ -125,6 +126,7 @@ public static class MapLoader
 			int num = header.Directory[LumpType.LeafSurfaces].Length / 4;
 			leafsSurfaces = new List<int>(num);
 			leafRenderFrame = new int[num];
+			leafRenderLayer = new int[num];
 			for (int i = 0; i < num; i++)
 			{
 				leafsSurfaces.Add(BSPMap.ReadInt32());

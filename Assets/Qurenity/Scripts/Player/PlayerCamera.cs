@@ -37,16 +37,6 @@ public class PlayerCamera : MonoBehaviour
 
 		playerControls = GetComponentInParent<PlayerControls>();
 
-		SkyholeCamera.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
-										(1 << (GameManager.RagdollLayer & 0x1f)) |
-										(1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
-										(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
-
-		ThirdPerson.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
-										(1 << (GameManager.ThingsLayer & 0x1f)) |
-										(1 << (GameManager.RagdollLayer & 0x1f)) |
-										(1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
-										(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
 		cTransform = transform;
 	}
 
@@ -56,6 +46,30 @@ public class PlayerCamera : MonoBehaviour
 		SkyboxCamera.rect = viewRect;
 		UICamera.rect = viewRect;
 		ThirdPerson.rect = viewRect;
+
+		int playerLayer = ((1 << GameManager.Player1Layer) |
+					(1 << GameManager.Player2Layer) |
+					(1 << GameManager.Player3Layer) |
+					(1 << GameManager.Player4Layer)) & ~(1 << (playerControls.playerInfo.playerLayer));
+
+		SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.ThingsLayer)) |
+													(1 << (GameManager.RagdollLayer)) |
+													(1 << (GameManager.CombinesMapMeshesLayer)) |
+													(1 << (playerControls.playerInfo.playerLayer - 5)) |
+													playerLayer));
+
+		ThirdPerson.cullingMask = ((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.ThingsLayer)) |
+													(1 << (GameManager.RagdollLayer)) |
+													(1 << (GameManager.CombinesMapMeshesLayer)) |
+													(1 << (playerControls.playerInfo.playerLayer - 5)) |
+													(1 << GameManager.Player1Layer) |
+													(1 << GameManager.Player2Layer) |
+													(1 << GameManager.Player3Layer) |
+													(1 << GameManager.Player4Layer));
+
+		UICamera.cullingMask = (1 << (playerControls.playerInfo.playerLayer - 14));
 	}
 	public void ChangeThirdPersonCamera(bool enable)
 	{

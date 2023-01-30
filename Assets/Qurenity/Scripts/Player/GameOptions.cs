@@ -10,6 +10,7 @@ public static class GameOptions
 	public static bool aspectRatioCorrection = true;
 
 	public static Vector2 MouseSensitivity = new Vector2(25f, 20f);
+	public static Vector2 GamePadSensitivity = new Vector2(4f, 3f);
 	public static Sprite crosshair = null;
 	public static int crosshairIndex = 4;
 	public static float crossHairAlpha = .4f;

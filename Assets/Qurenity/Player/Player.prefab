@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 743958849}
   - component: {fileID: 743958850}
   - component: {fileID: 1038530172}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: ThirdPersonCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,7 +42,7 @@ Camera:
   m_GameObject: {fileID: 743958848}
   m_Enabled: 0
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 4
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -180,7 +180,7 @@ GameObject:
   - component: {fileID: 4338069678295091742}
   - component: {fileID: 41184706}
   - component: {fileID: 2043769949}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -453,6 +453,7 @@ MonoBehaviour:
   playerCamera: {fileID: 0}
   pickupTexture: {fileID: 2800000, guid: 5e3a691264d240945ae8a6fdc965dac4, type: 3}
   painTexture: {fileID: 2800000, guid: 39a425f272a7b2c4fab06634c08c7f7c, type: 3}
+  crosshairTexture: {fileID: 2800000, guid: be8e5a36e70a821448890ac48c7c4152, type: 3}
   GuiFont: {fileID: 12800000, guid: 0eb590edc5a27d5428ecbc1263940d46, type: 3}
   FontMat: {fileID: 2100000, guid: cc288c801454ef9449e9914099f3c2b9, type: 2}
   pickupFlashTime: 0
@@ -467,7 +468,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4965662911938076}
   - component: {fileID: 20946132042153066}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: UICamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -545,7 +546,7 @@ GameObject:
   - component: {fileID: 20329405279158884}
   - component: {fileID: 4858407527809009081}
   - component: {fileID: 3628659859297732827}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: SkyholeCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -643,7 +644,7 @@ GameObject:
   - component: {fileID: 4853754259503296}
   - component: {fileID: 111704870}
   - component: {fileID: 111704871}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: Controls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -678,6 +679,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04fee26d1557ba04594e2da723e9f94c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  axisAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   audioSource: {fileID: 0}
   playerInfo: {fileID: 0}
   playerWeapon: {fileID: 0}
@@ -725,6 +750,7 @@ MonoBehaviour:
   playerThing: {fileID: 0}
   playerHUD: {fileID: 0}
   player: {fileID: 0}
+  playerLayer: 19
   UICanvas: {fileID: 223332192906287930}
   WeaponHand: {fileID: 120263213280996051}
   Ammo: 6400000000000000000000000000000000000000000000000000000000000000
@@ -757,7 +783,7 @@ GameObject:
   - component: {fileID: 20246609441403284}
   - component: {fileID: 45259091200768732}
   - component: {fileID: 396864669}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: SkyboxCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -838,7 +864,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835987207524526}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dcda517cd1d729249abdbe54700d15fe, type: 3}
   m_Name: 
@@ -854,7 +880,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4530601570485014}
   - component: {fileID: 1441192285}
-  m_Layer: 10
+  m_Layer: 18
   m_Name: Main Cameras
   m_TagString: MainCamera
   m_Icon: {fileID: 0}

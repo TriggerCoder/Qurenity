@@ -124,7 +124,7 @@ public class RailgunWeapon : PlayerWeapon
 
 			Ray ray = new Ray(playerInfo.playerCamera.MainCamera.transform.position, d);
 			RaycastHit hit;
-			if (Physics.Raycast(ray, out hit, maxRange, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.PlayerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore))
+			if (Physics.Raycast(ray, out hit, maxRange, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << playerInfo.playerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore))
 			{
 				Damageable target = hit.collider.gameObject.GetComponent<Damageable>();
 				if (target != null)
@@ -179,7 +179,7 @@ public class RailgunWeapon : PlayerWeapon
 
 			}
 			//Max Range hit, Railgun need to stop so it should have hit sky or something
-			else if(Physics.Raycast(ray, out hit, maxRange, ~((1 << GameManager.PlayerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore))
+			else if(Physics.Raycast(ray, out hit, maxRange, ~((1 << playerInfo.playerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore))
 			{
 				GameObject go = PoolManager.GetObjectFromPool(AttackProjectileName);
 				Vector3 start = muzzleObject.transform.position;

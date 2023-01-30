@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Qurenity/Scenes/URLLoad.unity
     guid: 62ee3e8807643c84bb4308420149eb0d
   - enabled: 1

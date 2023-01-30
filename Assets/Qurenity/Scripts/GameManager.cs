@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
 	public Transform TemporaryObjectsHolder;
 	public Transform BaseThingsHolder;
 
-	public PlayerInfo[] Player = new PlayerInfo[4];
+	public List<PlayerInfo> Player = new List<PlayerInfo>();
 
 	public int numPlayers = 0;
 	public GameObject Blood;
@@ -30,32 +30,33 @@ public class GameManager : MonoBehaviour
 	public const float sizeDividor = 1f / 32f;
 	public const float modelScale = 1f / 64f;
 
-	public const short DefaultLayer = 0;
-	public const short TransparentFXLayer = 1;
-	public const short UILayer = 5;
-	public const short MapMeshesLayer = 8;
-	public const short InvisibleBlockerLayer = 9;
-	public const short PlayerLayer = 10;
-	public const short DamageablesLayer = 11;
-	public const short ThingsLayer = 12;
-	public const short WalkTriggerLayer = 13;
-	public const short RagdollLayer = 14;
-	public const short ColliderLayer = 15;
-	public const short CombinesMapMeshesLayer = 16;
-	public const short MapMeshesPlayer1Layer = 17;
-	public const short MapMeshesPlayer2Layer = 18;
-	public const short MapMeshesPlayer3Layer = 19;
-	public const short MapMeshesPlayer4Layer = 20;
-	public const short CombinesThingsLayer = 21;
-	public const short ThingsPlayer1Layer = 22;
-	public const short ThingsPlayer2Layer = 23;
-	public const short ThingsPlayer3Layer = 24;
-	public const short ThingsPlayer4Layer = 25;
-	public const short CombinesDamageablesLayer = 26;
-	public const short DamageablesPlayer1Layer = 27;
-	public const short DamageablesPlayer2Layer = 28;
-	public const short DamageablesPlayer3Layer = 29;
-	public const short DamageablesPlayer4Layer = 30;
+	public const short DefaultLayer =				0;
+	public const short TransparentFXLayer =			1;
+
+	public const short UI_P1Layer =					5;
+	public const short UI_P2Layer =					6;
+	public const short UI_P3Layer =					7;
+	public const short UI_P4Layer =					8;
+
+	public const short ColliderLayer =				9;
+	public const short InvisibleBlockerLayer =		10;
+	public const short ThingsLayer =				11;
+
+	public const short MapMeshesLayer =				12;
+	public const short CombinesMapMeshesLayer =		13;
+	public const short MapMeshesPlayer1Layer =		14;
+	public const short MapMeshesPlayer2Layer =		15;
+	public const short MapMeshesPlayer3Layer =		16;
+	public const short MapMeshesPlayer4Layer =		17;
+
+	public const short DamageablesLayer =			18;
+	public const short Player1Layer =				19;
+	public const short Player2Layer =				20;
+	public const short Player3Layer =				21;
+	public const short Player4Layer =				22;
+
+	public const short WalkTriggerLayer =			23;
+	public const short RagdollLayer =				24;
 
 	public const short NavMeshWalkableTag = 0;
 	public const short NavMeshNotWalkableTag = 1;
@@ -182,7 +183,7 @@ public class GameManager : MonoBehaviour
 		else if (numPlayers == 2)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 1));
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 1, 0.5f));
 			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 1, 0.5f));
@@ -190,27 +191,34 @@ public class GameManager : MonoBehaviour
 		else if (numPlayers == 3)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 1));
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
 			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
 
-			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
-			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f),true);
+			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0, 0.5f, 0.5f));
+			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f,0, 1f, 0.5f),true);
 		}
 		else if (numPlayers == 4)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 0.5f, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 0.5f, 0.5f),true);
+			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 0.5f, 1),true);
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
 			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
 
-			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
-			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f),true);
+			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0, 0.5f, 0.5f));
+			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0, 1, 0.5f),true);
 
-			Player[3].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 1, 0.5f, 0.5f));
-			Player[3].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 1, 0.5f, 0.5f),true);
+			Player[3].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
+			Player[3].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 1, 1),true);
 		}
+	}
+
+	public static void SetLayerAllChildren(Transform root, int layer)
+	{
+		var children = root.GetComponentsInChildren<Transform>(includeInactive: true);
+		foreach (var child in children)
+			child.gameObject.layer = layer;
 	}
 }

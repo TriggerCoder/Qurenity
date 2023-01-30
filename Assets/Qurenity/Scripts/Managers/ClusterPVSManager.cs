@@ -70,7 +70,7 @@ public class ClusterPVSManager : MonoBehaviour
 		}
 		AllClusters.Add(cluster);
 	}
-	public void ActivateClusterBySurface(int surface)
+	public void ActivateClusterBySurface(int surface, int layer)
 	{
 		ClusterPVSController cluster = SurfaceToCluster[surface];
 		if (cluster == null)
@@ -78,6 +78,6 @@ public class ClusterPVSManager : MonoBehaviour
 //			Debug.LogWarning("Cluster not found for surface: " + surface);
 			return;
 		}
-		cluster.ActivateCluster(GameManager.MapMeshesPlayer1Layer);
+		cluster.ActivateCluster(layer);
 	}
 }

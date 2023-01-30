@@ -53,18 +53,27 @@ public class PlayerThing : MonoBehaviour, Damageable
 		player = new GameObject();
 		avatar = player.AddComponent<PlayerModel>();
 		player.transform.SetParent(transform);
-		avatar.LoadPlayer(modelName, skinName);
+		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer);
 
-		gameObject.layer = GameManager.PlayerLayer;
+		gameObject.layer = playerInfo.playerLayer;
 		playerControls.enabled = true;
-		transform.position = SpawnerManager.FindSpawnLocation();
+		Vector3 destination = SpawnerManager.FindSpawnLocation();
+		TeleporterThing.TelefragEverything(destination, gameObject);
+		transform.position = destination;
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
 
-		playerCamera.SkyholeCamera.cullingMask = ((1 << (GameManager.DefaultLayer & 0x1f)) |
-								(1 << (GameManager.RagdollLayer & 0x1f)) |
-								(1 << (GameManager.CombinesMapMeshesLayer & 0x1f)) |
-								(1 << (GameManager.MapMeshesPlayer1Layer & 0x1f)));
+		int playerLayer = ((1 << GameManager.Player1Layer) |
+							(1 << GameManager.Player2Layer) |
+							(1 << GameManager.Player3Layer) |
+							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
+
+		playerCamera.SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.ThingsLayer)) |
+													(1 << (GameManager.RagdollLayer)) |
+													(1 << (GameManager.CombinesMapMeshesLayer)) |
+													(1 << (playerInfo.playerLayer - 5)) |
+													playerLayer));
 
 		if (playerControls.playerWeapon == null)
 			playerControls.SwapToBestWeapon();

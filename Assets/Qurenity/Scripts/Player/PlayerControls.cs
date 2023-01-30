@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using Assets.MultiAudioListener;
 public class PlayerControls : MonoBehaviour
 {
+	public AnimationCurve axisAnimationCurve;
 	public MultiAudioSource audioSource;
 	[HideInInspector]
 	public PlayerInfo playerInfo;
@@ -129,13 +130,22 @@ public class PlayerControls : MonoBehaviour
 		if (playerInput.actions["CameraSwitch"].WasPressedThisFrame())
 			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
 
-		viewDirection.y += playerInput.actions["Look"].ReadValue<Vector2>().x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
-		viewDirection.x -= playerInput.actions["Look"].ReadValue<Vector2>().y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
+		Vector2 Look = playerInput.actions["Look"].ReadValue<Vector2>();
 
+		if (playerInput.currentControlScheme == "Keyboard&Mouse")
+		{
+			viewDirection.y += Look.x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
+			viewDirection.x -= Look.y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
+		}
+		else
+		{
+			viewDirection.y +=  Look.x * GameOptions.GamePadSensitivity.x * axisAnimationCurve.Evaluate(Mathf.Abs(Look.x));
+			viewDirection.x -=  Look.y * GameOptions.GamePadSensitivity.y * axisAnimationCurve.Evaluate(Mathf.Abs(Look.y));
+		}
 		//so you don't fall when no-clipping
 		bool outerSpace = false;
 
-		if (gameObject.layer != GameManager.PlayerLayer)
+		if (gameObject.layer != playerInfo.playerLayer)
 			outerSpace = true;
 
 		if (viewDirection.y < -180) viewDirection.y += 360;
