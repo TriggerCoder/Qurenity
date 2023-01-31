@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SpawnPosition : MonoBehaviour
 {
-	void OnEnable()
+	void Start()
 	{
 		SpawnerManager.AddToList(gameObject);
 	}

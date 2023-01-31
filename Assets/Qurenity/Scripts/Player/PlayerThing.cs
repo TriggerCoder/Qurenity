@@ -40,7 +40,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 		Right = 2
 	}
 	private LookType whereToLook = LookType.Center;
-	void Start()
+	void Awake()
 	{
 		audioSource = GetComponent<MultiAudioSource>();
 		playerInfo = GetComponentInChildren<PlayerInfo>();
@@ -48,18 +48,19 @@ public class PlayerThing : MonoBehaviour, Damageable
 		playerCamera = GetComponentInChildren<PlayerCamera>();
 	}
 
-	public void InitPlayer(int playerNum)
+	public void InitPlayer()
 	{
 		player = new GameObject();
 		avatar = player.AddComponent<PlayerModel>();
 		player.transform.SetParent(transform);
+
 		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer);
 
 		gameObject.layer = playerInfo.playerLayer;
-		playerControls.enabled = true;
 		Vector3 destination = SpawnerManager.FindSpawnLocation();
 		TeleporterThing.TelefragEverything(destination, gameObject);
 		transform.position = destination;
+
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
 
@@ -82,6 +83,8 @@ public class PlayerThing : MonoBehaviour, Damageable
 		playerInfo.playerHUD.HUDUpdateArmorNum();
 
 		playerCamera.ChangeThirdPersonCamera(false);
+
+		playerControls.enabled = true;
 		ready = true;
 	}
 

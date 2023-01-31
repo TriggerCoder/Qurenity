@@ -440,6 +440,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		loaded = false;
 		GameManager.SetLayerAllChildren(playerTransform, GameManager.ThingsLayer);
+		DestroyAfterTime destroyAfterTime = playerTransform.gameObject.AddComponent<DestroyAfterTime>();
+		destroyAfterTime._lifeTime = 10;
 	}
 
 	public void Die()

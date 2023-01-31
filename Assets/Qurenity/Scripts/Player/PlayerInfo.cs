@@ -11,11 +11,11 @@ public class PlayerInfo : MonoBehaviour
 	[HideInInspector]
 	public PlayerThing playerThing;
 	[HideInInspector]
-	public HUD playerHUD;
+	public PlayerHUD playerHUD;
 	[HideInInspector]
 	public GameObject player;
 	[HideInInspector]
-	public int playerLayer = GameManager.Player1Layer;
+	public int playerLayer = GameManager.DamageablesLayer;
 	public Canvas UICanvas;
 	public Transform WeaponHand;
 
@@ -38,17 +38,21 @@ public class PlayerInfo : MonoBehaviour
 		playerControls = GetComponent<PlayerControls>();
 		playerThing = GetComponentInParent<PlayerThing>();
 		playerCamera = GetComponentInChildren<PlayerCamera>();
-		playerHUD  = UICanvas.GetComponent<HUD>();
+		playerHUD  = UICanvas.GetComponent<PlayerHUD>();
 		player = playerThing.gameObject;
 	}
 
 	void Start()
 	{
-		playerLayer += GameManager.Instance.numPlayers;
-		if (GameManager.Instance.numPlayers != 0)
+		playerLayer += GameManager.Instance.Player.Count;
+		if (!GameManager.Instance.Player.Contains(this))
 		{
+			playerLayer++;
 			GameManager.Instance.Player.Add(this);
-			playerThing.InitPlayer(GameManager.Instance.numPlayers++);
+
+			if (GameManager.Instance.Player.Count == 3)
+				playerThing.modelName = "Visor";
+			playerThing.InitPlayer();
 		}
 		GameManager.Instance.UpdatePlayers();
 	}

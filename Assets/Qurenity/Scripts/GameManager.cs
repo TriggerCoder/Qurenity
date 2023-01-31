@@ -15,7 +15,6 @@ public class GameManager : MonoBehaviour
 
 	public List<PlayerInfo> Player = new List<PlayerInfo>();
 
-	public int numPlayers = 0;
 	public GameObject Blood;
 	public GameObject BulletHit;
 	public GameObject BulletMark;
@@ -57,6 +56,11 @@ public class GameManager : MonoBehaviour
 
 	public const short WalkTriggerLayer =			23;
 	public const short RagdollLayer =				24;
+
+	public const short UI3D_P1Layer =				25;
+	public const short UI3D_P2Layer =				26;
+	public const short UI3D_P3Layer =				27;
+	public const short UI3D_P4Layer =				28;
 
 	public const short NavMeshWalkableTag = 0;
 	public const short NavMeshNotWalkableTag = 1;
@@ -166,7 +170,7 @@ public class GameManager : MonoBehaviour
 				if (skipFrames == 0)
 				{
 					paused = false;
-					Player[0].playerThing.InitPlayer(numPlayers++);
+					Player[0].playerThing.InitPlayer();
 				}
 			}
 		}
@@ -175,43 +179,45 @@ public class GameManager : MonoBehaviour
 	//There must be a better way to assign this
 	public void UpdatePlayers()
 	{
+		int numPlayers = Player.Count;
+
 		if (numPlayers == 1)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 1, 1));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 1, 1));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P1Layer);
 		}
 		else if (numPlayers == 2)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 1));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P1Layer);
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 1, 0.5f));
-			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 1, 0.5f));
+			Player[1].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P2Layer);
 		}
 		else if (numPlayers == 3)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 1, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 1, 1));
+			Player[0].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P1Layer);
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
-			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
+			Player[1].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P2Layer);
 
 			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0, 0.5f, 0.5f));
-			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f,0, 1f, 0.5f),true);
+			Player[2].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P3Layer);
 		}
 		else if (numPlayers == 4)
 		{
 			Player[0].playerThing.playerCamera.UpdateRect(new Rect(0, 0.5f, 0.5f, 0.5f));
-			Player[0].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0.5f, 0.5f, 1),true);
+			Player[0].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P1Layer);
 
 			Player[1].playerThing.playerCamera.UpdateRect(new Rect(0, 0, 0.5f, 0.5f));
-			Player[1].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0, 0, 0.5f, 0.5f),true);
+			Player[1].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P2Layer);
 
 			Player[2].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0, 0.5f, 0.5f));
-			Player[2].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0, 1, 0.5f),true);
+			Player[2].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P3Layer);
 
 			Player[3].playerThing.playerCamera.UpdateRect(new Rect(0.5f, 0.5f, 0.5f, 0.5f));
-			Player[3].playerThing.playerInfo.playerHUD.UpdateRect(new Rect(0.5f, 0.5f, 1, 1),true);
+			Player[3].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P4Layer);
 		}
 	}
 

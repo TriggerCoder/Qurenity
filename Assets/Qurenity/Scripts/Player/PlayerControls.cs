@@ -118,7 +118,7 @@ public class PlayerControls : MonoBehaviour
 					}
 
 					playerInfo.Reset();
-					playerThing.InitPlayer(0);
+					playerThing.InitPlayer();
 				}
 			}
 			return;

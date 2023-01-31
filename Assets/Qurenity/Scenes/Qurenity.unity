@@ -187,14 +187,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm7
+  autoloadMap: q3dm1
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
   BaseThingsHolder: {fileID: 2028868021}
   Player:
   - {fileID: 111704871}
-  numPlayers: 0
   Blood: {fileID: 8145336117116166367, guid: fb114cce993c9a34bab563ddc4b13c72, type: 3}
   BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0, type: 3}
   BulletMark: {fileID: 8145336117116166367, guid: 88fb1cd2684a56442ae990594e923141, type: 3}
@@ -1232,9 +1231,17 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 1626833134530822, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_RootOrder

@@ -67,7 +67,8 @@ public class PlayerCamera : MonoBehaviour
 													(1 << GameManager.Player1Layer) |
 													(1 << GameManager.Player2Layer) |
 													(1 << GameManager.Player3Layer) |
-													(1 << GameManager.Player4Layer));
+													(1 << GameManager.Player4Layer) |
+													(1 << (playerControls.playerInfo.playerLayer + 6)));
 
 		UICamera.cullingMask = (1 << (playerControls.playerInfo.playerLayer - 14));
 	}
@@ -76,6 +77,16 @@ public class PlayerCamera : MonoBehaviour
 		ThirdPerson.enabled = enable;
 		SkyholeCamera.enabled = !enable;
 		UICamera.enabled = !enable;
+		if (enable)
+		{
+			playerControls.playerInfo.playerHUD.canvas.worldCamera = ThirdPerson;
+			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer + 6);
+		}
+		else
+		{
+			playerControls.playerInfo.playerHUD.canvas.worldCamera = UICamera;
+			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer - 14);
+		}
 	}
 	void Update()
 	{

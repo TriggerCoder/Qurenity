@@ -56,8 +56,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
+  near clip plane: 0.1
+  far clip plane: 300
   field of view: 70
   orthographic: 0
   orthographic size: 5
@@ -372,9 +372,9 @@ Canvas:
   m_GameObject: {fileID: 1351247977468658}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_RenderMode: 1
+  m_Camera: {fileID: 20946132042153066}
+  m_PlaneDistance: 0.2
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -451,6 +451,7 @@ MonoBehaviour:
   playerThing: {fileID: 0}
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
+  canvas: {fileID: 0}
   pickupTexture: {fileID: 2800000, guid: 5e3a691264d240945ae8a6fdc965dac4, type: 3}
   painTexture: {fileID: 2800000, guid: 39a425f272a7b2c4fab06634c08c7f7c, type: 3}
   crosshairTexture: {fileID: 2800000, guid: be8e5a36e70a821448890ac48c7c4152, type: 3}
@@ -750,7 +751,7 @@ MonoBehaviour:
   playerThing: {fileID: 0}
   playerHUD: {fileID: 0}
   player: {fileID: 0}
-  playerLayer: 19
+  playerLayer: 18
   UICanvas: {fileID: 223332192906287930}
   WeaponHand: {fileID: 120263213280996051}
   Ammo: 6400000000000000000000000000000000000000000000000000000000000000

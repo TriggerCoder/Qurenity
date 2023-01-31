@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HUD : MonoBehaviour
+public class PlayerHUD : MonoBehaviour
 {
 	public GameObject player;
 	public GameObject statusBar;
@@ -17,6 +17,8 @@ public class HUD : MonoBehaviour
 	public PlayerControls playerControls;
 	[HideInInspector]
 	public PlayerCamera playerCamera;
+	[HideInInspector]
+	public Canvas canvas;
 
 	public Texture2D pickupTexture;
 	public Texture2D painTexture;
@@ -42,15 +44,13 @@ public class HUD : MonoBehaviour
 	private UIItem HealthBar;
 	private UIItem ArmorBar;
 
-	Rect viewRect;
-	bool changeSize = false;
-
 	void Awake()
 	{
 		playerThing = player.GetComponent<PlayerThing>();
 		playerInfo = player.GetComponentInChildren<PlayerInfo>();
 		playerControls = player.GetComponentInChildren<PlayerControls>();
 		playerCamera = player.GetComponentInChildren<PlayerCamera>();
+		canvas = GetComponentInChildren<Canvas>();
 
 		pickupEffect = UIHelper.CreateUIObject("pickupEffect", transform, pickupTexture);
 		painEffect = UIHelper.CreateUIObject("painEffect", transform, painTexture);
@@ -80,46 +80,15 @@ public class HUD : MonoBehaviour
 		AmmoBar.gameObject.SetActive(true);
 		HealthBar.gameObject.SetActive(true);
 		ArmorBar.gameObject.SetActive(true);
-//		crosshair.gameObject.SetActive(true);
+		UIHelper.InitUIObject(crosshair, 64, 64, 0.5f, 0.5f, 0.5f, 0.5f, 0, 0);
 	}
 
-	void ChangeSizeAllObject()
+	public void UpdateLayer(int layer)
 	{
-		ChangeSize(statusBar);
-		ChangeSize(pickupEffect.gameObject);
-		ChangeSize(painEffect.gameObject);
-		ChangeSize(crosshair.gameObject);
-		changeSize = false;
+		gameObject.layer = layer;
+		GameManager.SetLayerAllChildren(transform, layer);
 	}
 
-	public void ChangeSize(GameObject go)
-	{
-		RectTransform trans = go.GetComponent<RectTransform>();
-		trans.anchorMin = new Vector2(viewRect.x, viewRect.y);
-		trans.anchorMax = new Vector2(viewRect.width, viewRect.height);
-	}
-
-	public void UpdateRect(Rect rect, bool scale = false)
-	{
-		EnableLayout();
-		viewRect = rect;
-		RectTransform trans = statusBar.GetComponent<RectTransform>();
-		trans.anchorMin = new Vector2(0, 0);
-		trans.anchorMax = new Vector2(1, 1);
-		if (scale)
-			trans.localScale = new Vector3(.5f, .5f, 1);
-		changeSize = true;
-		skipFrames = 10;
-	}
-
-	public void EnableLayout()
-	{
-		HorizontalLayoutGroup horizontalLayout = statusBar.GetComponent<HorizontalLayoutGroup>();
-		horizontalLayout.childControlHeight = true;
-		horizontalLayout.childControlWidth = true;
-		horizontalLayout.childForceExpandHeight = true;
-		horizontalLayout.childForceExpandWidth = true;
-	}
 	public void DisableLayout()
 	{
 		HorizontalLayoutGroup horizontalLayout = statusBar.GetComponent<HorizontalLayoutGroup>();
@@ -148,8 +117,6 @@ public class HUD : MonoBehaviour
 			if (skipFrames == 0)
 			{
 				playerInfo.playerHUD.DisableLayout();
-				if (changeSize)
-					ChangeSizeAllObject();
 			}
 		}
 		
