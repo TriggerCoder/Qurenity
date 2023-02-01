@@ -49,6 +49,7 @@ public class PlayerInfo : MonoBehaviour
 		{
 			playerLayer++;
 			GameManager.Instance.Player.Add(this);
+			MapLoader.noMarks.Add(playerControls.capsuleCollider);
 
 			if (GameManager.Instance.Player.Count == 3)
 				playerThing.modelName = "Visor";
@@ -177,7 +178,7 @@ public class PlayerInfo : MonoBehaviour
 				MapLoader.leafRenderFrame[surfaceId] = currentFrame;
 
 				// Activate the cluster associated with the surface
-				ClusterPVSManager.Instance.ActivateClusterBySurface(surfaceId, playerLayer - 5);
+				ClusterPVSManager.Instance.ActivateClusterBySurface(surfaceId, MapLoader.leafRenderLayer[surfaceId]);
 			}
 		}
 	}

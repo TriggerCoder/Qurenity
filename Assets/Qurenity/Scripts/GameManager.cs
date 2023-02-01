@@ -145,6 +145,7 @@ public class GameManager : MonoBehaviour
 		ThingsManager.AddThingsToMap();
 		ready = true;
 
+		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);
 		MusicPlayer.Instance.Play(autoloadMap);
 	}
 	void OnApplicationFocus(bool hasFocus)

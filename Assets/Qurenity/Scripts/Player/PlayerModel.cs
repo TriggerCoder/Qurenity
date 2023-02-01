@@ -47,7 +47,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private int currentFrameLower;
 
 	private bool loaded = false;
-
+	private bool ragDoll = false;
 	private bool ownerDead = false;
 	public class ModelAnimation
 	{
@@ -139,6 +139,12 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 	private int hitpoints = 50;
 	private Rigidbody rb;
+
+	//Needed to keep impulse once it turn into ragdoll
+	private PlayerControls playerControls;
+	private float impulseDampening = 4f;
+	private Vector3 impulseVector = Vector3.zero;
+
 	public int Hitpoints { get { return hitpoints; } }
 	public bool Dead { get { return hitpoints <= 0; } }
 	public bool Bleed { get { return true; } }
@@ -146,13 +152,42 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 	List<Vector3> currentVect = new List<Vector3>();
 	List<Vector3> nextVect = new List<Vector3>();
+
+	void ApplySimpleMove()
+	{
+		float gravityAccumulator;
+		Vector3 currentPosition = playerTransform.position;
+		isGrounded = Physics.CheckSphere(currentPosition + Vector3.up * .25f, .5f, (1 << GameManager.ColliderLayer), QueryTriggerInteraction.Ignore);
+		if (isGrounded)
+			gravityAccumulator = 0f;
+		else
+			gravityAccumulator = GameManager.Instance.gravity;
+		Vector3 gravity = Vector3.down *  gravityAccumulator;
+		currentPosition += (gravity + impulseVector) * Time.deltaTime;
+
+		//dampen impulse
+		if (impulseVector.sqrMagnitude > 0)
+		{
+			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
+			if (impulseVector.sqrMagnitude < 1f)
+				impulseVector = Vector3.zero;
+		}
+		rb.MovePosition(currentPosition);
+	}
+
 	private void Update()
 	{
+		if (GameManager.Paused)
+			return;
+
 		if (!loaded)
 			return;
 
-		if (GameManager.Paused)
+		if (ragDoll)
+		{
+			ApplySimpleMove();
 			return;
+		}
 
 		if (turnTo.sqrMagnitude > 0)
 		{
@@ -417,11 +452,6 @@ public class PlayerModel : MonoBehaviour, Damageable
 		playerTransform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
 		playerTransform.SetPositionAndRotation(currentPosition, currentRotation);
 		tagHeadTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-		gameObject.layer = GameManager.DefaultLayer;
-
-		var transformChildren = playerTransform.GetComponentsInChildren<Transform>(includeInactive: true);
-		foreach (var child in transformChildren)
-			child.gameObject.layer = GameManager.DefaultLayer;
 
 		var meshFilterChildren = playerTransform.GetComponentsInChildren<MeshFilter>(includeInactive: true);
 		CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
@@ -438,8 +468,12 @@ public class PlayerModel : MonoBehaviour, Damageable
 		rb.useGravity = false;
 		rb.isKinematic = true;
 
-		loaded = false;
-		GameManager.SetLayerAllChildren(playerTransform, GameManager.ThingsLayer);
+
+		impulseVector = playerControls.impulseVector;
+		playerControls.capsuleCollider.enabled = false;
+		playerControls.controller.enabled = false;
+				ragDoll = true;
+
 		DestroyAfterTime destroyAfterTime = playerTransform.gameObject.AddComponent<DestroyAfterTime>();
 		destroyAfterTime._lifeTime = 10;
 	}
@@ -453,6 +487,9 @@ public class PlayerModel : MonoBehaviour, Damageable
 		int deathNum = 2 * UnityEngine.Random.Range(0, 3);
 		upperAnimation = (UpperAnimation)deathNum;
 		lowerAnimation = (LowerAnimation)deathNum;
+
+		gameObject.layer = GameManager.RagdollLayer;
+		GameManager.SetLayerAllChildren(playerTransform, GameManager.RagdollLayer);
 
 		ownerDead = true;
 	}
@@ -701,7 +738,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		
 		upperAnimation = UpperAnimation.Drop;
 	}
-	public bool LoadPlayer(string modelName, string SkinName, int layer)
+	public bool LoadPlayer(string modelName, string SkinName, int layer, PlayerControls control)
 	{
 		string playerModelPath = "players/" + modelName;
 
@@ -784,7 +821,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 			loaded = true;
 		}
-
+		playerControls = control;
 		GameManager.SetLayerAllChildren(playerTransform, layer);
 		return true;
 	}

@@ -89,6 +89,21 @@ public class PlayerControls : MonoBehaviour
 		moveSpeed = runSpeed;
 		currentMoveType = MoveType.Run;
 	}
+
+	void ApplyMove()
+	{
+		lastPosition = transform.position;
+		controller.Move((playerVelocity + impulseVector + jumpPadVel) * Time.deltaTime);
+
+		//dampen impulse
+		if (impulseVector.sqrMagnitude > 0)
+		{
+			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
+			if (impulseVector.sqrMagnitude < 1f)
+				impulseVector = Vector3.zero;
+		}
+	}
+
 	void Update()
 	{
 		if (GameManager.Paused)
@@ -101,6 +116,13 @@ public class PlayerControls : MonoBehaviour
 		{
 			if (playerCamera != null)
 				playerCamera.bopActive = false;
+
+			if (controller.enabled)
+			{
+				// Reset the gravity velocity
+				playerVelocity = Vector3.down * GameManager.Instance.gravity;
+				ApplyMove();
+			}
 
 			if (deathTime < respawnDelay)
 				deathTime += Time.deltaTime;
@@ -224,16 +246,7 @@ public class PlayerControls : MonoBehaviour
 			AirMove();
 
 		//apply move
-		lastPosition = transform.position;
-		controller.Move((playerVelocity + impulseVector + jumpPadVel) * Time.deltaTime);
-
-		//dampen impulse
-		if (impulseVector.sqrMagnitude > 0)
-		{
-			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
-			if (impulseVector.sqrMagnitude < 1f)
-				impulseVector = Vector3.zero;
-		}
+		ApplyMove();
 
 		//dampen jump pad impulse
 		if (jumpPadVel.sqrMagnitude > 0)

@@ -54,13 +54,15 @@ public class PlayerThing : MonoBehaviour, Damageable
 		avatar = player.AddComponent<PlayerModel>();
 		player.transform.SetParent(transform);
 
-		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer);
+		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
 
 		gameObject.layer = playerInfo.playerLayer;
 		Vector3 destination = SpawnerManager.FindSpawnLocation();
 		TeleporterThing.TelefragEverything(destination, gameObject);
 		transform.position = destination;
 
+		playerControls.capsuleCollider.enabled = true;
+		playerControls.controller.enabled = true;
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
 
@@ -228,11 +230,14 @@ public class PlayerThing : MonoBehaviour, Damageable
 	public void Impulse(Vector3 direction, float force)
 	{
 		float length = force / 80;
-		playerControls.impulseVector += direction * length;
 
-		//Check if going too fast
-//		if (playerControls.impulseVector.sqrMagnitude > GameManager.Instance.barrierVelocity)
-//			playerControls.impulseVector = playerControls.impulseVector.normalized * 32;
+		//Gravity will be the only force down
+		Vector3 impulse = direction * length;
+		float magnitude = impulse.magnitude;
+		impulse.y = 0;
+		impulse = impulse.normalized * magnitude;
+
+		playerControls.impulseVector += impulse;
 	}
 
 	public void JumpPadDest(Vector3 destination)

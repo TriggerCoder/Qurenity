@@ -104,7 +104,7 @@ public class Projectile : MonoBehaviour
 		RaycastHit Hit = new RaycastHit();
 		{
 			Vector3 dir = cTransform.forward;
-			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
+			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer)), QueryTriggerInteraction.Ignore);
 
 			if (max > hits.Length)
 				max = hits.Length;
@@ -231,8 +231,7 @@ public class Projectile : MonoBehaviour
 						if (index >= BFGTracers.pixels)
 							index = 0;
 						int max = Physics.RaycastNonAlloc(r, hitRays, 300, ~((1 << GameManager.InvisibleBlockerLayer) |
-																		   (1 << GameManager.ThingsLayer) |
-																		   (1 << GameManager.RagdollLayer)), QueryTriggerInteraction.Ignore);
+																		   (1 << GameManager.ThingsLayer)), QueryTriggerInteraction.Ignore);
 						if (max > hitRays.Length)
 							max = hitRays.Length;
 						for (int i = 0; i < max; i++)
