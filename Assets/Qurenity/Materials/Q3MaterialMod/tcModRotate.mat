@@ -7,8 +7,10 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: default
-  m_Shader: {fileID: -6465566751694194690, guid: 746be5640cf0aa64688867cb5ef9818c, type: 3}
+  m_Name: tcModRotate
+  m_Shader: {fileID: -6465566751694194690, guid: 1d03ae78e44aa1e4d841f22b285f22ad, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -17,6 +19,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -88,6 +91,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Param0: 90
     - _Param1: 0
     - _Param2: 1
     - _QueueControl: 0

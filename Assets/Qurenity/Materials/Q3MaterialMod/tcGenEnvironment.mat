@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: default
-  m_Shader: {fileID: -6465566751694194690, guid: 746be5640cf0aa64688867cb5ef9818c, type: 3}
+  m_Name: tcGenEnvironment
+  m_Shader: {fileID: -6465566751694194690, guid: bf8aa7e1b7e433c4c9d235c945a8056b, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
