@@ -59,37 +59,82 @@ public class BezierMesh
 	public BezierMesh(int level, int surfaceId, int patchNumber, List<Vector3> control)
 	{
 		Transform parent = null;
+		float step, s, f, m;
+		bool Collinear;
 
 		// We'll use these two to hold our verts
 		int capacity = control.Count;
 		if (vertexCache.Capacity < capacity)
 			vertexCache.Capacity = capacity;
 
-		float step = 1f / level;
-
-		for (int i = 0; i < level; i++)
+		//Check if control points rows are collinear
 		{
-			float s = i * step;
-			float f = (i + 1) * step;
-			float m = (s + f) / 2f;
 			p0sCache.Clear();
 			p1sCache.Clear();
 			p2sCache.Clear();
 
-			//Top row
-			p0sCache.Add(BezCurve(s, control[0], control[3], control[6]));
-			p0sCache.Add(BezCurve(m, control[0], control[3], control[6]));
-			p0sCache.Add(BezCurve(f, control[0], control[3], control[6]));
+			for (int i = 0; i < 3; i++)
+			{
+				p0sCache.Add(control[i]);
+				p1sCache.Add(control[3 + i]);
+				p2sCache.Add(control[6 + i]);
+			}
 
-			//Middle row
-			p1sCache.Add(BezCurve(s, control[1], control[4], control[7]));
-			p1sCache.Add(BezCurve(m, control[1], control[4], control[7]));
-			p1sCache.Add(BezCurve(f, control[1], control[4], control[7]));
+			Collinear = ArePointsCollinear(p0sCache);
+			Collinear &= ArePointsCollinear(p1sCache);
+			Collinear &= ArePointsCollinear(p2sCache);
+		}
 
-			//Bottom row
-			p2sCache.Add(BezCurve(s, control[2], control[5], control[8]));
-			p2sCache.Add(BezCurve(m, control[2], control[5], control[8]));
-			p2sCache.Add(BezCurve(f, control[2], control[5], control[8]));
+		//Check if control points columns are collinear
+		if (!Collinear)
+		{
+			p0sCache.Clear();
+			p1sCache.Clear();
+			p2sCache.Clear();
+
+			for (int i = 0; i < 3; i++)
+			{
+				p0sCache.Add(control[3 * i]);
+				p1sCache.Add(control[(3 * i) + 1]);
+				p2sCache.Add(control[(3 * i) + 2]);
+			}
+
+			Collinear = ArePointsCollinear(p0sCache);
+			Collinear &= ArePointsCollinear(p1sCache);
+			Collinear &= ArePointsCollinear(p2sCache);
+		}
+
+		step = 1f / level;
+		int iteration = level;
+		if (Collinear)
+			iteration = 1;
+
+		for (int i = 0; i < iteration; i++)
+		{
+			if (!Collinear)
+			{
+				s = i * step;
+				f = (i + 1) * step;
+				m = (s + f) / 2f;
+				p0sCache.Clear();
+				p1sCache.Clear();
+				p2sCache.Clear();
+
+				//Top row
+				p0sCache.Add(BezCurve(s, control[0], control[1], control[2]));
+				p0sCache.Add(BezCurve(m, control[0], control[1], control[2]));
+				p0sCache.Add(BezCurve(f, control[0], control[1], control[2]));
+
+				//Middle row
+				p1sCache.Add(BezCurve(s, control[3], control[4], control[5]));
+				p1sCache.Add(BezCurve(m, control[3], control[4], control[5]));
+				p1sCache.Add(BezCurve(f, control[3], control[4], control[5]));
+
+				//Bottom row
+				p2sCache.Add(BezCurve(s, control[6], control[7], control[8]));
+				p2sCache.Add(BezCurve(m, control[6], control[7], control[8]));
+				p2sCache.Add(BezCurve(f, control[6], control[7], control[8]));
+			}
 
 			for (int j = 0; j < level; j++)
 			{
@@ -116,9 +161,10 @@ public class BezierMesh
 				Axis axis = Axis.None;
 				bool is3D = true;
 				Vector3 offSet = Vector3.zero;
+
 				if (!CanFormConvexHull(vertexCache, ref axis))
 				{
-					//Check if 2D Surface
+					//Check if it's a 2D Surface
 					vertex2d.Clear();
 					for (int k = 0; k < vertexCache.Count; k++)
 					{
@@ -159,11 +205,13 @@ public class BezierMesh
 					ColliderObject = new GameObject(goName + surfaceId + "_" + patchNumber);
 					parent = ColliderObject.transform;
 				}
+
 				Mesh patchMesh;
 				if (is3D)
 					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertexCache);
 				else
 					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertex2d, offSet);
+				
 				GameObject objCollider = new GameObject(patchMesh.name + "_collider");
 				objCollider.layer = GameManager.ColliderLayer;
 				objCollider.transform.SetParent(parent);
@@ -171,6 +219,7 @@ public class BezierMesh
 				MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 				mc.sharedMesh = patchMesh;
 				mc.convex = true;
+
 				Rigidbody rb = objCollider.AddComponent<Rigidbody>();
 				rb.isKinematic = true;
 				rb.useGravity = false;
@@ -390,6 +439,33 @@ public class BezierMesh
 	public Mesh Mesh { get; }
 
 	public GameObject ColliderObject { get; set; }
+
+	//Check Collinear
+	private static bool ArePointsCollinear(List<Vector3> points)
+	{
+		const float EPSILON = 0.00001f;
+
+		if (points.Count < 3)
+		{
+			// Cannot have collinear points with less than 3 points
+			return false;
+		}
+
+		Vector3 firstDirection = points[1] - points[0];
+		for (int i = 2; i < points.Count; i++)
+		{
+			Vector3 currentDirection = points[i] - points[0];
+
+			if (Vector3.Cross(firstDirection, currentDirection).sqrMagnitude > EPSILON)
+			{
+				// The cross product of the two vectors is non-zero, meaning they are not collinear
+				return false;
+			}
+		}
+
+		// All the points are collinear
+		return true;
+	}
 
 	// Calculate UVs for our tessellated vertices 
 	private Vector2 BezCurveUV(float t, Vector2 p0, Vector2 p1, Vector2 p2)

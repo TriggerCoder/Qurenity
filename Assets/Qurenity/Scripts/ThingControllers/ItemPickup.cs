@@ -38,6 +38,10 @@ public class ItemPickup : MonoBehaviour
 		if (player == null)
 			return;
 
+		//Dead player don't pick up stuff
+		if (player.Dead)
+			return;
+
 		bool disable = false;
 
 		switch (itemType)

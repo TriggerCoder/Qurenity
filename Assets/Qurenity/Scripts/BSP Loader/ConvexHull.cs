@@ -542,10 +542,6 @@ public static class ConvexHull
 		p2 = tStart.p2;
 		p3 = tStart.p3;
 
-		//pointsOnConvexHull.Add(p1);
-		//pointsOnConvexHull.Add(p2);
-		//pointsOnConvexHull.Add(p3);
-
 		//Remove the points that we now know are within the hull triangle
 		tStart.RemovePointsWithinTriangle(pointsToAdd);
 
@@ -920,9 +916,6 @@ public static class ConvexHull
 		//
 		// Convert to mesh
 		//
-
-		//We know we have stored triangles in the data structure
-		//shareVertices means that we want a smooth surface where some vertices are shared between triangles
 		public Mesh ConvertToMesh(string meshName)
 		{
 			Mesh Mesh = new Mesh();
@@ -1065,6 +1058,7 @@ public static class ConvexHull
 
 			return m;
 		}
+
 		//
 		// We have faces, but we also want a list with vertices, edges, etc
 		//
