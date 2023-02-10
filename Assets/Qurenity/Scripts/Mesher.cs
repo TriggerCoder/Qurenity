@@ -67,7 +67,6 @@ public static class Mesher
 				index++;
 			}
 		}
-
 /*
 		CombineInstance[] combineDraw = new CombineInstance[totalPatches];
 		int index = 0;
@@ -100,7 +99,7 @@ public static class Mesher
 				Rigidbody rb = ColliderObject.AddComponent<Rigidbody>();
 				rb.isKinematic = true;
 				rb.useGravity = false;
-				rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+				rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			}
 		}
 */
@@ -804,7 +803,7 @@ public static class Mesher
 			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
 			rb.isKinematic = true;
 			rb.useGravity = false;
-			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 		}
 
 		ContentType contentType = objCollider.AddComponent<ContentType>();

@@ -1,3 +1,30 @@
+/* MIT License
+
+Copyright (c) 2020 Erik Nordeus
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+erik.nordeus@gmail.com
+https://github.com/Habrador/Computational-geometry
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +35,7 @@ public static class ConvexHull
 	public const float EPSILON = 0.00001f;
 
 	//Given points and a plane, find the point furthest away from the plane
-	private static Vector3 FindPointFurthestAwayFromPlane(List<Vector3> points, NewPlane plane)
+	private static Vector3 FindPointFurthestAwayFromPlane(List<Vector3> points, Plane3D plane)
 	{
 		//Cant init by picking the first point in a list because it might be co-planar
 		Vector3 bestPoint = default;
@@ -75,6 +102,49 @@ public static class ConvexHull
 		}
 
 		return pointFurthestAway;
+	}
+
+	private static Vector2 FindPointFurthestFromEdge(Vector2 p1, Vector2 p2, HashSet<Vector2> points)
+	{
+		//Just init the third point
+		Vector2 p3 = new Vector2(0f, 0f);
+
+		//Set max distance to something small
+		float maxDistanceToEdge = -Mathf.Infinity;
+
+		//The direction of the edge so we can create the normal (doesnt matter in which way it points)
+		Vector2 edgeDir = p2 - p1;
+
+		//We dont need to normalize this normal 
+		Vector2 edgeNormal = new Vector2(edgeDir.y, -edgeDir.x);
+
+		//Find the actual third point
+		foreach (Vector2 p in points)
+		{
+			//The distance between this point and the edge is the same as the distance between
+			//the point and the plane
+			Plane2D plane = new Plane2D(p1, edgeNormal);
+
+			float distanceToEdge = GetSignedDistanceFromPointToPlane(p, plane);
+
+			//The distance can be negative if we are behind the plane
+			//and because we just picked a normal out of nowhere, we have to make sure
+			//the distance is positive
+			if (distanceToEdge < 0f)
+			{
+				distanceToEdge *= -1f;
+			}
+
+			//This point is better
+			if (distanceToEdge > maxDistanceToEdge)
+			{
+				maxDistanceToEdge = distanceToEdge;
+
+				p3 = p;
+			}
+		}
+
+		return p3;
 	}
 
 
@@ -220,7 +290,7 @@ public static class ConvexHull
 		HalfEdgeFace triangle = triangles[0];
 
 		//Build a plane
-		NewPlane plane = new NewPlane(triangle.edge.v.normal, triangle.edge.v.position);
+		Plane3D plane = new Plane3D(triangle.edge.v.normal, triangle.edge.v.position);
 
 		//Find the point furthest away from the plane
 		Vector3 p4 = FindPointFurthestAwayFromPlane(points, plane);
@@ -363,6 +433,307 @@ public static class ConvexHull
 
 		//Merge concave edges according to the paper
 		return convexHull;
+	}
+
+	public static Mesh GenerateMeshFromConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis)
+	{
+		HalfEdgeData convexHull = GenerateConvexHull(vertex, axis);
+		return convexHull.ConvertToMesh(MeshName, axis);
+	}
+
+	public static HalfEdgeData GenerateConvexHull(List<Vector2> originalPoints, Vector3 axis)
+	{
+		HalfEdgeData convexHull = new HalfEdgeData();
+
+		//Step 1. 
+		//Find the extreme points along each axis
+		//This is similar to AABB but we need both x and y coordinates at each extreme point
+		Vector2 maxX = originalPoints[0];
+		Vector2 minX = originalPoints[0];
+		Vector2 maxY = originalPoints[0];
+		Vector2 minY = originalPoints[0];
+
+		for (int i = 1; i < originalPoints.Count; i++)
+		{
+			Vector2 p = originalPoints[i];
+
+			if (p.x > maxX.x)
+			{
+				maxX = p;
+			}
+			if (p.x < minX.x)
+			{
+				minX = p;
+			}
+
+			if (p.y > maxY.y)
+			{
+				maxY = p;
+			}
+			if (p.y < minY.y)
+			{
+				minY = p;
+			}
+		}
+
+
+		//Step 2. 
+		//From the 4 extreme points, choose the pair that's furthest appart
+		//These two are the first two points on the hull
+		List<Vector2> extremePoints = new List<Vector2>() { maxX, minX, maxY, minY };
+
+		//Just pick some points as start value
+		Vector2 p1 = maxX;
+		Vector2 p2 = minX;
+
+		//Can use sqr because we are not interested in the exact distance
+		float maxDistanceSqr = -Mathf.Infinity;
+
+		//Loop through all points and compare them with each other
+		for (int i = 0; i < extremePoints.Count; i++)
+		{
+			Vector2 p1_test = extremePoints[i];
+
+			for (int j = i + 1; j < extremePoints.Count; j++)
+			{
+				Vector2 p2_test = extremePoints[j];
+
+				float distSqr = Vector2.SqrMagnitude(p1_test - p2_test);
+
+				if (distSqr > maxDistanceSqr)
+				{
+					maxDistanceSqr = distSqr;
+
+					p1 = p1_test;
+					p2 = p2_test;
+				}
+			}
+		}
+
+		//Convert the list to hashset to easier remove points which are on the hull or are inside of the hull
+		HashSet<Vector2> pointsToAdd = new HashSet<Vector2>(originalPoints);
+
+		//Remove the first 2 points on the hull
+		pointsToAdd.Remove(p1);
+		pointsToAdd.Remove(p2);
+
+
+		//Step 3. 
+		//Find the third point on the hull, by finding the point which is the furthest
+		//from the line between p1 and p2
+		Vector2 p3 = FindPointFurthestFromEdge(p1, p2, pointsToAdd);
+
+		//Remove it from the points we want to add
+		pointsToAdd.Remove(p3);
+
+
+		//Step 4. Form the intitial triangle 
+
+		//Make sure the hull is oriented counter-clockwise
+		Triangle2D tStart = new Triangle2D(p1, p2, p3);
+
+		if (tStart.IsTriangleOrientedClockwise())
+		{
+			tStart.ChangeOrientation();
+		}
+
+		//New p1-p3
+		p1 = tStart.p1;
+		p2 = tStart.p2;
+		p3 = tStart.p3;
+
+		//pointsOnConvexHull.Add(p1);
+		//pointsOnConvexHull.Add(p2);
+		//pointsOnConvexHull.Add(p3);
+
+		//Remove the points that we now know are within the hull triangle
+		tStart.RemovePointsWithinTriangle(pointsToAdd);
+
+
+		//Step 5. 
+		//Associate the rest of the points to their closest edge
+		HashSet<Vector2> edge_p1p2_points = new HashSet<Vector2>();
+		HashSet<Vector2> edge_p2p3_points = new HashSet<Vector2>();
+		HashSet<Vector2> edge_p3p1_points = new HashSet<Vector2>();
+
+		foreach (Vector2 p in pointsToAdd)
+		{
+			//p1 p2
+			LeftOnRight pointRelation1 = IsPoint_Left_On_Right_OfVector(p1, p2, p);
+
+			if (pointRelation1 == LeftOnRight.On || pointRelation1 == LeftOnRight.Right)
+			{
+				edge_p1p2_points.Add(p);
+
+				continue;
+			}
+
+			//p2 p3
+			LeftOnRight pointRelation2 = IsPoint_Left_On_Right_OfVector(p2, p3, p);
+
+			if (pointRelation2 == LeftOnRight.On || pointRelation2 == LeftOnRight.Right)
+			{
+				edge_p2p3_points.Add(p);
+
+				continue;
+			}
+
+			//p3 p1
+			//If the point hasnt been added yet, we know it belong to this edge
+			edge_p3p1_points.Add(p);
+		}
+
+
+		//Step 6
+		//For each edge, find the point furthest away and create a new triangle
+		//and repeat the above steps by finding which points are inside of the hull
+		//and which points are outside and belong to a new edge
+
+		//Will automatically ignore the last point on this sub-hull to avoid doubles 
+		List<Vector2> pointsOnHUll_p1p2 = CreateSubConvexHUll(p1, p2, edge_p1p2_points);
+
+		List<Vector2> pointsOnHUll_p2p3 = CreateSubConvexHUll(p2, p3, edge_p2p3_points);
+
+		List<Vector2> pointsOnHUll_p3p1 = CreateSubConvexHUll(p3, p1, edge_p3p1_points);
+
+
+		//Create the final hull by combing the points
+		foreach (Vector2 v in pointsOnHUll_p1p2)
+		{
+			if (axis.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
+			else if (axis.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			else
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+		}
+
+		foreach (Vector2 v in pointsOnHUll_p2p3)
+		{
+			if (axis.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
+			else if (axis.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			else
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+		}
+
+		foreach (Vector2 v in pointsOnHUll_p3p1)
+		{
+			if (axis.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
+			else if (axis.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			else
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+		}
+
+		return convexHull;
+	}
+
+	//Split an edge and create a new sub-convex hull
+	private static List<Vector2> CreateSubConvexHUll(Vector2 p1, Vector2 p3, HashSet<Vector2> pointsToAdd)
+	{
+		if (pointsToAdd.Count == 0)
+		{
+			//Never return the last point so we avoid doubles on the convex hull
+			return new List<Vector2>() { p1 };
+		}
+
+
+		//Find the point which is furthest from an edge
+		Vector2 p2 = FindPointFurthestFromEdge(p1, p3, pointsToAdd);
+
+		//This point is also on the hull
+		pointsToAdd.Remove(p2);
+
+		Triangle2D t = new Triangle2D(p1, p2, p3);
+		//Remove points within this sub-hull triangle
+		t.RemovePointsWithinTriangle(pointsToAdd);
+
+		//No more points to add
+		if (pointsToAdd.Count == 0)
+		{
+			//Never return the last point so we avoid doubles on the convex hull
+			return new List<Vector2>() { p1, p2 };
+		}
+		//If we still have points to add, we have to split the edges again
+		else
+		{
+			//As before, find the points outside of each edge
+			HashSet<Vector2> edge_p1p2_points = new HashSet<Vector2>();
+			HashSet<Vector2> edge_p2p3_points = new HashSet<Vector2>();
+
+			foreach (Vector2 p in pointsToAdd)
+			{
+				//p1 p2
+				LeftOnRight pointRelation1 = IsPoint_Left_On_Right_OfVector(p1, p2, p);
+
+				if (pointRelation1 == LeftOnRight.On || pointRelation1 == LeftOnRight.Right)
+				{
+					edge_p1p2_points.Add(p);
+
+					continue;
+				}
+
+				//p2 p3
+				//If the point hasnt been added yet, we know it belong to this edge
+				edge_p2p3_points.Add(p);
+			}
+
+
+			//Split the edge again
+			List<Vector2> pointsOnHUll_p1p2 = CreateSubConvexHUll(p1, p2, edge_p1p2_points);
+			List<Vector2> pointsOnHUll_p2p3 = CreateSubConvexHUll(p2, p3, edge_p2p3_points);
+
+
+			//Combine the list
+			List<Vector2> pointsOnHull = pointsOnHUll_p1p2;
+
+			pointsOnHull.AddRange(pointsOnHUll_p2p3);
+
+
+			return pointsOnHull;
+		}
+	}
+
+	//
+	// Does a point p lie to the left, to the right, or on a vector going from a to b
+	//
+	//https://gamedev.stackexchange.com/questions/71328/how-can-i-add-and-subtract-convex-polygons
+	public static float GetPointInRelationToVectorValue(Vector2 a, Vector2 b, Vector2 p)
+	{
+		float x1 = a.x - p.x;
+		float x2 = a.y - p.y;
+		float y1 = b.x - p.x;
+		float y2 = b.y - p.y;
+
+		float determinant = x1 * y2 - y1 * x2;
+
+		return determinant;
+	}
+	public static LeftOnRight IsPoint_Left_On_Right_OfVector(Vector2 a, Vector2 b, Vector2 p)
+	{
+		float relationValue = GetPointInRelationToVectorValue(a, b, p);
+
+		//To avoid floating point precision issues we can add a small value
+		float epsilon = EPSILON;
+
+		//To the right
+		if (relationValue < -epsilon)
+		{
+			return LeftOnRight.Right;
+		}
+		//To the left
+		else if (relationValue > epsilon)
+		{
+			return LeftOnRight.Left;
+		}
+		//= 0 -> on the line
+		else
+		{
+			return LeftOnRight.On;
+		}
 	}
 
 	public class HalfEdgeData
@@ -611,6 +982,89 @@ public static class ConvexHull
 			return Mesh;
 		}
 
+		public Mesh ConvertToMesh(string meshName, Vector3 axis)
+		{
+			List<Vector3> Vertexes = new List<Vector3>();
+			List<int> Triangles = new List<int>();
+			int currentTriangle = 0;
+
+			for (int i = 0; i < verts.Count; i++)
+				Vertexes.Add(verts[i].position);
+
+			for (int i = 0; currentTriangle < Vertexes.Count;)
+			{
+				Triangles.Add(currentTriangle);
+				i++;
+				if ((i == 3) && (currentTriangle < Vertexes.Count - 1))
+				{
+					i = 1;
+					Triangles.Add(0);
+				}
+				else
+					currentTriangle++;
+			}
+			Mesh Mesh = GetExtrudedMeshFromPoints(Vertexes.ToArray(), Triangles.ToArray(), axis.normalized, 0.001f);
+			Mesh.name = meshName;
+			return Mesh;
+		}
+
+		public Mesh GetExtrudedMeshFromPoints(Vector3[] points, int[] tris, Vector3 normal, float depth)
+		{
+			Mesh m = new Mesh();
+			Vector3[] vertices = new Vector3[points.Length * 2];
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				vertices[i].x = points[i].x;
+				vertices[i].y = points[i].y;
+				vertices[i].z = points[i].z;
+				vertices[i + points.Length].x = points[i].x - depth * normal.x;
+				vertices[i + points.Length].y = points[i].y - depth * normal.y;
+				vertices[i + points.Length].z = points[i].z - depth * normal.z;
+			}
+
+			int[] triangles = new int[tris.Length * 2 + points.Length * 6];
+			int count_tris = 0;
+
+			// Front vertices
+			for (int i = 0; i < tris.Length; i += 3)
+			{
+				triangles[i] = tris[i + 2];
+				triangles[i + 1] = tris[i + 1];
+				triangles[i + 2] = tris[i];
+			}
+
+			count_tris += tris.Length;
+			// Back vertices
+			for (int i = 0; i < tris.Length; i += 3)
+			{
+				triangles[count_tris + i] = tris[i] + points.Length;
+				triangles[count_tris + i + 1] = tris[i + 1] + points.Length;
+				triangles[count_tris + i + 2] = tris[i + 2] + points.Length;
+			}
+
+			count_tris += tris.Length;
+			// Triangles around the perimeter of the object
+			for (int i = 0; i < points.Length; i++)
+			{
+				int n = (i + 1) % points.Length;
+				triangles[count_tris] = n;
+				triangles[count_tris + 1] = i + points.Length;
+				triangles[count_tris + 2] = i;
+				triangles[count_tris + 3] = n;
+				triangles[count_tris + 4] = n + points.Length;
+				triangles[count_tris + 5] = i + points.Length;
+				count_tris += 6;
+			}
+
+			m.vertices = vertices;
+			m.triangles = triangles;
+
+			m.RecalculateBounds();
+			m.RecalculateNormals();
+
+			return m;
+		}
 		//
 		// We have faces, but we also want a list with vertices, edges, etc
 		//
@@ -1077,6 +1531,21 @@ public static class ConvexHull
         }
     }
 
+	public class Edge2D
+	{
+		public Vector2 p1;
+		public Vector2 p2;
+
+		//Is this edge intersecting with another edge?
+		public bool isIntersecting = false;
+
+		public Edge2D(Vector2 p1, Vector2 p2)
+		{
+			this.p1 = p1;
+			this.p2 = p2;
+		}
+	}
+
 	//And edge between two vertices in 3d space
 	public struct Edge
 	{
@@ -1105,12 +1574,24 @@ public static class ConvexHull
 		}
 	}
 
-	public class NewPlane
+	public class Plane3D
 	{
 		public Vector3 pos;
 		public Vector3 normal;
 
-		public NewPlane(Vector3 normal, Vector3 pos)
+		public Plane3D(Vector3 normal, Vector3 pos)
+		{
+			this.pos = pos;
+			this.normal = normal;
+		}
+	}
+
+	public class Plane2D
+	{
+		public Vector2 pos;
+		public Vector2 normal;
+
+		public Plane2D(Vector2 pos, Vector2 normal)
 		{
 			this.pos = pos;
 			this.normal = normal;
@@ -1121,16 +1602,22 @@ public static class ConvexHull
 	//- Positive distance denotes that the point p is outside the plane (in the direction of the plane normal)
 	//- Negative means it's inside
 
-	//3d
-	public static float GetSignedDistanceFromPointToPlane(Vector3 pointPos, NewPlane plane)
+	public static float GetSignedDistanceFromPointToPlane(Vector3 pointPos, Plane3D plane)
 	{
 		float distance = Vector3.Dot(plane.normal, pointPos - plane.pos);
 
 		return distance;
 	}
 
+	public static float GetSignedDistanceFromPointToPlane(Vector2 pointPos, Plane2D plane)
+	{
+		float distance = Vector2.Dot(plane.normal, pointPos - plane.pos);
+
+		return distance;
+	}
+
 	//Outside means in the planes normal direction
-	public static bool IsPointOutsidePlane(Vector3 pointPos, NewPlane plane)
+	public static bool IsPointOutsidePlane(Vector3 pointPos, Plane3D plane)
 	{
 		float distance = GetSignedDistanceFromPointToPlane(pointPos, plane);
 
@@ -1155,7 +1642,7 @@ public static class ConvexHull
 		foreach (HalfEdgeFace triangle in triangles)
 		{
 			//A triangle is visible from a point the point is outside of a plane formed with the triangles position and normal 
-			NewPlane plane = new NewPlane(triangle.edge.v.normal, triangle.edge.v.position);
+			Plane3D plane = new Plane3D(triangle.edge.v.normal, triangle.edge.v.position);
 
 			bool isPointOutsidePlane = IsPointOutsidePlane(p, plane);
 
@@ -1252,7 +1739,7 @@ public static class ConvexHull
 
 				//Check if this triangle is visible
 				//A triangle is visible from a point the point is outside of a plane formed with the triangles position and normal 
-				NewPlane plane = new NewPlane(oppositeTriangle.edge.v.normal, oppositeTriangle.edge.v.position);
+				Plane3D plane = new Plane3D(oppositeTriangle.edge.v.normal, oppositeTriangle.edge.v.position);
 
 				bool isPointOutsidePlane = IsPointOutsidePlane(p, plane);
 
@@ -1294,7 +1781,7 @@ public static class ConvexHull
 		foreach (HalfEdgeFace triangle in convexHull.faces)
 		{
 			//Build a plane
-			NewPlane plane = new NewPlane(triangle.edge.v.normal, triangle.edge.v.position);
+			Plane3D plane = new Plane3D(triangle.edge.v.normal, triangle.edge.v.position);
 
 			//Find the distance to the plane from the point
 			//The distance is negative if the point is inside the plane
@@ -1343,4 +1830,184 @@ public static class ConvexHull
 		}
 	}
 
+	public struct Triangle2D
+	{
+		//Corners
+		public Vector2 p1;
+		public Vector2 p2;
+		public Vector2 p3;
+
+		public Triangle2D(Vector2 p1, Vector2 p2, Vector2 p3)
+		{
+			this.p1 = p1;
+			this.p2 = p2;
+			this.p3 = p3;
+		}
+
+		public bool IsTriangleOrientedClockwise()
+		{
+			bool isClockWise = true;
+
+			float determinant = p1.x * p2.y + p3.x * p1.y + p2.x * p3.y - p1.x * p3.y - p3.x * p2.y - p2.x * p1.y;
+
+			if (determinant > 0f)
+			{
+				isClockWise = false;
+			}
+
+			return isClockWise;
+		}
+
+		//Remove from points from hashset that are within a triangle
+		public void RemovePointsWithinTriangle(HashSet<Vector2> points)
+		{
+			HashSet<Vector2> pointsToRemove = new HashSet<Vector2>();
+
+			foreach (Vector2 p in points)
+			{
+				if (PointTriangle(p, includeBorder: true))
+				{
+					pointsToRemove.Add(p);
+				}
+			}
+
+			foreach (Vector2 p in pointsToRemove)
+			{
+				points.Remove(p);
+			}
+		}
+
+		//Change orientation of triangle from cw -> ccw or ccw -> cw
+		public void ChangeOrientation()
+		{
+			//Swap two vertices
+			(p1, p2) = (p2, p1);
+		}
+
+
+		//Find the max and min coordinates, which is useful when doing AABB intersections
+		public float MinX()
+		{
+			return Mathf.Min(p1.x, Mathf.Min(p2.x, p3.x));
+		}
+
+		public float MaxX()
+		{
+			return Mathf.Max(p1.x, Mathf.Max(p2.x, p3.x));
+		}
+
+		public float MinY()
+		{
+			return Mathf.Min(p1.y, Mathf.Min(p2.y, p3.y));
+		}
+
+		public float MaxY()
+		{
+			return Mathf.Max(p1.y, Mathf.Max(p2.y, p3.y));
+		}
+
+
+		//Find the opposite edge to a vertex
+		public Edge2D FindOppositeEdgeToVertex(Vector2 p)
+		{
+			if (p.Equals(p1))
+			{
+				return new Edge2D(p2, p3);
+			}
+			else if (p.Equals(p2))
+			{
+				return new Edge2D(p3, p1);
+			}
+			else
+			{
+				return new Edge2D(p1, p2);
+			}
+		}
+
+
+		//Check if an edge is a part of this triangle
+		public bool IsEdgePartOfTriangle(Edge2D e)
+		{
+			if ((e.p1.Equals(p1) && e.p2.Equals(p2)) || (e.p1.Equals(p2) && e.p2.Equals(p1)))
+			{
+				return true;
+			}
+			if ((e.p1.Equals(p2) && e.p2.Equals(p3)) || (e.p1.Equals(p3) && e.p2.Equals(p2)))
+			{
+				return true;
+			}
+			if ((e.p1.Equals(p3) && e.p2.Equals(p1)) || (e.p1.Equals(p1) && e.p2.Equals(p3)))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+
+		//Find the vertex which is not an edge
+		public Vector2 GetVertexWhichIsNotPartOfEdge(Edge2D e)
+		{
+			if (!p1.Equals(e.p1) && !p1.Equals(e.p2))
+			{
+				return p1;
+			}
+			if (!p2.Equals(e.p1) && !p2.Equals(e.p2))
+			{
+				return p2;
+			}
+
+			return p3;
+		}
+
+		//
+		// Is a point inside a triangle?
+		//
+		//From http://totologic.blogspot.se/2014/01/accurate-point-in-triangle-test.html
+		public bool PointTriangle(Vector2 p, bool includeBorder)
+		{
+			//To avoid floating point precision issues we can add a small value
+			float epsilon = EPSILON;
+
+			//Based on Barycentric coordinates
+			float denominator = ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+
+			float a = ((p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y)) / denominator;
+			float b = ((p3.y - p1.y) * (p.x - p3.x) + (p1.x - p3.x) * (p.y - p3.y)) / denominator;
+			float c = 1 - a - b;
+
+			bool isWithinTriangle = false;
+
+			if (includeBorder)
+			{
+				float zero = 0f - epsilon;
+				float one = 1f + epsilon;
+
+				//The point is within the triangle or on the border
+				if (a >= zero && a <= one && b >= zero && b <= one && c >= zero && c <= one)
+				{
+					isWithinTriangle = true;
+				}
+			}
+			else
+			{
+				float zero = 0f + epsilon;
+				float one = 1f - epsilon;
+
+				//The point is within the triangle
+				if (a > zero && a < one && b > zero && b < one && c > zero && c < one)
+				{
+					isWithinTriangle = true;
+				}
+			}
+
+			return isWithinTriangle;
+		}
+	}
+
+	//Help enum in case we need to return something else than a bool
+	public enum LeftOnRight
+	{
+		Left, On, Right
+	}
 }

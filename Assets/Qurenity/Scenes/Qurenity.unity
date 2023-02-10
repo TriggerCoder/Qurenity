@@ -104,7 +104,7 @@ NavMeshSettings:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_BuildSettings:
-    serializedVersion: 2
+    serializedVersion: 3
     agentTypeID: 0
     agentRadius: 0.5
     agentHeight: 2
@@ -117,7 +117,7 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualTileSize: 0
     tileSize: 256
-    accuratePlacement: 0
+    buildHeightMesh: 0
     maxJobWorkers: 0
     preserveTilesOutsideBounds: 0
     debug:
@@ -187,7 +187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3dm7
   tessellations: 5
   gamma: 1
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -246,6 +246,10 @@ MonoBehaviour:
   defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
   defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
   debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
+  rgbGenIdentity: {fileID: 2100000, guid: 1db27fa4648f0304c853ec05bf5ddacd, type: 2}
+  tcGenEnvironment: {fileID: 2100000, guid: 4c9eae67b665b2b4cb2ef65189522769, type: 2}
+  tcModRotate: {fileID: 2100000, guid: 40c86b82b0bfa4c4e8d89062cab026ed, type: 2}
+  tcModScroll: {fileID: 2100000, guid: bc1dfc10932146b4d8c6eb405eae2d91, type: 2}
   _OverrideMaterials:
   - overrideName: textures/sfx/flame1
     opaque: 0
@@ -1107,7 +1111,7 @@ LightingSettings:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Settings.lighting
-  serializedVersion: 4
+  serializedVersion: 6
   m_GIWorkflowMode: 1
   m_EnableBakedLightmaps: 1
   m_EnableRealtimeLightmaps: 1
@@ -1147,7 +1151,7 @@ LightingSettings:
   m_LightProbeSampleCountMultiplier: 4
   m_PVRBounces: 2
   m_PVRMinBounces: 2
-  m_PVREnvironmentMIS: 1
+  m_PVREnvironmentImportanceSampling: 1
   m_PVRFilteringMode: 1
   m_PVRDenoiserTypeDirect: 1
   m_PVRDenoiserTypeIndirect: 1
@@ -1162,6 +1166,8 @@ LightingSettings:
   m_PVRFilteringAtrousPositionSigmaIndirect: 2
   m_PVRFilteringAtrousPositionSigmaAO: 1
   m_PVRTiledBaking: 0
+  m_NumRaysToShootPerTexel: -1
+  m_RespectSceneVisibilityWhenBakingGI: 0
 --- !u!1 &1399079442
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,11 +1235,16 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_CullingMask.m_Bits
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043769949, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_DefaultControlScheme
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
@@ -1292,4 +1303,7 @@ PrefabInstance:
       value: sarge
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0607bb188534d754db77d3cf1a751561, type: 3}

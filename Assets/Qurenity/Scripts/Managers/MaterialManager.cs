@@ -16,6 +16,10 @@ public class MaterialManager : MonoBehaviour
 	public Material defaultLightMapMaterial;
 	public Material defaultTransparentLightMapMaterial;
 	public Material debug;
+	public Material rgbGenIdentity;
+	public Material tcGenEnvironment;
+	public Material tcModRotate;
+	public Material tcModScroll;
 
 	public MaterialOverride[] _OverrideMaterials = new MaterialOverride[0];
 

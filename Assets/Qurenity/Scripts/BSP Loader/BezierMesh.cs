@@ -24,6 +24,14 @@ public class BezierMesh
     private static List<Vector2> p2suv2Cache = new List<Vector2>();
 	private static List<Color> p2scolorCache = new List<Color>();
 
+	private static List<Vector2> vertex2d = new List<Vector2>();
+	public enum Axis
+	{
+		None,
+		X,
+		Y,
+		Z
+	}
 	public static void ClearCaches()
     {
         vertexCache = new List<Vector3>();
@@ -57,62 +65,161 @@ public class BezierMesh
 		if (vertexCache.Capacity < capacity)
 			vertexCache.Capacity = capacity;
 
+		float step = 1f / level;
+
 		for (int i = 0; i < level; i++)
 		{
-			float s = i * (1f / level);
-			float f = (i + 1) * (1f / level);
+			float s = i * step;
+			float f = (i + 1) * step;
 			float m = (s + f) / 2f;
-			vertexCache.Clear();
-		
+			p0sCache.Clear();
+			p1sCache.Clear();
+			p2sCache.Clear();
+
 			//Top row
-			vertexCache.Add(BezCurve(s, control[0], control[1], control[2]));
-			vertexCache.Add(BezCurve(m, control[0], control[1], control[2]));
-			vertexCache.Add(BezCurve(f, control[0], control[1], control[2]));
+			p0sCache.Add(BezCurve(s, control[0], control[3], control[6]));
+			p0sCache.Add(BezCurve(m, control[0], control[3], control[6]));
+			p0sCache.Add(BezCurve(f, control[0], control[3], control[6]));
 
 			//Middle row
-			vertexCache.Add(BezCurve(s, control[3], control[4], control[5]));
-			vertexCache.Add(BezCurve(m, control[3], control[4], control[5]));
-			vertexCache.Add(BezCurve(f, control[3], control[4], control[5]));
+			p1sCache.Add(BezCurve(s, control[1], control[4], control[7]));
+			p1sCache.Add(BezCurve(m, control[1], control[4], control[7]));
+			p1sCache.Add(BezCurve(f, control[1], control[4], control[7]));
 
 			//Bottom row
-			vertexCache.Add(BezCurve(s, control[6], control[7], control[8]));
-			vertexCache.Add(BezCurve(m, control[6], control[7], control[8]));
-			vertexCache.Add(BezCurve(f, control[6], control[7], control[8]));
+			p2sCache.Add(BezCurve(s, control[2], control[5], control[8]));
+			p2sCache.Add(BezCurve(m, control[2], control[5], control[8]));
+			p2sCache.Add(BezCurve(f, control[2], control[5], control[8]));
 
-			if (!CanFormConvexHull(vertexCache))
+			for (int j = 0; j < level; j++)
 			{
-				ColliderObject = null;
-				return;
+				s = j * step;
+				f = (j + 1) * step;
+				m = (s + f) / 2f;
+				vertexCache.Clear();
+
+				//Top row
+				vertexCache.Add(BezCurve(s, p0sCache[0], p1sCache[0], p2sCache[0]));
+				vertexCache.Add(BezCurve(m, p0sCache[0], p1sCache[0], p2sCache[0]));
+				vertexCache.Add(BezCurve(f, p0sCache[0], p1sCache[0], p2sCache[0]));
+
+				//Middle row
+				vertexCache.Add(BezCurve(s, p0sCache[1], p1sCache[1], p2sCache[1]));
+				vertexCache.Add(BezCurve(m, p0sCache[1], p1sCache[1], p2sCache[1]));
+				vertexCache.Add(BezCurve(f, p0sCache[1], p1sCache[1], p2sCache[1]));
+
+				//Bottom row
+				vertexCache.Add(BezCurve(s, p0sCache[2], p1sCache[2], p2sCache[2]));
+				vertexCache.Add(BezCurve(m, p0sCache[2], p1sCache[2], p2sCache[2]));
+				vertexCache.Add(BezCurve(f, p0sCache[2], p1sCache[2], p2sCache[2]));
+
+				Axis axis = Axis.None;
+				bool is3D = true;
+				Vector3 offSet = Vector3.zero;
+				if (!CanFormConvexHull(vertexCache, ref axis))
+				{
+					//Check if 2D Surface
+					vertex2d.Clear();
+					for (int k = 0; k < vertexCache.Count; k++)
+					{
+						switch(axis)
+						{
+							case Axis.X:
+								vertex2d.Add(new Vector2(vertexCache[k].y, vertexCache[k].z));
+								if (k == 0)
+									offSet.Set(vertexCache[k].x, 0, 0);
+							break;
+							case Axis.Y:
+								vertex2d.Add(new Vector2(vertexCache[k].x, vertexCache[k].z));
+								if (k == 0)
+									offSet.Set(0, vertexCache[k].y, 0);
+							break;
+							case Axis.Z:
+								vertex2d.Add(new Vector2(vertexCache[k].x, vertexCache[k].y));
+								if (k == 0)
+									offSet.Set(0, 0, vertexCache[k].z);
+							break;
+						}
+					}
+
+					if (!CanFormConvexHull(vertex2d))
+					{
+						ColliderObject = null;
+						return;
+					}
+					else
+						is3D = false;
+				}
+
+				if ((i == 0) && (j == 0))
+				{
+					string goName = "Bezier_Collider_";
+					if (!is3D)
+						goName += "2D_";
+					ColliderObject = new GameObject(goName + surfaceId + "_" + patchNumber);
+					parent = ColliderObject.transform;
+				}
+				Mesh patchMesh;
+				if (is3D)
+					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertexCache);
+				else
+					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertex2d, offSet);
+				GameObject objCollider = new GameObject(patchMesh.name + "_collider");
+				objCollider.layer = GameManager.ColliderLayer;
+				objCollider.transform.SetParent(parent);
+
+				MeshCollider mc = objCollider.AddComponent<MeshCollider>();
+				mc.sharedMesh = patchMesh;
+				mc.convex = true;
+				Rigidbody rb = objCollider.AddComponent<Rigidbody>();
+				rb.isKinematic = true;
+				rb.useGravity = false;
+				rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			}
-
-			if (i == 0)
-			{
-				ColliderObject = new GameObject("Bezier_Collider_" + surfaceId + "_" + patchNumber);
-				parent = ColliderObject.transform;
-			}
-
-			Mesh patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i, vertexCache);
-			GameObject objCollider = new GameObject(patchMesh.name + "_collider");
-			objCollider.layer = GameManager.ColliderLayer;
-			objCollider.transform.SetParent(parent);
-
-			MeshCollider mc = objCollider.AddComponent<MeshCollider>();
-			mc.sharedMesh = patchMesh;
-			mc.convex = true;
-			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 		}
 	}
-	public bool CanFormConvexHull(List<Vector3> points)
+
+	public bool CanFormConvexHull(List<Vector2> points)
+	{
+		const float EPSILON = 0.001f;
+
+		Vector2 min = points[0];
+		Vector2 max = points[0];
+
+		if (points.Count < 3)
+			return false;
+
+		for (int i = 1; i < points.Count; i++)
+		{
+			Vector2 p = points[i];
+
+			if (p.x < min.x)
+				min.x = p.x;
+			else if (p.x > max.x)
+				max.x = p.x;
+
+			if (p.y < min.y)
+				min.y = p.y;
+			else if (p.y > max.y)
+				max.y = p.y;
+		}
+
+		float xWidth = Mathf.Abs(max.x - min.x);
+		float yWidth = Mathf.Abs(max.y - min.y);
+
+		if ((xWidth < EPSILON) || (yWidth < EPSILON))
+			return false;
+
+		return true;
+	}
+	public bool CanFormConvexHull(List<Vector3> points, ref Axis axis)
 	{
 		const float EPSILON = 0.001f;
 
 		Vector3 min = points[0];
 		Vector3 max = points[0];
 
-		if (points.Count == 1)
+		if (points.Count < 4)
 			return false;
 
 		for (int i = 1; i < points.Count; i++)
@@ -139,12 +246,16 @@ public class BezierMesh
 		float yWidth = Mathf.Abs(max.y - min.y);
 		float zWidth = Mathf.Abs(max.z - min.z);
 
-		if (xWidth < EPSILON || yWidth < EPSILON || zWidth < EPSILON)
-		{
-			return false;
-		}
+		if (xWidth < EPSILON)
+			axis = Axis.X;
+		else if (yWidth < EPSILON)
+			axis = Axis.Y;
+		else if (zWidth < EPSILON)
+			axis = Axis.Z;
+		else
+			return true;
 
-		return true;
+		return false;
 	}
 	public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
 	{
@@ -224,7 +335,7 @@ public class BezierMesh
 		// This will produce (tessellationLevel + 1)^2 verts
 		int numVerts = (level + 1) * (level + 1);
 
-		// Computer triangle indexes for forming a mesh.
+		// Compute triangle indexes for forming a mesh.
 		// The mesh will be tessellationlevel + 1 verts
 		// wide and tall.
 		int xStep = 1;

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6846132397439511784}
   - component: {fileID: 8036243224729044624}
   - component: {fileID: 6371347112400024671}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Switch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51,6 +51,8 @@ MonoBehaviour:
   thingName: func_button
   respawnSound: 
   respawnTime: 0
+  modelsToCache: []
+  poolObjectsToCache: []
   thingType: 6
 --- !u!114 &8036243224729044624
 MonoBehaviour:
@@ -69,6 +71,8 @@ MonoBehaviour:
   startSound: movers/switches/butn2
   endSound: 
   tc: {fileID: 0}
+  damage: 4
+  crusher: 0
   audioSource: {fileID: 0}
   currentState: 1
   internalSwitch: {fileID: 6371347112400024671}

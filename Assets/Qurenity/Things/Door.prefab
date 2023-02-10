@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8223384032887834687}
   - component: {fileID: 6846132397439511784}
   - component: {fileID: 5263093456070513284}
-  m_Layer: 16
+  m_Layer: 13
   m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -50,6 +50,8 @@ MonoBehaviour:
   thingName: func_door
   respawnSound: 
   respawnTime: 0
+  modelsToCache: []
+  poolObjectsToCache: []
   thingType: 7
 --- !u!114 &5263093456070513284
 MonoBehaviour:
@@ -63,14 +65,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5753dac5e262e34984fbf5851b20035, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  doorOn: 0
+  playSoundClose: 1
   startSound: movers/doors/dr1_strt
   endSound: movers/doors/dr1_end
-  Damage: 2
-  Lip: 0.25
-  Repeatable: 1
-  AutoReturn: 1
-  AutoReturnTime: 3
-  bounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
-  time: 0
+  tc: {fileID: 0}
+  damage: 4
+  crusher: 0
+  audioSource: {fileID: 0}
+  currentState: 1
