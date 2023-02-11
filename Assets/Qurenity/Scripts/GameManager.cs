@@ -62,6 +62,8 @@ public class GameManager : MonoBehaviour
 	public const short UI3D_P3Layer =				27;
 	public const short UI3D_P4Layer =				28;
 
+	public const int TakeDamageMask = ((1 << DamageablesLayer) | (1 << Player1Layer) | (1 << Player2Layer) | (1 << Player3Layer) | (1 << Player4Layer));
+
 	public const short NavMeshWalkableTag = 0;
 	public const short NavMeshNotWalkableTag = 1;
 

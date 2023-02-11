@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4262236980032938389}
   - component: {fileID: 2368282602389991726}
   - component: {fileID: -6721585332727615024}
-  m_Layer: 13
+  m_Layer: 11
   m_Name: MachineGunAmmoCase
   m_TagString: Untagged
   m_Icon: {fileID: 0}

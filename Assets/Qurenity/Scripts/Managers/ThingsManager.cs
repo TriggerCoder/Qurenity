@@ -19,7 +19,7 @@ public class ThingsManager : MonoBehaviour
 
 	public static readonly string[] ignoreThings = { "misc_model", "light", "func_group" };
 
-	public static readonly string[] targetThings = { "func_timer", "trigger_multiple", "target_position", "misc_teleporter_dest" };
+	public static readonly string[] targetThings = { "func_timer", "trigger_multiple", "target_position", "info_notnull", "misc_teleporter_dest" };
 
 	public class Entity
 	{

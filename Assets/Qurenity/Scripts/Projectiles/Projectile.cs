@@ -104,7 +104,7 @@ public class Projectile : MonoBehaviour
 		RaycastHit Hit = new RaycastHit();
 		{
 			Vector3 dir = cTransform.forward;
-			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer)), QueryTriggerInteraction.Ignore);
+			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.ThingsLayer)), QueryTriggerInteraction.Ignore);
 
 			if (max > hits.Length)
 				max = hits.Length;
@@ -150,7 +150,7 @@ public class Projectile : MonoBehaviour
 		{
 			cTransform.position = cTransform.position + cTransform.forward * nearest;
 			Vector3 cPosition = cTransform.position;
-			Collider[] hits = Physics.OverlapSphere(cTransform.position, explosionRadius, ~(1 << GameManager.InvisibleBlockerLayer), QueryTriggerInteraction.Ignore);
+			Collider[] hits = Physics.OverlapSphere(cTransform.position, explosionRadius, GameManager.TakeDamageMask , QueryTriggerInteraction.Ignore);
 			foreach (Collider hit in hits)
 			{
 				float distance;
@@ -230,8 +230,7 @@ public class Projectile : MonoBehaviour
 						index++;
 						if (index >= BFGTracers.pixels)
 							index = 0;
-						int max = Physics.RaycastNonAlloc(r, hitRays, 300, ~((1 << GameManager.InvisibleBlockerLayer) |
-																		   (1 << GameManager.ThingsLayer)), QueryTriggerInteraction.Ignore);
+						int max = Physics.RaycastNonAlloc(r, hitRays, 300, GameManager.TakeDamageMask, QueryTriggerInteraction.Ignore);
 						if (max > hitRays.Length)
 							max = hitRays.Length;
 						for (int i = 0; i < max; i++)
