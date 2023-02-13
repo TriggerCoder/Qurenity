@@ -8,10 +8,16 @@ public class TeleporterThing : MonoBehaviour
 	public string TeleportOutSound;
 
 	private Vector3 destination;
+	private int angle;
 	private List<PlayerThing> toTeleport = new List<PlayerThing>();
-	public void Init(Vector3 dest)
+	public void Init(Vector3 dest, int alpha)
 	{
 		destination = dest;
+		angle = -alpha - 90;
+		if (angle < -180)
+			angle += 360;
+		if (angle > 180)
+			angle -= 360;
 	}
 	public static void TelefragEverything(Vector3 position, GameObject go)
 	{
@@ -62,6 +68,10 @@ public class TeleporterThing : MonoBehaviour
 		if (playerThing == null)
 			return;
 
+		//Dead player don't use teleporters
+		if (playerThing.Dead)
+			return;
+
 		if (!toTeleport.Contains(playerThing))
 			toTeleport.Add(playerThing);
 	}
@@ -88,7 +98,8 @@ public class TeleporterThing : MonoBehaviour
 
 			if (!string.IsNullOrEmpty(TeleportInSound))
 				AudioManager.Create3DSound(destination, TeleportInSound, 1f);
-//			playerThing.playerControls.viewDirection.y = teleporter.viewAngle;
+			playerThing.playerControls.viewDirection.y = angle;
+			playerThing.Impulse(Quaternion.Euler(0, angle, 0) * Vector3.forward, 1500);
 		}
 		toTeleport = new List<PlayerThing>();
 	}

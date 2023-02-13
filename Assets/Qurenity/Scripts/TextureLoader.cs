@@ -240,24 +240,56 @@ public class TextureLoader : MonoBehaviour
 		Color32[] colors = new Color32[128 * 128];
 		int j = 0;
 		for (int i = 0; i < 128 * 128; i++)
-			colors[i] = new Color32(ChangeGamma(rgb[j++]), ChangeGamma(rgb[j++]), ChangeGamma(rgb[j++]), (byte)1f);
+			colors[i] = ChangeGamma(rgb[j++], rgb[j++] , rgb[j++]);
 		tex.SetPixels32(colors);
 		tex.wrapMode = TextureWrapMode.Clamp;
 		tex.Apply();
 		return tex;
 	}
-	public static byte ChangeGamma(byte color)
+	public static Color32 ChangeGamma(byte r, byte g, byte b)
 	{
 		float scale = 1.0f, temp;
-		float icolor = color *  GameManager.Instance.gamma / 255f;
+		float R, G, B;
 
-		if (icolor > 1.0f && (temp = (1.0f / icolor)) < scale) 
+		R = r * GameManager.Instance.gamma / 255.0f;
+		G = g * GameManager.Instance.gamma / 255.0f;
+		B = b * GameManager.Instance.gamma / 255.0f;
+
+		if (R > 1.0f && (temp = (1.0f / R)) < scale)
 			scale = temp;
-		
+		if (G > 1.0f && (temp = (1.0f / G)) < scale)
+			scale = temp;
+		if (B > 1.0f && (temp = (1.0f / B)) < scale)
+			scale = temp;
+
 		scale *= 255f;
-		icolor *= scale;
-		Mathf.Clamp(icolor, 0, 255);
-		return (byte)icolor;
+		R *= scale;
+		G *= scale;
+		B *= scale;
+		return new Color32((byte)R,(byte)G,(byte)B, 1);
+	}
+
+	public static Color ChangeGamma(Color icolor)
+	{
+		float scale = 1.0f, temp;
+		float R, G, B;
+
+		R = icolor.r * GameManager.Instance.gamma;
+		G = icolor.g * GameManager.Instance.gamma;
+		B = icolor.b * GameManager.Instance.gamma;
+
+		if (R > 1.0f && (temp = (1.0f / R)) < scale)
+			scale = temp;
+		if (G > 1.0f && (temp = (1.0f / G)) < scale)
+			scale = temp;
+		if (B > 1.0f && (temp = (1.0f / B)) < scale)
+			scale = temp;
+
+		R *= scale;
+		G *= scale;
+		B *= scale;
+
+		return new Color(R, G, B, 1f);
 	}
 	public static void CompressTextureNearestPowerOfTwo(ref Texture2D texture)
 	{

@@ -141,10 +141,10 @@ public class GameManager : MonoBehaviour
 			ClusterPVSManager.Instance.ResetClusterList();
 			MapLoader.GenerateMapCollider();
 			MapLoader.GenerateSurfaces();
+			ThingsManager.AddThingsToMap();
 			ClusterPVSManager.Instance.ResetGroups();
 			Mesher.ClearMesherCache();
 		}
-		ThingsManager.AddThingsToMap();
 		ready = true;
 
 		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);

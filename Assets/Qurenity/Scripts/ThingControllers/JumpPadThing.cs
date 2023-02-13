@@ -23,6 +23,10 @@ public class JumpPadThing : MonoBehaviour
 		if (p == null)
 			return;
 
+		//Dead player don't use jumppads
+		if (p.Dead)
+			return;
+
 		if (!string.IsNullOrEmpty(BoingSound))
 			AudioManager.Create3DSound(position, BoingSound, 1f);
 

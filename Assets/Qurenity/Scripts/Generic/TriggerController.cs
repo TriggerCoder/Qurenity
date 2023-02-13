@@ -65,6 +65,10 @@ public class TriggerController : MonoBehaviour
 		if (playerThing == null)
 			return;
 
+		//Dead player don't activate stuff
+		if (playerThing.Dead)
+			return;
+
 		Activate(playerThing);
 	}
 }

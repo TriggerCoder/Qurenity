@@ -330,13 +330,13 @@ public static class ConvexHull
 		convexHull.ConnectAllEdgesSlow();
 
 	}
-	public static Mesh GenerateMeshFromConvexHull(string MeshName, List<Vector3> vertex)
+	public static Mesh GenerateMeshFrom3DConvexHull(string MeshName, List<Vector3> vertex)
 	{
-		HalfEdgeData convexHull = GenerateConvexHull(vertex);
+		HalfEdgeData convexHull = Generate3DConvexHull(vertex);
 		return convexHull.ConvertToMesh(MeshName);
 	}
 
-	public static HalfEdgeData GenerateConvexHull(List<Vector3> points)
+	public static HalfEdgeData Generate3DConvexHull(List<Vector3> points)
 	{
 		HalfEdgeData convexHull = new HalfEdgeData();
 
@@ -435,13 +435,13 @@ public static class ConvexHull
 		return convexHull;
 	}
 
-	public static Mesh GenerateMeshFromConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis)
+	public static Mesh GenerateMeshFrom2DConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis)
 	{
-		HalfEdgeData convexHull = GenerateConvexHull(vertex, axis);
+		HalfEdgeData convexHull = Generate2DConvexHull(vertex, axis);
 		return convexHull.ConvertToMesh(MeshName, axis);
 	}
 
-	public static HalfEdgeData GenerateConvexHull(List<Vector2> originalPoints, Vector3 axis)
+	public static HalfEdgeData Generate2DConvexHull(List<Vector2> originalPoints, Vector3 axis)
 	{
 		HalfEdgeData convexHull = new HalfEdgeData();
 

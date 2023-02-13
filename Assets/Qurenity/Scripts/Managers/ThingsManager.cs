@@ -11,7 +11,7 @@ public class ThingsManager : MonoBehaviour
 	public List<ThingController> _ThingPrefabs = new List<ThingController>();
 	public static Dictionary<string, GameObject> thingsPrefabs = new Dictionary<string, GameObject>();
 	public static List<Entity> entitiesOnMap = new List<Entity>();
-	public static Dictionary<int, Vector3> targetsOnMap = new Dictionary<int, Vector3>();
+	public static Dictionary<int, Target> targetsOnMap = new Dictionary<int, Target>();
 	public static Dictionary<int, TriggerController> triggerToActivate = new Dictionary<int, TriggerController>();
 	public static Dictionary<int, Dictionary<string, string>> timersOnMap = new Dictionary<int, Dictionary<string, string>>();
 	public static Dictionary<int, Dictionary<string, string>> triggersOnMap = new Dictionary<int, Dictionary<string, string>>();
@@ -21,6 +21,16 @@ public class ThingsManager : MonoBehaviour
 
 	public static readonly string[] targetThings = { "func_timer", "trigger_multiple", "target_position", "info_notnull", "misc_teleporter_dest" };
 
+	public class Target
+	{
+		public Vector3 destination;
+		public int angle;
+		public Target(Vector3 destination, int angle)
+		{
+			this.destination = destination;
+			this.angle = angle;
+		}
+	}
 	public class Entity
 	{
 		public string name;
@@ -96,10 +106,13 @@ public class ThingsManager : MonoBehaviour
 					continue;
 				}
 
+				int angle = 0;
+				if (entityData.TryGetValue("angle", out strWord))
+					angle = int.Parse(strWord);
+
 				Vector3 origin = Vector3.zero;
-				if (entityData.ContainsKey("origin"))
+				if (entityData.TryGetValue("origin", out strWord))
 				{
-					strWord = entityData["origin"];
 					string[] values = new string[3] { "", "", "",};
 					bool lastDigit = true;
 					for (int i = 0, j = 0; i < strWord.Length; i++)
@@ -136,7 +149,7 @@ public class ThingsManager : MonoBehaviour
 					switch(entityData["classname"])
 					{
 						default:
-							targetsOnMap.Add(target, origin);
+							targetsOnMap.Add(target, new Target(origin,angle));
 						break;
 						case "func_timer": //Timers
 							timersOnMap.Add(target, entityData);
@@ -450,7 +463,7 @@ public class ThingsManager : MonoBehaviour
 					int model = int.Parse(strWord.Trim('*'));
 					strWord = entity.entityData["target"];
 					int target = int.Parse(strWord.Trim('t'));
-					Vector3 destination = targetsOnMap[target];
+					Vector3 destination = targetsOnMap[target].destination;
 					MapLoader.GenerateJumpPadCollider(thingObject, model);
 					thing.Init(destination);
 				}
@@ -466,9 +479,10 @@ public class ThingsManager : MonoBehaviour
 					int model = int.Parse(strWord.Trim('*'));
 					strWord = entity.entityData["target"];
 					int target = int.Parse(strWord.Trim('t'));
-					Vector3 destination = targetsOnMap[target];
+					Vector3 destination = targetsOnMap[target].destination;
+					int angle = targetsOnMap[target].angle;
 					MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Teleporter);
-					thing.Init(destination);
+					thing.Init(destination,angle);
 				}
 				break;
 				//Speaker

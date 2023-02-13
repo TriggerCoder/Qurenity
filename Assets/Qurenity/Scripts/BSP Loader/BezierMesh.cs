@@ -56,7 +56,7 @@ public class BezierMesh
 		p2scolorCache = new List<Color>();
 	}
 
-	public BezierMesh(int level, int surfaceId, int patchNumber, List<Vector3> control)
+	public void BezierColliderMesh(int level, int surfaceId, int patchNumber, List<Vector3> control)
 	{
 		Transform parent = null;
 		float step, s, f, m;
@@ -162,7 +162,7 @@ public class BezierMesh
 				bool is3D = true;
 				Vector3 offSet = Vector3.zero;
 
-				if (!CanFormConvexHull(vertexCache, ref axis))
+				if (!CanForm3DConvexHull(vertexCache, ref axis))
 				{
 					//Check if it's a 2D Surface
 					vertex2d.Clear();
@@ -188,7 +188,7 @@ public class BezierMesh
 						}
 					}
 
-					if (!CanFormConvexHull(vertex2d))
+					if (!CanForm2DConvexHull(vertex2d))
 					{
 						ColliderObject = null;
 						return;
@@ -208,9 +208,9 @@ public class BezierMesh
 
 				Mesh patchMesh;
 				if (is3D)
-					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertexCache);
+					patchMesh = ConvexHull.GenerateMeshFrom3DConvexHull("Collider_" + i + "_" + j, vertexCache);
 				else
-					patchMesh = ConvexHull.GenerateMeshFromConvexHull("Collider_" + i + "_" + j, vertex2d, offSet);
+					patchMesh = ConvexHull.GenerateMeshFrom2DConvexHull("Collider_" + i + "_" + j, vertex2d, offSet);
 				
 				GameObject objCollider = new GameObject(patchMesh.name + "_collider");
 				objCollider.layer = GameManager.ColliderLayer;
@@ -228,7 +228,7 @@ public class BezierMesh
 		}
 	}
 
-	public bool CanFormConvexHull(List<Vector2> points)
+	public bool CanForm2DConvexHull(List<Vector2> points)
 	{
 		const float EPSILON = 0.001f;
 
@@ -261,7 +261,7 @@ public class BezierMesh
 
 		return true;
 	}
-	public bool CanFormConvexHull(List<Vector3> points, ref Axis axis)
+	public bool CanForm3DConvexHull(List<Vector3> points, ref Axis axis)
 	{
 		const float EPSILON = 0.001f;
 

@@ -67,42 +67,6 @@ public static class Mesher
 				index++;
 			}
 		}
-/*
-		CombineInstance[] combineDraw = new CombineInstance[totalPatches];
-		int index = 0;
-		for (int i = 0; i < surfaces.Length; i++)
-		{
-			bool hasCollider = false;
-			CombineInstance[] combineCollide = new CombineInstance[numPatches[i]];
-			for (int n = 0; n < numPatches[i]; n++)
-			{
-				BezierMesh BezMesh = GenerateBezMesh(surfaces[i], n);
-				combineDraw[index].mesh = BezMesh.Mesh;
-				combineCollide[n].mesh = BezMesh.Mesh;
-				index++;
-				if (BezMesh.ColliderObject != null)
-					hasCollider = true;
-			}
-			//Don't use Mesh Collider unless it's a 2d Surface
-			if (!hasCollider)
-			{
-				GameObject ColliderObject = new GameObject("2D_Bezier_Collider_" + surfaces[i].surfaceId);
-				ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
-
-				Mesh collideMesh = new Mesh();
-				collideMesh.name = Name;
-				collideMesh.CombineMeshes(combineCollide, true, false, false);
-
-				MeshCollider mc = ColliderObject.AddComponent<MeshCollider>();
-				mc.sharedMesh = collideMesh;
-
-				Rigidbody rb = ColliderObject.AddComponent<Rigidbody>();
-				rb.isKinematic = true;
-				rb.useGravity = false;
-				rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-			}
-		}
-*/
 
 		Mesh mesh = new Mesh();
 		mesh.name = Name;
@@ -269,10 +233,9 @@ public static class Mesher
 		}
 */
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
-		BezierMesh bezCollider = new BezierMesh(4, surface.surfaceId, patchNumber, bverts);
-		if (bezCollider.ColliderObject != null)
-			bezCollider.ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
-		bezPatch.ColliderObject = bezCollider.ColliderObject;
+		bezPatch.BezierColliderMesh(4, surface.surfaceId, patchNumber, bverts);
+		if (bezPatch.ColliderObject != null)
+			bezPatch.ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
 
 		return bezPatch;
 	}
@@ -294,7 +257,7 @@ public static class Mesher
 		CombineInstance[] combine = new CombineInstance[surfaces.Length];
 		for (var i = 0; i < combine.Length; i++)
 		{
-			combine[i].mesh = GeneratePolygonMesh(surfaces[i]);
+			combine[i].mesh = GeneratePolygonMesh(surfaces[i], lmIndex);
 			Name += "_" + surfaces[i].surfaceId;
 		}
 
@@ -414,7 +377,7 @@ public static class Mesher
 		return mesh;
 	}
 
-	public static Mesh GeneratePolygonMesh(QSurface surface)
+	public static Mesh GeneratePolygonMesh(QSurface surface, int lm_index)
 	{
 		Mesh mesh = new Mesh();
 		mesh.name = "BSPface (poly/mesh)";
@@ -447,7 +410,11 @@ public static class Mesher
 			uvCache.Add(MapLoader.verts[vstep].textureCoord);
 			uv2Cache.Add(MapLoader.verts[vstep].lightmapCoord);
 			normalsCache.Add(MapLoader.verts[vstep].normal);
-			vertsColor.Add(MapLoader.verts[vstep].color);
+			//Need to compensate for Gamma Change as lightmapped textures will change
+			if (lm_index >= 0)
+				vertsColor.Add(MapLoader.verts[vstep].color);
+			else
+				vertsColor.Add(TextureLoader.ChangeGamma(MapLoader.verts[vstep].color));
 			vstep++;
 		}
 
@@ -793,7 +760,7 @@ public static class Mesher
 
 		intersectPoint = RemoveDuplicatedVectors(intersectPoint);
 
-		Mesh mesh = ConvexHull.GenerateMeshFromConvexHull("brushSide: " + brush.brushSide,intersectPoint);
+		Mesh mesh = ConvexHull.GenerateMeshFrom3DConvexHull("brushSide: " + brush.brushSide,intersectPoint);
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
