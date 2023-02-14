@@ -15,7 +15,7 @@ public class SpriteAnimation : MonoBehaviour
 	public bool isTransparent;
 	public Color color = Color.white;
 	public Vector2 pivot = new Vector2(.5f, .5f);
-	public float scale = 1;
+	public float radius = 32;
 
 	public bool oscillates;
 	public int direction = 1;
@@ -49,8 +49,8 @@ public class SpriteAnimation : MonoBehaviour
 				TextureLoader.AddNewTexture(frames[i], true);
 				_frames[i] = TextureLoader.Instance.GetTexture(frames[i]);
 			}
-			size[i].x = _frames[i].width * GameManager.sizeDividor * scale;
-			size[i].y = _frames[i].height * GameManager.sizeDividor * scale;
+			size[i].x = GameManager.sizeDividor * radius * 2;
+			size[i].y = GameManager.sizeDividor * radius * 2;
 		}
 		CreateBillboard();
 

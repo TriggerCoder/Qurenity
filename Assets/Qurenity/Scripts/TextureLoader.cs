@@ -240,20 +240,20 @@ public class TextureLoader : MonoBehaviour
 		Color32[] colors = new Color32[128 * 128];
 		int j = 0;
 		for (int i = 0; i < 128 * 128; i++)
-			colors[i] = ChangeGamma(rgb[j++], rgb[j++] , rgb[j++]);
+			colors[i] = ChangeColorLighting(rgb[j++], rgb[j++] , rgb[j++]);
 		tex.SetPixels32(colors);
 		tex.wrapMode = TextureWrapMode.Clamp;
 		tex.Apply();
 		return tex;
 	}
-	public static Color32 ChangeGamma(byte r, byte g, byte b)
+	public static Color32 ChangeColorLighting(byte r, byte g, byte b)
 	{
 		float scale = 1.0f, temp;
 		float R, G, B;
 
-		R = r * GameManager.Instance.gamma / 255.0f;
-		G = g * GameManager.Instance.gamma / 255.0f;
-		B = b * GameManager.Instance.gamma / 255.0f;
+		R = r * GameManager.Instance.colorLightning / 255.0f;
+		G = g * GameManager.Instance.colorLightning / 255.0f;
+		B = b * GameManager.Instance.colorLightning / 255.0f;
 
 		if (R > 1.0f && (temp = (1.0f / R)) < scale)
 			scale = temp;
@@ -269,14 +269,14 @@ public class TextureLoader : MonoBehaviour
 		return new Color32((byte)R,(byte)G,(byte)B, 1);
 	}
 
-	public static Color ChangeGamma(Color icolor)
+	public static Color ChangeColorLighting(Color icolor)
 	{
 		float scale = 1.0f, temp;
 		float R, G, B;
 
-		R = icolor.r * GameManager.Instance.gamma;
-		G = icolor.g * GameManager.Instance.gamma;
-		B = icolor.b * GameManager.Instance.gamma;
+		R = icolor.r * GameManager.Instance.colorLightning;
+		G = icolor.g * GameManager.Instance.colorLightning;
+		B = icolor.b * GameManager.Instance.colorLightning;
 
 		if (R > 1.0f && (temp = (1.0f / R)) < scale)
 			scale = temp;

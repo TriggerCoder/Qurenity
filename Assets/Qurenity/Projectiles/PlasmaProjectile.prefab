@@ -103,7 +103,7 @@ MonoBehaviour:
   isTransparent: 1
   color: {r: 1, g: 1, b: 1, a: 1}
   pivot: {x: 0.5, y: 0.5}
-  scale: 1
+  radius: 16
   oscillates: 0
   direction: 1
 --- !u!1 &5505914504139178766

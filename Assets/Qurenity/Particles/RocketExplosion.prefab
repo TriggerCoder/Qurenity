@@ -210,9 +210,11 @@ MonoBehaviour:
   - models/weaphits/rlboom/rlboom_6
   - models/weaphits/rlboom/rlboom_7
   - models/weaphits/rlboom/rlboom_8
+  isOmni: 1
   isTransparent: 1
+  color: {r: 1, g: 1, b: 1, a: 1}
   pivot: {x: 0.5, y: 0.5}
-  scale: 2
+  radius: 64
   oscillates: 0
   direction: 1
 --- !u!114 &5070849989359862730

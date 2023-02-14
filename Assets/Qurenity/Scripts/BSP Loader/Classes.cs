@@ -8,14 +8,14 @@ public static class QuakeToUnity
 	{
 		Vector3 outV3 = new Vector3(-inV3.x, inV3.z, -inV3.y);
 		if (scale)
-			outV3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+			outV3.Scale(Vector3.one * GameManager.sizeDividor);
 		return outV3;
 	}
 	public static Vector3 Vect3(Vector3Int inV3, bool scale = true)
 	{
 		Vector3 outV3 = new Vector3(-inV3.x, inV3.z, -inV3.y);
 		if (scale)
-			outV3.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+			outV3.Scale(Vector3.one * GameManager.sizeDividor);
 		return outV3;
 	}
 }

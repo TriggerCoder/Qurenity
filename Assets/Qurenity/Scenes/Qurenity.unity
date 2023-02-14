@@ -187,9 +187,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm7
+  autoloadMap: q3dm1
   tessellations: 5
-  gamma: 2
+  colorLightning: 2
   TemporaryObjectsHolder: {fileID: 1399079443}
   BaseThingsHolder: {fileID: 2028868021}
   Player:

@@ -192,9 +192,9 @@ public class MD3Frame
 		bb_Max = new Vector3(-bb_Max.x, bb_Max.z, -bb_Max.y);
 		locOrigin = new Vector3(-locOrigin.x, locOrigin.z, -locOrigin.y);
 
-		bb_Min.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-		bb_Max.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
-		locOrigin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+		bb_Min.Scale(Vector3.one * GameManager.sizeDividor);
+		bb_Max.Scale(Vector3.one * GameManager.sizeDividor);
+		locOrigin.Scale(Vector3.one * GameManager.sizeDividor);
 
 		bs_Radius *= GameManager.sizeDividor;
 	}
@@ -317,7 +317,7 @@ public class MD3Mesh
 			float n2 = Md3ModelFile.ReadByte();
 
 			Vector3 position = new Vector3(-x, z, -y);
-			position.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+			position.Scale(Vector3.one* GameManager.sizeDividor);
 			verts[j].Add(position);
 
 			if (((i + 1) % numVertices) == 0)

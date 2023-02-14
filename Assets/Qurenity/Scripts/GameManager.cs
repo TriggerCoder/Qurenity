@@ -7,7 +7,8 @@ public class GameManager : MonoBehaviour
 	public string autoloadMap = "";
 
 	public int tessellations = 6;
-	public float gamma = 1f;
+	public const int colliderTessellations = 4;  //Do not modify
+	public float colorLightning = 1f;
 	public static GameManager Instance;
 
 	public Transform TemporaryObjectsHolder;

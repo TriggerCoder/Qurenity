@@ -233,7 +233,7 @@ public static class Mesher
 		}
 */
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
-		bezPatch.BezierColliderMesh(4, surface.surfaceId, patchNumber, bverts);
+		bezPatch.BezierColliderMesh(GameManager.colliderTessellations, surface.surfaceId, patchNumber, bverts);
 		if (bezPatch.ColliderObject != null)
 			bezPatch.ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
 
@@ -414,7 +414,7 @@ public static class Mesher
 			if (lm_index >= 0)
 				vertsColor.Add(MapLoader.verts[vstep].color);
 			else
-				vertsColor.Add(TextureLoader.ChangeGamma(MapLoader.verts[vstep].color));
+				vertsColor.Add(TextureLoader.ChangeColorLighting(MapLoader.verts[vstep].color));
 			vstep++;
 		}
 

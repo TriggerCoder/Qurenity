@@ -137,7 +137,7 @@ public class ThingsManager : MonoBehaviour
 					int y = int.Parse(values[1]);
 					int z = int.Parse(values[2]);
 					origin = new Vector3(-x, z, -y);
-					origin.Scale(new Vector3(GameManager.sizeDividor, GameManager.sizeDividor, GameManager.sizeDividor));
+					origin.Scale(Vector3.one * GameManager.sizeDividor);
 				}
 
 				if (targetThings.Any(s => s == entityData["classname"]))

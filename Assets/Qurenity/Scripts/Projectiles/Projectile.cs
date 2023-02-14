@@ -206,6 +206,7 @@ public class Projectile : MonoBehaviour
 				{
 					mark.transform.position = Hit.point - -Hit.normal * .05f;
 					mark.transform.forward = Hit.normal;
+					mark.transform.Rotate(Vector3.forward, Random.Range(0, 360));
 				}
 			}
 

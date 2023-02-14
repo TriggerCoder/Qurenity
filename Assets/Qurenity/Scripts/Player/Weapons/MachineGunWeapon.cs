@@ -119,7 +119,8 @@ public class MachineGunWeapon : PlayerWeapon
 					GameObject puff = PoolManager.GetObjectFromPool("BulletHit");
 					puff.transform.position = hit.point - ray.direction * .2f;
 					puff.transform.right = -hit.normal;
-					//puff.transform.right = -ray.direction;
+					puff.transform.Rotate(Vector3.right, Random.Range(0, 360));
+
 					if (Sounds.Length > 3)
 						AudioManager.Create3DSound(puff.transform.position, Sounds[Random.Range(3, Sounds.Length)], 5f, 1);
 
@@ -129,6 +130,7 @@ public class MachineGunWeapon : PlayerWeapon
 						GameObject mark = PoolManager.GetObjectFromPool("BulletMark");
 						mark.transform.position = hit.point + hit.normal * .05f;
 						mark.transform.forward = hit.normal;
+						mark.transform.Rotate(Vector3.forward, Random.Range(0, 360));
 					}
 					Debug.Log(hit.collider.name);
 				}

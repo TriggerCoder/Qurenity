@@ -151,7 +151,7 @@ public class RailgunWeapon : PlayerWeapon
 					}
 					else
 					{
-						GameObject puff = PoolManager.GetObjectFromPool("BulletHit");
+						GameObject puff = PoolManager.GetObjectFromPool("SlugMark");
 						puff.transform.position = hit.point - ray.direction * .2f;
 					}
 				}
@@ -163,6 +163,7 @@ public class RailgunWeapon : PlayerWeapon
 						GameObject mark = PoolManager.GetObjectFromPool("SlugMark");
 						mark.transform.position = hit.point - ray.direction * .05f;
 						mark.transform.forward = hit.normal;
+						mark.transform.Rotate(Vector3.forward, Random.Range(0, 360));
 					}
 					Debug.Log(hit.collider.name);
 				}
