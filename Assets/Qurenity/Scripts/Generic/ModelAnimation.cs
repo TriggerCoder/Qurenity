@@ -76,7 +76,7 @@ public class ModelAnimation : MonoBehaviour
 			currentObject = gameObject;
 
 		if (md3Model.readyMeshes.Count == 0)
-			unityModel = Mesher.GenerateModelFromMeshes(md3Model, currentObject, isTransparent);
+			unityModel = Mesher.GenerateModelFromMeshes(md3Model, currentObject, isTransparent, null, (modelAnim.Count > 0));
 		else
 			unityModel = Mesher.FillModelFromProcessedData(md3Model, currentObject);
 

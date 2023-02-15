@@ -53,6 +53,7 @@ public class PlayerCamera : MonoBehaviour
 					(1 << GameManager.Player4Layer)) & ~(1 << (playerControls.playerInfo.playerLayer));
 
 		SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.DebrisLayer)) |
 													(1 << (GameManager.ThingsLayer)) |
 													(1 << (GameManager.RagdollLayer)) |
 													(1 << (GameManager.CombinesMapMeshesLayer)) |
@@ -60,6 +61,7 @@ public class PlayerCamera : MonoBehaviour
 													playerLayer));
 
 		ThirdPerson.cullingMask = ((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.DebrisLayer)) |
 													(1 << (GameManager.ThingsLayer)) |
 													(1 << (GameManager.RagdollLayer)) |
 													(1 << (GameManager.CombinesMapMeshesLayer)) |
@@ -80,16 +82,18 @@ public class PlayerCamera : MonoBehaviour
 		if (enable)
 		{
 			playerControls.playerInfo.playerHUD.canvas.worldCamera = ThirdPerson;
-			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer + 6);
+			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer + 6, true);
 		}
 		else
 		{
 			playerControls.playerInfo.playerHUD.canvas.worldCamera = UICamera;
-			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer - 14);
+			playerControls.playerInfo.playerHUD.UpdateLayer(playerControls.playerInfo.playerLayer - 14, false);
 		}
 	}
 	void Update()
 	{
+		if (GameManager.Paused)
+			return;
 
 		if (MainCamera.activeSelf == false)
 			return;

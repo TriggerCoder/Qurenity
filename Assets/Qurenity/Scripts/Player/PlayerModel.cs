@@ -326,10 +326,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 				weaponTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
 
-				if ((_enableOffset) || (ownerDead))
+//				if ((_enableOffset) || (ownerDead))
 					playerTransform.localPosition = lowerTorsoOrigin;
-				else
-					playerTransform.localPosition = Vector3.zero;
+//				else
+//					playerTransform.localPosition = Vector3.zero;
 
 				currentOffset = upperTorsoRotation * upperTorsoOrigin;
 				currentOffset -= lowerTorsoOrigin;
@@ -797,14 +797,14 @@ public class PlayerModel : MonoBehaviour, Damageable
 			headTransform.SetParent(tag_head.transform);
 
 			if (upper.readyMeshes.Count == 0)
-				upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin);
+				upperModel = Mesher.GenerateModelFromMeshes(upper, meshToSkin, true);
 			else
 				upperModel = Mesher.FillModelFromProcessedData(upper, meshToSkin);
 			upperModel.go.name = "upper_body";
 			upperModel.go.transform.SetParent(upperTransform);
 
 			if (head.readyMeshes.Count == 0)
-				headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin);
+				headModel = Mesher.GenerateModelFromMeshes(head, meshToSkin, false);
 			else
 				headModel = Mesher.FillModelFromProcessedData(head, meshToSkin);
 
@@ -812,7 +812,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 			headModel.go.transform.SetParent(headTransform);
 
 			if (lower.readyMeshes.Count == 0)
-				lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin);
+				lowerModel = Mesher.GenerateModelFromMeshes(lower, meshToSkin, true);
 			else
 				lowerModel = Mesher.FillModelFromProcessedData(lower, meshToSkin);
 			lowerModel.go.name = "lower_body";

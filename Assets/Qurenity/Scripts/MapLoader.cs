@@ -261,78 +261,51 @@ public static class MapLoader
 
 	public static void LerpColorOnRepeatedVertex()
 	{
-		// Group surfaces by their type
-		var sGroups = surfaces.GroupBy(s => new { s.type });
+		// We are only looking for bezier type
+		var groupsurfaces = surfaces.Where(s => s.type == QSurfaceType.Patch);
 
-		foreach (var sGroup in sGroups)
+		// Initialize 2 lists (one for test) to hold the vertices of each surface in the group
+		List<QVertex> surfVerts = new List<QVertex>();
+		List<QVertex> testVerts = new List<QVertex>();
+
+		// Now searh all the vertexes for all the bezier surface
+		foreach (var groupsurface in groupsurfaces)
 		{
-			QSurface[] groupsurfaces = sGroup.ToArray();
+			testVerts.Clear();
 
-			// If the array is empty, skip to the next group
-			if (groupsurfaces.Length == 0)
+			int startVert = groupsurface.startVertIndex;
+			for (int j = 0; j < groupsurface.numOfVerts; j++)
+				testVerts.Add(verts[startVert + j]);
+
+			//Get number of groups for all the vertexes by their position, as we want to get the uniques it need to match the number of vertex
+			int numGroups = testVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z }).Count();
+
+			// If the verts are unique, add the test vertices to the surface list
+			if (numGroups == groupsurface.numOfVerts)
+				surfVerts.AddRange(testVerts);
+		}
+
+		//Now we got unique vertexes for each bezier surface, search for common positions
+		var vGroups = surfVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
+
+		foreach (var vGroup in vGroups)
+		{
+			QVertex[] groupVerteces = vGroup.ToArray();
+
+			if (groupVerteces.Length == 0)
 				continue;
 
-			// We are only looking for bezier type
-			if (sGroup.Key.type != QSurfaceType.Patch)
-				continue;
+			// Set the initial color to the color of the first vertex in the group
+			// The we will be interpolating the color of every common vertex
+			Color color = groupVerteces[0].color;
+			for (int i = 1; i < groupVerteces.Length; i++)
+				color = Color.Lerp(color, groupVerteces[i].color, 0.5f);
 
-			// Initialize 2 lists (one for test) to hold the vertices of each surface in the group
-			List<QVertex> surfVerts = new List<QVertex>();
-			List<QVertex> testVerts = new List<QVertex>();
-
-			// Now searh all the vertexes for all the bezier surface
-			for (int i = 0; i < groupsurfaces.Length; i++)
+			// Finally set the final color to all the common vertexex
+			for (int i = 0; i < groupVerteces.Length; i++)
 			{
-				testVerts.Clear();
-				int vertStep = groupsurfaces[i].startVertIndex;
-				for (int j = 0; j < groupsurfaces[i].numOfVerts; j++)
-				{
-					testVerts.Add(verts[vertStep]);
-					vertStep++;
-				}
-
-				// Group all the vertexes by their position, as we want to get the uniques
-				var tGroups = testVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
-				bool unique = true;
-
-				foreach (var tGroup in tGroups)
-				{
-					QVertex[] testVerteces = tGroup.ToArray();
-					if (testVerteces.Length == 0)
-						continue;
-
-					if (testVerteces.Length != 1)
-						unique = false;
-				}
-
-				// If the vertex is unique, add the test vertices to the surface list
-				if (unique)
-					surfVerts.AddRange(testVerts);
-			}
-
-			//Now we got unique vertexes for each bezier surface, search for common positions
-			var vGroups = surfVerts.GroupBy(v => new { v.position.x, v.position.y, v.position.z });
-
-			foreach (var vGroup in vGroups)
-			{
-				QVertex[] groupVerteces = vGroup.ToArray();
-
-				if (groupVerteces.Length == 0)
-					continue;
-
-				// Set the initial color to the color of the first vertex in the group
-				// The we will be interpolating the color of every common vertex
-				Color color = groupVerteces[0].color;
-				for (int i = 1; i < groupVerteces.Length; i++)
-					color = Color.Lerp(color, groupVerteces[i].color, 0.5f);
-
-
-				// Finally set the final color to all the common vertexex
-				for (int i = 0; i < groupVerteces.Length; i++)
-				{
-					int index = groupVerteces[i].vertId;
-					verts[index].color = color;
-				}
+				int index = groupVerteces[i].vertId;
+				verts[index].color = color;
 			}
 		}
 	}

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class UIItem
 {
 	public GameObject gameObject;
+	public RectTransform trans;
 	public CanvasRenderer canvas;
 	public Image image;
 	public Text text;
@@ -25,12 +26,12 @@ public class UIHelper
 		uiItem.gameObject.SetActive(false);
 		uiItem.gameObject.transform.SetParent(parent);
 
-		RectTransform trans = uiItem.gameObject.AddComponent<RectTransform>();
-		trans.anchoredPosition = new Vector2(0.5f, 0.5f);
-		trans.localPosition = Vector3.zero;
-		trans.localScale = Vector3.one;
-		trans.anchorMin = new Vector2(0, 0);
-		trans.anchorMax = new Vector2(1, 1);
+		uiItem.trans = uiItem.gameObject.AddComponent<RectTransform>();
+		uiItem.trans.anchoredPosition = new Vector2(0.5f, 0.5f);
+		uiItem.trans.localPosition = Vector3.zero;
+		uiItem.trans.localScale = Vector3.one;
+		uiItem.trans.anchorMin = new Vector2(0, 0);
+		uiItem.trans.anchorMax = new Vector2(1, 1);
 
 		uiItem.canvas = uiItem.gameObject.GetComponent<CanvasRenderer>();
 		if (uiItem.canvas == null)

@@ -441,18 +441,18 @@ public static class Mesher
 		mesh.SetTriangles(indiciesCache, 0);
 
 		// Let Unity do some heavy lifting for us
-		mesh.RecalculateBounds();
-		//            mesh.RecalculateNormals();
-		//            mesh.Optimize();
+		// mesh.RecalculateBounds();
+		// mesh.RecalculateNormals();
+		// mesh.Optimize();
 
 		return mesh;
 	}
 
-	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, Dictionary<string, string> meshToSkin)
+	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, Dictionary<string, string> meshToSkin, bool markDynamic)
 	{
-		return GenerateModelFromMeshes(model, null, false, meshToSkin);
+		return GenerateModelFromMeshes(model, null, false, meshToSkin, markDynamic);
 	}
-	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, GameObject ownerObject = null, bool forceSkinAlpha = false, Dictionary<string, string> meshToSkin = null)
+	public static MD3UnityConverted GenerateModelFromMeshes(MD3 model, GameObject ownerObject = null, bool forceSkinAlpha = false, Dictionary<string, string> meshToSkin = null, bool markDynamic = false)
 	{
 		if (model == null || model.meshes.Count == 0)
 		{
@@ -477,7 +477,7 @@ public static class Mesher
 		{
 			foreach (MD3Mesh modelMesh in model.meshes)
 			{
-				Mesh mesh = GenerateModelMesh(modelMesh);
+				Mesh mesh = GenerateModelMesh(modelMesh, markDynamic);
 				mesh.name = modelMesh.name;
 
 				GameObject modelObject;
@@ -664,7 +664,7 @@ public static class Mesher
 		return md3Model;
 	}
 
-	public static Mesh GenerateModelMesh(MD3Mesh md3Mesh)
+	public static Mesh GenerateModelMesh(MD3Mesh md3Mesh, bool markDynamic = false)
 	{
 		if (md3Mesh == null)
 		{
@@ -674,6 +674,8 @@ public static class Mesher
 
 		Mesh mesh = new Mesh();
 		mesh.name = md3Mesh.name;
+		if (markDynamic)
+			mesh.MarkDynamic();
 
 		List<int> Triangles = new List<int>();
 

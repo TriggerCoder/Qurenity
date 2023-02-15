@@ -72,6 +72,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
 
 		playerCamera.SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.DebrisLayer)) |
 													(1 << (GameManager.ThingsLayer)) |
 													(1 << (GameManager.RagdollLayer)) |
 													(1 << (GameManager.CombinesMapMeshesLayer)) |

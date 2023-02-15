@@ -104,7 +104,7 @@ public class Projectile : MonoBehaviour
 		RaycastHit Hit = new RaycastHit();
 		{
 			Vector3 dir = cTransform.forward;
-			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~((1 << GameManager.InvisibleBlockerLayer) | (1 << GameManager.ThingsLayer)), QueryTriggerInteraction.Ignore);
+			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~(GameManager.NoHit), QueryTriggerInteraction.Ignore);
 
 			if (max > hits.Length)
 				max = hits.Length;

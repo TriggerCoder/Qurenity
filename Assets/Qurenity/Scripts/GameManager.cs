@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
 	public const short DefaultLayer =				0;
 	public const short TransparentFXLayer =			1;
 
+	public const short DebrisLayer =				3;
+
 	public const short UI_P1Layer =					5;
 	public const short UI_P2Layer =					6;
 	public const short UI_P3Layer =					7;
@@ -64,6 +66,8 @@ public class GameManager : MonoBehaviour
 	public const short UI3D_P4Layer =				28;
 
 	public const int TakeDamageMask = ((1 << DamageablesLayer) | (1 << Player1Layer) | (1 << Player2Layer) | (1 << Player3Layer) | (1 << Player4Layer));
+
+	public const int NoHit = ((1 << InvisibleBlockerLayer) | (1 << DebrisLayer) | (1 << ThingsLayer));
 
 	public const short NavMeshWalkableTag = 0;
 	public const short NavMeshNotWalkableTag = 1;
