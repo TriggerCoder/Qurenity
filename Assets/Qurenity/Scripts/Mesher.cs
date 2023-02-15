@@ -86,6 +86,7 @@ public static class Mesher
 
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
+		meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
 		Material material = null;
 		if (MaterialManager.GetOverrideMaterials(textureName, lmIndex, ref material, ref bezObj))
@@ -279,6 +280,8 @@ public static class Mesher
 
 		
 		MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+		mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
 		MeshFilter meshFilter = obj.AddComponent<MeshFilter>();
 		meshFilter.mesh = mesh;
 
@@ -696,7 +699,8 @@ public static class Mesher
 		mesh.SetTriangles(Triangles, 0);
 
 		// Let Unity do some heavy lifting for us
-		mesh.RecalculateBounds();
+//		mesh.RecalculateBounds();
+		mesh.RecalculateNormals();
 
 		return mesh;
 	}

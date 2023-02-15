@@ -144,6 +144,7 @@ public class ModelAnimation : MonoBehaviour
 				lerpVertex.Add(newVertex);
 			}
 			unityModel.data[i].meshFilter.mesh.SetVertices(lerpVertex);
+			unityModel.data[i].meshFilter.mesh.RecalculateNormals();
 		}
 
 		modelAnimation.lerpTime = modelAnimation.fps * Time.deltaTime;

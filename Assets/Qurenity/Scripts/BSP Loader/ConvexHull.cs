@@ -1052,8 +1052,6 @@ public static class ConvexHull
 
 			m.vertices = vertices;
 			m.triangles = triangles;
-
-			m.RecalculateBounds();
 			m.RecalculateNormals();
 
 			return m;

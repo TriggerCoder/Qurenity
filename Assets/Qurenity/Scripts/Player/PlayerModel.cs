@@ -312,6 +312,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 					}
 
 					upperModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+					upperModel.data[i].meshFilter.mesh.RecalculateNormals();
 				}
 
 				Quaternion baseRotation = lowerTorsoRotation;
@@ -350,6 +351,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 					}
 					lowerModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+					lowerModel.data[i].meshFilter.mesh.RecalculateNormals();
 				}
 			}
 
@@ -447,6 +449,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 			}
 
 			headModel.data[i].meshFilter.mesh.SetVertices(currentVect);
+			headModel.data[i].meshFilter.mesh.RecalculateNormals();
 		}
 
 		playerTransform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
