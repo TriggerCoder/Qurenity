@@ -83,7 +83,7 @@ public class PlayerHUD : MonoBehaviour
 		UIHelper.InitUIObject(crosshair, 64, 64, 0.5f, 0.5f, 0.5f, 0.5f, 0, 0);
 	}
 
-	public void UpdateLayer(int layer)
+	public void UpdateLayer(int layer, bool is3D = false)
 	{
 		gameObject.layer = layer;
 		GameManager.SetLayerAllChildren(transform, layer);

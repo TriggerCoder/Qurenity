@@ -73,6 +73,7 @@ public class URLFileLoader : MonoBehaviour
 				string filePath = Application.streamingAssetsPath + "/pak0.pk3";
 				if (!File.Exists(filePath))
 				{
+					Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 					string localPath = Application.persistentDataPath + "/pak0.pk3";
 					FileStream stream = File.Open(localPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 					byte[] pakBytes = File.ReadAllBytes(localPath);
