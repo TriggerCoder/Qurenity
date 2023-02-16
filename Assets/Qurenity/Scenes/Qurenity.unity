@@ -125,7 +125,8 @@ NavMeshSettings:
   m_NavMeshData: {fileID: 0}
 --- !u!114 &111704871 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_CorrespondingSourceObject: {fileID: 111704871, guid: 0607bb188534d754db77d3cf1a751561,
+    type: 3}
   m_PrefabInstance: {fileID: 2071567870}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
@@ -195,13 +196,20 @@ MonoBehaviour:
   Player:
   - {fileID: 111704871}
   Blood: {fileID: 8145336117116166367, guid: fb114cce993c9a34bab563ddc4b13c72, type: 3}
-  BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0, type: 3}
-  BulletMark: {fileID: 8145336117116166367, guid: 88fb1cd2684a56442ae990594e923141, type: 3}
-  BurnMark: {fileID: 8145336117116166367, guid: 72c4fedd031bd7443b3450f6068b34d7, type: 3}
-  PlasmaMark: {fileID: 8145336117116166367, guid: bc7de774593dbdb41995d81dd8c6e190, type: 3}
-  SlugMark: {fileID: 8145336117116166367, guid: 2d4bd8bcede3dcf4f97b675273c982b2, type: 3}
-  BulletCase: {fileID: 3778548176006231648, guid: 6b4a985403b517a4c88e5e78ead9a4c3, type: 3}
-  ShogunShell: {fileID: 6489570926119005409, guid: fb492697b24919949b25743dbd807e92, type: 3}
+  BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0,
+    type: 3}
+  BulletMark: {fileID: 8145336117116166367, guid: 88fb1cd2684a56442ae990594e923141,
+    type: 3}
+  BurnMark: {fileID: 8145336117116166367, guid: 72c4fedd031bd7443b3450f6068b34d7,
+    type: 3}
+  PlasmaMark: {fileID: 8145336117116166367, guid: bc7de774593dbdb41995d81dd8c6e190,
+    type: 3}
+  SlugMark: {fileID: 8145336117116166367, guid: 2d4bd8bcede3dcf4f97b675273c982b2,
+    type: 3}
+  BulletCase: {fileID: 3778548176006231648, guid: 6b4a985403b517a4c88e5e78ead9a4c3,
+    type: 3}
+  ShogunShell: {fileID: 6489570926119005409, guid: fb492697b24919949b25743dbd807e92,
+    type: 3}
   paused: 1
   gravity: 25
   friction: 6
@@ -242,9 +250,12 @@ MonoBehaviour:
   defaultMaterial: {fileID: 2100000, guid: 57ff2ce48e255445eb5618176aabb82f, type: 2}
   billBoardMaterial: {fileID: 2100000, guid: 993c729bed4dce84e9fcf092f99239f3, type: 2}
   spriteMaterial: {fileID: 2100000, guid: 999c5f9d5e5b2624b846bd2f3dd5a8ce, type: 2}
-  defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a, type: 2}
-  defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955, type: 2}
-  defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3, type: 2}
+  defaultTransparentMaterial: {fileID: 2100000, guid: 76d3601c08e98d6439a22490c9b7988a,
+    type: 2}
+  defaultLightMapMaterial: {fileID: 2100000, guid: 03f1db577c1cc8fdb96b2fcd71b94955,
+    type: 2}
+  defaultTransparentLightMapMaterial: {fileID: 2100000, guid: 5e45a09f786caad4bbc4496ab55cc3c3,
+    type: 2}
   debug: {fileID: 2100000, guid: fb7c637433e400645a5179fa4d617a07, type: 2}
   rgbGenIdentity: {fileID: 2100000, guid: 1db27fa4648f0304c853ec05bf5ddacd, type: 2}
   tcGenEnvironment: {fileID: 2100000, guid: 4c9eae67b665b2b4cb2ef65189522769, type: 2}
@@ -1095,7 +1106,8 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: 0}
-  m_PlayerPrefab: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+  m_PlayerPrefab: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561,
+    type: 3}
   m_SplitScreen: 1
   m_MaintainAspectRatioInSplitScreen: 0
   m_FixedNumberOfSplitScreens: -1
@@ -1239,21 +1251,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 743958850, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_CullingMask.m_Bits
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2043769949, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_DefaultControlScheme
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 1626833134530822, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_RootOrder
@@ -1299,7 +1299,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+    - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561,
+        type: 3}
       propertyPath: modelName
       value: sarge
       objectReference: {fileID: 0}
