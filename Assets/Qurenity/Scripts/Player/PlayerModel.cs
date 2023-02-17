@@ -157,7 +157,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 	{
 		float gravityAccumulator;
 		Vector3 currentPosition = playerTransform.position;
-		isGrounded = Physics.CheckSphere(currentPosition + Vector3.up * .25f, .5f, (1 << GameManager.ColliderLayer), QueryTriggerInteraction.Ignore);
+		isGrounded = Physics.CheckSphere(currentPosition, .5f, (1 << GameManager.ColliderLayer), QueryTriggerInteraction.Ignore);
 		if (isGrounded)
 			gravityAccumulator = 0f;
 		else
@@ -463,6 +463,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		var mesh = new Mesh();
 		mesh.CombineMeshes(combine, true, false, false);
+		mesh.RecalculateNormals();
 
 		MeshCollider mc = playerTransform.gameObject.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
@@ -475,7 +476,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		impulseVector = playerControls.impulseVector;
 		playerControls.capsuleCollider.enabled = false;
 		playerControls.controller.enabled = false;
-				ragDoll = true;
+		ragDoll = true;
 
 		DestroyAfterTime destroyAfterTime = playerTransform.gameObject.AddComponent<DestroyAfterTime>();
 		destroyAfterTime._lifeTime = 10;

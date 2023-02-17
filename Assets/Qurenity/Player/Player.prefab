@@ -78,8 +78,8 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
+  m_HDR: 0
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -118,7 +118,7 @@ MonoBehaviour:
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
-  m_CameraType: 0
+  m_CameraType: 1
   m_Cameras: []
   m_RendererIndex: -1
   m_VolumeLayerMask:
@@ -325,7 +325,7 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
-  modelName: major
+  modelName: doom
   skinName: default
   player: {fileID: 0}
   avatar: {fileID: 0}
@@ -1074,6 +1074,7 @@ MonoBehaviour:
   m_Cameras:
   - {fileID: 20329405279158884}
   - {fileID: 20946132042153066}
+  - {fileID: 743958850}
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
