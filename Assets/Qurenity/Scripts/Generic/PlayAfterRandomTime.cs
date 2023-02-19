@@ -3,8 +3,8 @@ using Assets.MultiAudioListener;
 
 public class PlayAfterRandomTime : MonoBehaviour
 {
-	public int waitTime;
-	public int randomTime;
+	public float waitTime;
+	public float randomTime;
 	private float nextPlayTime;
 	private AudioSource audioSource;
 	private MultiAudioSource mAudioSource;
@@ -34,14 +34,12 @@ public class PlayAfterRandomTime : MonoBehaviour
 		if (audioType == AudioType.None)
 			enabled = false;
 	}
-
-	public void Init(int wait, int random)
+	public void Init(float wait, float random)
 	{
 		waitTime = wait;
 		randomTime = random;
 		nextPlayTime = Random.Range(waitTime - randomTime, waitTime + randomTime + 1);
 	}
-
 	void ResetTimer()
 	{
 		time = 0f;

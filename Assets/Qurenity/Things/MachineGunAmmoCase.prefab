@@ -49,6 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   modelName: weapons2/shells/m_shell
   isTransparent: 0
+  castShadow: 0
   modelAnimation:
     fps: 0
     lerpTime: 0

@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.MultiAudioListener;
 using UnityEngine;
-
+using ExtensionMethods;
 public class ThingsManager : MonoBehaviour
 {
 	public ThingsManager Instance;
 	public List<ThingController> _ThingPrefabs = new List<ThingController>();
 	public static Dictionary<string, GameObject> thingsPrefabs = new Dictionary<string, GameObject>();
 	public static List<Entity> entitiesOnMap = new List<Entity>();
-	public static Dictionary<int, Target> targetsOnMap = new Dictionary<int, Target>();
-	public static Dictionary<int, TriggerController> triggerToActivate = new Dictionary<int, TriggerController>();
-	public static Dictionary<int, Dictionary<string, string>> timersOnMap = new Dictionary<int, Dictionary<string, string>>();
-	public static Dictionary<int, Dictionary<string, string>> triggersOnMap = new Dictionary<int, Dictionary<string, string>>();
+	public static Dictionary<string, Target> targetsOnMap = new Dictionary<string, Target>();
+	public static Dictionary<string, TriggerController> triggerToActivate = new Dictionary<string, TriggerController>();
+	public static Dictionary<string, Dictionary<string, string>> timersOnMap = new Dictionary<string, Dictionary<string, string>>();
+	public static Dictionary<string, Dictionary<string, string>> triggersOnMap = new Dictionary<string, Dictionary<string, string>>();
 	public static DoubleLinkedList<RespawnItem> itemToRespawn = new DoubleLinkedList<RespawnItem>();
 
 	public static readonly string[] ignoreThings = { "misc_model", "light", "func_group" };
@@ -63,6 +63,7 @@ public class ThingsManager : MonoBehaviour
 		foreach (ThingController tc in _ThingPrefabs)
 			thingsPrefabs.Add(tc.thingName, tc.gameObject);
 	}
+
 	public static void ReadEntities(byte[] entities)
 	{
 		MemoryStream ms = new MemoryStream(entities);
@@ -144,9 +145,9 @@ public class ThingsManager : MonoBehaviour
 				{
 					if (!entityData.TryGetValue("target", out strWord))
 						strWord = entityData["targetname"];
-					int target = int.Parse(strWord.Trim('t'));
+					string target = strWord;
 
-					switch(entityData["classname"])
+					switch (entityData["classname"])
 					{
 						default:
 							targetsOnMap.Add(target, new Target(origin,angle));
@@ -176,9 +177,9 @@ public class ThingsManager : MonoBehaviour
 	}
 	public static void AddTriggersOnMap()
 	{
-		foreach (KeyValuePair<int, Dictionary<string, string>> trigger in triggersOnMap)
+		foreach (KeyValuePair<string, Dictionary<string, string>> trigger in triggersOnMap)
 		{
-			int target = trigger.Key;
+			string target = trigger.Key;
 			Dictionary<string, string> entityData = trigger.Value;
 			GameObject thingObject = Instantiate(thingsPrefabs[entityData["classname"]]);
 			if (thingObject == null)
@@ -191,11 +192,12 @@ public class ThingsManager : MonoBehaviour
 
 			string strWord = entityData["model"];
 			int model = int.Parse(strWord.Trim('*'));
+			float wait;
 
-			if (entityData.TryGetValue("wait", out strWord))
+			if (entityData.TryGetNumValue("wait", out wait))
 			{
 				tc.AutoReturn = true;
-				tc.AutoReturnTime = int.Parse(strWord);
+				tc.AutoReturnTime = wait;
 			}
 
 			MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Trigger);
@@ -207,19 +209,20 @@ public class ThingsManager : MonoBehaviour
 
 	public static void AddTimersToMap()
 	{
-		foreach (KeyValuePair<int, Dictionary<string, string>> timer in timersOnMap)
+		foreach (KeyValuePair<string, Dictionary<string, string>> timer in timersOnMap)
 		{
-			int target = timer.Key;
+			string target = timer.Key;
 			TriggerController tc;
 			if (!triggerToActivate.TryGetValue(target, out tc))
 				continue;
 
 			Dictionary<string, string> entityData = timer.Value;
 			GameObject go = new GameObject("Timer "+ target);
-			string strWord = entityData["random"];
-			int random = int.Parse(strWord);
-			strWord = entityData["wait"];
-			int wait = int.Parse(strWord);
+			float random, wait;
+
+			entityData.TryGetNumValue("random", out random);
+			entityData.TryGetNumValue("wait", out wait);
+
 			TimerController timerController = go.AddComponent<TimerController>();
 			timerController.Init(wait, random, tc);
 			go.transform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
@@ -228,7 +231,9 @@ public class ThingsManager : MonoBehaviour
 	}
 	public static void AddEntitiesToMap()
 	{
-		foreach(Entity entity in entitiesOnMap)
+		string strWord;
+
+		foreach (Entity entity in entitiesOnMap)
 		{
 			GameObject thingObject = Instantiate(thingsPrefabs[entity.name]);
 			if (thingObject == null)
@@ -242,9 +247,10 @@ public class ThingsManager : MonoBehaviour
 				//Switch
 				case "func_button":
 				{
-					string strWord = entity.entityData["model"];
+					strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0, hitpoints = 0, speed = 40, wait = 1, lip = 4;
+					int angle = 0, hitpoints = 0, speed = 40, lip = 4;
+					float wait;
 					SwitchController sw = thingObject.GetComponent<SwitchController>();
 					if (sw == null)
 						sw = thingObject.AddComponent<SwitchController>();
@@ -254,8 +260,8 @@ public class ThingsManager : MonoBehaviour
 						hitpoints = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("speed", out strWord))
 						speed = int.Parse(strWord);
-					if (entity.entityData.TryGetValue("wait", out strWord))
-						wait = int.Parse(strWord);
+					if (!entity.entityData.TryGetNumValue("wait", out wait))
+						wait = 1;
 					if (entity.entityData.TryGetValue("lip", out strWord))
 						lip = int.Parse(strWord);
 
@@ -291,10 +297,9 @@ public class ThingsManager : MonoBehaviour
 						}
 					}
 
-					if (entity.entityData.ContainsKey("target"))
+					if (entity.entityData.TryGetValue("target", out strWord))
 					{
-						strWord = entity.entityData["target"];
-						int target = int.Parse(strWord.Trim('t'));
+						string target = strWord;
 
 						TriggerController tc;
 						if (!triggerToActivate.TryGetValue(target, out tc))
@@ -306,7 +311,7 @@ public class ThingsManager : MonoBehaviour
 							if (sw.tc == null)
 							{
 								TriggerController swTrigger;
-								if (!triggerToActivate.TryGetValue(sw.internalSwitch.triggerNum, out swTrigger))
+								if (!triggerToActivate.TryGetValue(sw.internalSwitch.triggerName, out swTrigger))
 									return;
 								sw.tc = swTrigger;
 							}
@@ -319,9 +324,10 @@ public class ThingsManager : MonoBehaviour
 				//Door
 				case "func_door":
 				{
-					string strWord = entity.entityData["model"];
+					strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					int angle = 0, hitpoints = 0, speed = 200, wait = 2, lip = 8, dmg = 4;
+					int angle = 0, hitpoints = 0, speed = 200, lip = 8, dmg = 4;
+					float wait;
 					DoorController door = thingObject.GetComponent<DoorController>();
 					if (door == null)
 						door = thingObject.AddComponent<DoorController>();
@@ -331,8 +337,8 @@ public class ThingsManager : MonoBehaviour
 						hitpoints = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("speed", out strWord))
 						speed = int.Parse(strWord);
-					if (entity.entityData.TryGetValue("wait", out strWord))
-						wait = int.Parse(strWord);
+					if (!entity.entityData.TryGetNumValue("wait", out wait))
+						wait = 2;
 					if (entity.entityData.TryGetValue("lip", out strWord))
 						lip = int.Parse(strWord);
 					if (entity.entityData.TryGetValue("dmg", out strWord))
@@ -362,10 +368,9 @@ public class ThingsManager : MonoBehaviour
 						doorCollider.door = door;
 					}
 
-					if (entity.entityData.ContainsKey("targetname"))
+					if (entity.entityData.TryGetValue("targetname", out strWord))
 					{
-						strWord = entity.entityData["targetname"];
-						int target = int.Parse(strWord.Trim('t'));
+						string target = strWord;
 
 						TriggerController tc;
 						if (!triggerToActivate.TryGetValue(target, out tc))
@@ -394,7 +399,7 @@ public class ThingsManager : MonoBehaviour
 							tc.Repeatable = true;
 							tc.AutoReturn = true;
 							tc.AutoReturnTime = wait;
-							tc.SetController(0, (p) =>
+							tc.SetController("", (p) =>
 							{
 								door.CurrentState = DoorController.State.Opening;
 							});
@@ -413,16 +418,17 @@ public class ThingsManager : MonoBehaviour
 				//Trigger Hurt
 				case "trigger_hurt":
 				{
-					string strWord = entity.entityData["model"];
+					int dmg = 9999;
+					strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					strWord = entity.entityData["dmg"];
-					int dmg = int.Parse(strWord);
+					if (entity.entityData.TryGetValue("dmg", out strWord))
+						dmg = int.Parse(strWord);
 					MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Trigger);
 					TriggerController tc = thingObject.GetComponent<TriggerController>();
 					if (tc == null)
 						tc = thingObject.AddComponent<TriggerController>();
 					tc.Repeatable = true;
-					tc.SetController(0, (p) =>
+					tc.SetController("", (p) =>
 					{
 						p.Damage(dmg,DamageType.Generic);
 					});
@@ -431,10 +437,9 @@ public class ThingsManager : MonoBehaviour
 				//Remove PowerUps
 				case "target_remove_powerups":
 				{
-					if (entity.entityData.ContainsKey("targetname"))
+					if (entity.entityData.TryGetValue("targetname", out strWord))
 					{
-						string strWord = entity.entityData["targetname"];
-						int target = int.Parse(strWord.Trim('t'));
+						string target = strWord;
 
 						TriggerController tc;
 						if (!triggerToActivate.TryGetValue(target, out tc))
@@ -459,10 +464,9 @@ public class ThingsManager : MonoBehaviour
 					if (thing == null)
 						continue;
 
-					string strWord = entity.entityData["model"];
+					strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					strWord = entity.entityData["target"];
-					int target = int.Parse(strWord.Trim('t'));
+					string target = entity.entityData["target"];
 					Vector3 destination = targetsOnMap[target].destination;
 					MapLoader.GenerateJumpPadCollider(thingObject, model);
 					thing.Init(destination);
@@ -475,10 +479,9 @@ public class ThingsManager : MonoBehaviour
 					if (thing == null)
 						continue;
 
-					string strWord = entity.entityData["model"];
+					strWord = entity.entityData["model"];
 					int model = int.Parse(strWord.Trim('*'));
-					strWord = entity.entityData["target"];
-					int target = int.Parse(strWord.Trim('t'));
+					string target = entity.entityData["target"];
 					Vector3 destination = targetsOnMap[target].destination;
 					int angle = targetsOnMap[target].angle;
 					MapLoader.GenerateGeometricCollider(thingObject, model, ContentFlags.Teleporter);
@@ -489,7 +492,7 @@ public class ThingsManager : MonoBehaviour
 				case "target_speaker":
 				{
 					bool isAudio3d = true;
-					string strWord = entity.entityData["noise"];
+					strWord = entity.entityData["noise"];
 					string[] keyValue = strWord.Split('.');
 					strWord = keyValue[0];
 					if (!strWord.Contains('*'))
@@ -528,10 +531,9 @@ public class ThingsManager : MonoBehaviour
 						{
 							if ((spawnflags & 8) != 0) //Activator Sound
 							{
-								if (entity.entityData.ContainsKey("targetname"))
+								if (entity.entityData.TryGetValue("targetname", out strWord))
 								{
-									strWord = entity.entityData["targetname"];
-									int target = int.Parse(strWord.Trim('t'));
+									string target = strWord;
 
 									TriggerController tc;
 									if (!triggerToActivate.TryGetValue(target, out tc))
@@ -562,10 +564,9 @@ public class ThingsManager : MonoBehaviour
 									audioSource2D.playOnAwake = false;
 									audioSource2D.volume = GameOptions.MainVolume * GameOptions.SFXVolume;
 								}
-								if (entity.entityData.ContainsKey("targetname"))
+								if (entity.entityData.TryGetValue("targetname", out strWord))
 								{
-									strWord = entity.entityData["targetname"];
-									int target = int.Parse(strWord.Trim('t'));
+									string target = strWord;
 
 									TriggerController tc;
 									if (!triggerToActivate.TryGetValue(target, out tc))
@@ -596,11 +597,10 @@ public class ThingsManager : MonoBehaviour
 	}
 	public static void AddRandomTimeToSound(GameObject go, Dictionary<string, string> entityData)
 	{
+		float random, wait;
 		PlayAfterRandomTime playRandom = go.AddComponent<PlayAfterRandomTime>();
-		string strWord = entityData["random"];
-		int random = int.Parse(strWord);
-		strWord = entityData["wait"];
-		int wait = int.Parse(strWord);
+		entityData.TryGetNumValue("random", out random);
+		entityData.TryGetNumValue("wait", out wait);
 		playRandom.Init(wait, random);
 	}
 	public static void AddItemToRespawn(GameObject go, string respawnSournd, float time)

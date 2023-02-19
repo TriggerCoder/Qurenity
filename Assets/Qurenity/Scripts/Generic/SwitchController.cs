@@ -18,7 +18,7 @@ public class SwitchController : DoorController
 		if (tc == null)
 		{
 			TriggerController swTrigger;
-			if (!ThingsManager.triggerToActivate.TryGetValue(internalSwitch.triggerNum, out swTrigger))
+			if (!ThingsManager.triggerToActivate.TryGetValue(internalSwitch.triggerName, out swTrigger))
 				return;
 			tc = swTrigger;
 		}

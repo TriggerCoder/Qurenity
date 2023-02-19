@@ -111,7 +111,7 @@ public class DoorController : MonoBehaviour, Damageable
 			currentState = value;
 		}
 	}
-	public void Init(int angle, int hp, int sp, int wait, int openlip, Bounds swBounds, int dmg = 0)
+	public void Init(int angle, int hp, int sp, float wait, int openlip, Bounds swBounds, int dmg = 0)
 	{
 		cTransform = transform;
 

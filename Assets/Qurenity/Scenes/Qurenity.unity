@@ -1207,7 +1207,7 @@ Light:
   m_RenderMode: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 8380416
+    m_Bits: 25159680
   m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
@@ -1227,14 +1227,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 599665251}
-  m_LocalRotation: {x: 0.4698463, y: 0.4698463, z: -0.32898986, w: 0.6710102}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalRotation: {x: -0.14454393, y: 0.8516508, z: -0.30997548, w: -0.39713123}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 70, y: 70, z: 0}
+  m_LocalEulerAnglesHint: {x: 40, y: 230, z: 0}
 --- !u!850595691 &1245000655
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -1369,10 +1369,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2043769949, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
-      propertyPath: m_DefaultControlScheme
-      value: Gamepad
-      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1424,7 +1420,7 @@ PrefabInstance:
     - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561,
         type: 3}
       propertyPath: modelName
-      value: sarge
+      value: doom
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

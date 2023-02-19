@@ -6,6 +6,7 @@ public class ModelAnimation : MonoBehaviour
 {
 	public string modelName;
 	public bool isTransparent = false;
+	public bool castShadow = true;
 
 	private MD3 md3Model;
 
@@ -112,6 +113,11 @@ public class ModelAnimation : MonoBehaviour
 		//If no vertex animation nor texture animation, disable the animation
 		if ((modelAnim.Count == 0) && (textureAnim.Count == 0) && (!localAnimation.rotEnable) && (!localAnimation.posEnable))
 			enabled = false;
+
+		//Transparent models never cast shadow
+		if ((isTransparent) || (!castShadow))
+			for (int i = 0; i < md3Model.readyMeshes.Count; i++)
+				unityModel.data[i].meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
 		currentOrigin = cTransform.position;
 		height = currentOrigin.y;

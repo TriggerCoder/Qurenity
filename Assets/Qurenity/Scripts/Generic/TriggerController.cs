@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 public class TriggerController : MonoBehaviour
 {
-	public int triggerNum = 0;
+	public string triggerName = "";
 	public bool activated = false;
 	private Action<PlayerThing> OnActivate = new Action<PlayerThing>((p) => { return; });
 
@@ -15,16 +15,16 @@ public class TriggerController : MonoBehaviour
 
 	public float time = 0f;
 
-	public void SetController(int num, Action<PlayerThing> activeAction)
+	public void SetController(string name, Action<PlayerThing> activeAction)
 	{
-		triggerNum = num;
+		triggerName = name;
 		OnActivate = activeAction;
 	}
 	public bool Activate(PlayerThing playerThing)
 	{
 		if (!PreReq())
 		{
-			Debug.Log("TriggerController: Prereq False for: "+ triggerNum);
+			Debug.Log("TriggerController: Prereq False for: "+ triggerName);
 			return false;
 		}
 

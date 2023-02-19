@@ -254,7 +254,7 @@ Transform:
   - {fileID: 4853754259503296}
   - {fileID: 743958849}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &143113606728799366
 CharacterController:
@@ -325,7 +325,7 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   playerControls: {fileID: 0}
   playerCamera: {fileID: 0}
-  modelName: doom
+  modelName: major
   skinName: default
   player: {fileID: 0}
   avatar: {fileID: 0}
@@ -1081,8 +1081,8 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
-  m_Antialiasing: 0
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 1
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0

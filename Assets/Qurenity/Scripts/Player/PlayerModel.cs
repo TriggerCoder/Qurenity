@@ -684,6 +684,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 		if (!string.IsNullOrEmpty(muzzleModelName))
 		{
+			MD3UnityConverted muzzleUnityConverted;
 			Vector3 OffSet = Vector3.zero;
 			List<MD3Tag> weaponTags;
 			muzzleFlash = new GameObject("muzzle_flash");
@@ -693,11 +694,15 @@ public class PlayerModel : MonoBehaviour, Damageable
 				return;
 
 			if (muzzle.readyMeshes.Count == 0)
-				Mesher.GenerateModelFromMeshes(muzzle, muzzleFlash, true);
+				muzzleUnityConverted = Mesher.GenerateModelFromMeshes(muzzle, muzzleFlash, true);
 			else
-				Mesher.FillModelFromProcessedData(muzzle, muzzleFlash);
+				muzzleUnityConverted = Mesher.FillModelFromProcessedData(muzzle, muzzleFlash);
 			muzzleFlash.layer = weaponModel.go.layer;
 
+			//Muzzle Flash never cast shadow
+			for (int i = 0; i < muzzle.readyMeshes.Count; i++)
+				muzzleUnityConverted.data[i].meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			
 			//Such Vanity
 			if (barrel == null)
 			{

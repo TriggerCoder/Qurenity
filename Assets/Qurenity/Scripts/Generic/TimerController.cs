@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class TimerController : MonoBehaviour
 {
-	public int waitTime;
-	public int randomTime;
+	public float waitTime;
+	public float randomTime;
 	private float nextActivateTime;
 	private TriggerController trigger;
 	float time = 0f;
@@ -14,7 +14,7 @@ public class TimerController : MonoBehaviour
 		public GameObject target;
 	#endif
 
-	public void Init(int wait, int random, TriggerController tc)
+	public void Init(float wait, float random, TriggerController tc)
 	{
 		waitTime = wait;
 		randomTime = random;

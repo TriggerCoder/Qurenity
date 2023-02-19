@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3812391199950910529}
   - component: {fileID: 3540044376720875523}
   - component: {fileID: 1031457437187045785}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Health Small
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,6 +53,8 @@ MonoBehaviour:
   thingName: item_health_small
   respawnSound: items/respawn1
   respawnTime: 30
+  modelsToCache: []
+  poolObjectsToCache: []
   thingType: 2
 --- !u!114 &3069971105422698728
 MonoBehaviour:
@@ -87,6 +89,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   modelName: powerups/health/small_sphere
   isTransparent: 0
+  castShadow: 0
   modelAnimation:
     fps: 0
     lerpTime: 0
@@ -116,6 +119,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   modelName: powerups/health/small_cross
   isTransparent: 0
+  castShadow: 1
   modelAnimation:
     fps: 0
     lerpTime: 0
@@ -139,8 +143,16 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 33660320433956289}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Radius: 0.4
   m_Center: {x: 0, y: 0.15, z: 0}
