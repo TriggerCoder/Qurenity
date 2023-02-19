@@ -161,9 +161,56 @@ public class BezierMesh
 				Axis axis = Axis.None;
 				bool is3D = true;
 				Vector3 offSet = Vector3.zero;
-
-				if (!CanForm3DConvexHull(vertexCache, ref axis))
+				Vector3 normal = Vector3.zero;
+				Quaternion changeRotation = Quaternion.identity;
+//				if (!CanForm3DConvexHull(vertexCache, ref axis))
+				if (!CanForm3DConvexHull(vertexCache, ref normal))
 				{
+					if ((normal.x == 1) || (normal.x == -1))
+						axis = Axis.X;
+					else if ((normal.y == 1) || (normal.y == -1))
+						axis = Axis.Y;
+					else if ((normal.z == 1) || (normal.z == -1))
+						axis = Axis.Z;
+					else
+					{
+						Debug.LogError("Damn ROTATED 2D PLANE");
+						float x = Mathf.Abs(normal.x), y = Mathf.Abs(normal.y), z = Mathf.Abs(normal.z);
+						Vector3 normalRef = Vector3.zero;
+
+						if ((x >= y) && (x >= z))
+							axis = Axis.X;
+						else if ((y >= x) && (y >= z))
+							axis = Axis.Y;
+						else
+							axis = Axis.Z;
+
+						switch (axis)
+						{
+							case Axis.X:
+								if (normal.x > 0)
+									normalRef = Vector3.right;
+								else
+									normalRef = Vector3.left;
+							break;
+							case Axis.Y:
+								if (normal.y > 0)
+									normalRef = Vector3.up;
+								else
+									normalRef = Vector3.down;
+							break;
+							case Axis.Z:
+								if (normal.z > 0)
+									normalRef = Vector3.forward;
+								else
+									normalRef = Vector3.back;
+							break;
+						}
+						changeRotation = CalculateRotation(normal, normalRef);
+						for (int k = 0; k < vertexCache.Count; k++)
+							vertexCache[k] = changeRotation * vertexCache[k];
+					}
+
 					//Check if it's a 2D Surface
 					vertex2d.Clear();
 					for (int k = 0; k < vertexCache.Count; k++)
@@ -210,7 +257,7 @@ public class BezierMesh
 				if (is3D)
 					patchMesh = ConvexHull.GenerateMeshFrom3DConvexHull("Collider_" + i + "_" + j, vertexCache);
 				else
-					patchMesh = ConvexHull.GenerateMeshFrom2DConvexHull("Collider_" + i + "_" + j, vertex2d, offSet);
+					patchMesh = ConvexHull.GenerateMeshFrom2DConvexHull("Collider_" + i + "_" + j, vertex2d, offSet, changeRotation);
 				
 				GameObject objCollider = new GameObject(patchMesh.name + "_collider");
 				objCollider.layer = GameManager.ColliderLayer;
@@ -228,6 +275,50 @@ public class BezierMesh
 		}
 	}
 
+	Quaternion CalculateRotation(Vector3 normal1, Vector3 normal2)
+	{
+		float dotProduct = Vector3.Dot(normal1, normal2);
+		float angle = Mathf.Acos(dotProduct) * Mathf.Rad2Deg;
+
+		Vector3 crossProduct = Vector3.Cross(normal1, normal2);
+		Vector3 axis = crossProduct.normalized;
+
+		return Quaternion.AngleAxis(angle, axis);
+	}
+	bool CanForm3DConvexHull(List<Vector3> points, ref Vector3 normal)
+	{
+		int i;
+		if (points.Count < 4)
+			return false;
+
+		// Calculate a normal vector 
+		for (i = 0; i < points.Count; i++)
+		{
+			Vector3 v1 = points[1] - points[i];
+			Vector3 v2 = points[2] - points[i];
+			normal = Vector3.Cross(v1, v2);
+			// check that v1 and v2 were NOT collinear
+			if (normal.sqrMagnitude > 0)
+				break;
+			if (i == 0)
+				i = 2;
+		}
+		//Check if we got a normal
+		if (i == points.Count)
+			return false;
+
+		// Check if all points lie on the plane
+		for (i = 0; i < points.Count; i++)
+		{
+			float dotProduct = Vector3.Dot(points[i] - points[0], normal);
+			//We really need precision here, or we will get false positives
+			if (Mathf.Abs(dotProduct) > Mathf.Epsilon)
+				return true;
+		}
+
+		normal.Normalize();
+		return false;
+	}
 	public bool CanForm2DConvexHull(List<Vector2> points)
 	{
 		const float EPSILON = 0.001f;

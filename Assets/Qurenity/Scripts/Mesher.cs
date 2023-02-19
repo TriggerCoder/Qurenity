@@ -38,9 +38,9 @@ public static class Mesher
 
 	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, Transform holder, params QSurface[] surfaces)
 	{
-		GenerateBezObject(textureName, lmIndex, indexId, holder, null, surfaces);
+		GenerateBezObject(textureName, lmIndex, indexId, holder, null, true, surfaces);
 	}
-	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject bezObj, params QSurface[] surfaces)
+	public static void GenerateBezObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject bezObj, bool addPVS, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 			return;
@@ -80,9 +80,12 @@ public static class Mesher
 			bezObj.transform.SetParent(holder);
 		}
 
-		//PVS
-		ClusterPVSController cluster = bezObj.AddComponent<ClusterPVSController>();
-		cluster.RegisterClusterAndSurfaces(surfaces);
+		//PVS only add on Static Geometry, as it has BSP Nodes
+		if (addPVS)
+		{
+			ClusterPVSController cluster = bezObj.AddComponent<ClusterPVSController>();
+			cluster.RegisterClusterAndSurfaces(surfaces);
+		}
 
 		bezObj.AddComponent<MeshFilter>().mesh = mesh;
 		MeshRenderer meshRenderer = bezObj.AddComponent<MeshRenderer>();
@@ -242,9 +245,9 @@ public static class Mesher
 	}
 	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, Transform holder, params QSurface[] surfaces)
 	{
-		GeneratePolygonObject(textureName, lmIndex, indexId, holder, null, surfaces);
+		GeneratePolygonObject(textureName, lmIndex, indexId, holder, null, true, surfaces);
 	}
-	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject obj, params QSurface[] surfaces)
+	public static void GeneratePolygonObject(string textureName, int lmIndex, int indexId, Transform holder, GameObject obj, bool addPVS, params QSurface[] surfaces)
 	{
 		if (surfaces == null || surfaces.Length == 0)
 		{
@@ -269,10 +272,13 @@ public static class Mesher
 			obj.name = "Mesh_"+indexId;
 			obj.transform.SetParent(holder);
 		}
-	
-		//PVS
-		ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
-		cluster.RegisterClusterAndSurfaces(surfaces);
+
+		//PVS only add on Static Geometry, as it has BSP Nodes
+		if (addPVS)
+		{
+			ClusterPVSController cluster = obj.AddComponent<ClusterPVSController>();
+			cluster.RegisterClusterAndSurfaces(surfaces);
+		}
 
 		var mesh = new Mesh();
 		mesh.name = Name;
@@ -765,6 +771,12 @@ public static class Mesher
 		}
 
 		intersectPoint = RemoveDuplicatedVectors(intersectPoint);
+
+		if (intersectPoint.Count == 0)
+		{
+			Debug.LogError("HOW DID THIS HAPPENED!");
+			return null;
+		}
 
 		Mesh mesh = ConvexHull.GenerateMeshFrom3DConvexHull("brushSide: " + brush.brushSide,intersectPoint);
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();

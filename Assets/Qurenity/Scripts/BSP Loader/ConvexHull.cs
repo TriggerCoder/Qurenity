@@ -435,10 +435,10 @@ public static class ConvexHull
 		return convexHull;
 	}
 
-	public static Mesh GenerateMeshFrom2DConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis)
+	public static Mesh GenerateMeshFrom2DConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis, Quaternion changeRotation)
 	{
 		HalfEdgeData convexHull = Generate2DConvexHull(vertex, axis);
-		return convexHull.ConvertToMesh(MeshName, axis);
+		return convexHull.ConvertToMesh(MeshName, axis, changeRotation);
 	}
 
 	public static HalfEdgeData Generate2DConvexHull(List<Vector2> originalPoints, Vector3 axis)
@@ -975,7 +975,7 @@ public static class ConvexHull
 			return Mesh;
 		}
 
-		public Mesh ConvertToMesh(string meshName, Vector3 axis)
+		public Mesh ConvertToMesh(string meshName, Vector3 axis, Quaternion changeRotation)
 		{
 			List<Vector3> Vertexes = new List<Vector3>();
 			List<int> Triangles = new List<int>();
@@ -996,15 +996,20 @@ public static class ConvexHull
 				else
 					currentTriangle++;
 			}
-			Mesh Mesh = GetExtrudedMeshFromPoints(Vertexes.ToArray(), Triangles.ToArray(), axis.normalized, 0.001f);
+			Mesh Mesh = GetExtrudedMeshFromPoints(Vertexes.ToArray(), Triangles.ToArray(), axis.normalized, changeRotation, 0.001f);
 			Mesh.name = meshName;
 			return Mesh;
 		}
 
-		public Mesh GetExtrudedMeshFromPoints(Vector3[] points, int[] tris, Vector3 normal, float depth)
+		public Mesh GetExtrudedMeshFromPoints(Vector3[] points, int[] tris, Vector3 normal, Quaternion changeRotation, float depth)
 		{
 			Mesh m = new Mesh();
 			Vector3[] vertices = new Vector3[points.Length * 2];
+			Quaternion inverRot = Quaternion.Inverse(changeRotation);
+
+			normal = inverRot * normal;
+			for (int i = 0; i < points.Length; i++)
+				points[i] = inverRot * points[i];
 
 			for (int i = 0; i < points.Length; i++)
 			{

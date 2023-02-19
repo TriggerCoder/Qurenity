@@ -154,6 +154,10 @@ public class PlayerInfo : MonoBehaviour
 		{
 			QLeaf leaf = MapLoader.leafs[i];
 
+			//If negative, then leaf is back leaf and contains no visibility data
+			if (leaf.cluster < 0)
+				continue;
+
 			// Check if the leaf's cluster is visible from the current leaf's cluster
 			if (!IsClusterVisible(cluster, leaf.cluster))
 				continue;

@@ -238,11 +238,12 @@ public class ThingsManager : MonoBehaviour
 			GameObject thingObject = Instantiate(thingsPrefabs[entity.name]);
 			if (thingObject == null)
 				continue;
-			
-			switch(entity.name)
+			Transform currentTransform = thingObject.transform;
+
+			switch (entity.name)
 			{
 				default:
-					thingObject.transform.position = entity.origin;
+					currentTransform.position = entity.origin;
 				break;
 				//Switch
 				case "func_button":
@@ -251,6 +252,7 @@ public class ThingsManager : MonoBehaviour
 					int model = int.Parse(strWord.Trim('*'));
 					int angle = 0, hitpoints = 0, speed = 40, lip = 4;
 					float wait;
+	
 					SwitchController sw = thingObject.GetComponent<SwitchController>();
 					if (sw == null)
 						sw = thingObject.AddComponent<SwitchController>();
@@ -266,7 +268,9 @@ public class ThingsManager : MonoBehaviour
 						lip = int.Parse(strWord);
 
 					MapLoader.GenerateGeometricSurface(thingObject, model);
-					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
+					//As dynamic surface don't have bsp data, assign it to the always visible layer 
+					GameManager.SetLayerAllChildren(currentTransform, GameManager.CombinesMapMeshesLayer);
+					MapLoader.GenerateGeometricCollider(currentTransform, model);
 
 					MeshFilter[] meshFilterChildren = thingObject.GetComponentsInChildren<MeshFilter>(includeInactive: true);
 					CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
@@ -345,7 +349,9 @@ public class ThingsManager : MonoBehaviour
 						dmg = int.Parse(strWord);
 
 					MapLoader.GenerateGeometricSurface(thingObject, model);
-					MapLoader.GenerateGeometricCollider(thingObject.transform, model);
+					//As dynamic surface don't have bsp data, assign it to the always visible layer 
+					GameManager.SetLayerAllChildren(currentTransform, GameManager.CombinesMapMeshesLayer);
+					MapLoader.GenerateGeometricCollider(currentTransform, model);
 
 					MeshFilter[] meshFilterChildren = thingObject.GetComponentsInChildren<MeshFilter>(includeInactive: true);
 					CombineInstance[] combine = new CombineInstance[meshFilterChildren.Length];
@@ -516,7 +522,7 @@ public class ThingsManager : MonoBehaviour
 						audioSource.AudioClip = audio;
 					}
 
-					thingObject.transform.position = entity.origin;
+					currentTransform.position = entity.origin;
 					if (entity.entityData.ContainsKey("spawnflags"))
 					{
 						strWord = entity.entityData["spawnflags"];
@@ -591,7 +597,7 @@ public class ThingsManager : MonoBehaviour
 				}
 				break;
 			}
-			thingObject.transform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
+			currentTransform.SetParent(GameManager.Instance.TemporaryObjectsHolder);
 			thingObject.SetActive(true);
 		}
 	}
