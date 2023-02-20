@@ -774,7 +774,7 @@ public static class Mesher
 
 		if (intersectPoint.Count == 0)
 		{
-			Debug.LogError("HOW DID THIS HAPPENED!");
+//			Debug.LogError("HOW DID THIS HAPPENED! " + brush.brushSide);
 			return null;
 		}
 
@@ -782,7 +782,7 @@ public static class Mesher
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
-
+/*
 		if (addRigidBody)
 		{
 			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
@@ -790,7 +790,7 @@ public static class Mesher
 			rb.useGravity = false;
 			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 		}
-
+*/
 		ContentType contentType = objCollider.AddComponent<ContentType>();
 		contentType.Init(type);
 

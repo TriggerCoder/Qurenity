@@ -435,13 +435,13 @@ public static class ConvexHull
 		return convexHull;
 	}
 
-	public static Mesh GenerateMeshFrom2DConvexHull(string MeshName, List<Vector2> vertex, Vector3 axis, Quaternion changeRotation)
+	public static Mesh GenerateMeshFrom2DConvexHull(string MeshName, List<Vector2> vertex, Vector3 normal, Vector3 offset, Quaternion changeRotation)
 	{
-		HalfEdgeData convexHull = Generate2DConvexHull(vertex, axis);
-		return convexHull.ConvertToMesh(MeshName, axis, changeRotation);
+		HalfEdgeData convexHull = Generate2DConvexHull(vertex, normal, offset);
+		return convexHull.ConvertToMesh(MeshName, normal, changeRotation);
 	}
 
-	public static HalfEdgeData Generate2DConvexHull(List<Vector2> originalPoints, Vector3 axis)
+	public static HalfEdgeData Generate2DConvexHull(List<Vector2> originalPoints, Vector3 normal, Vector3 offset)
 	{
 		HalfEdgeData convexHull = new HalfEdgeData();
 
@@ -596,32 +596,32 @@ public static class ConvexHull
 		//Create the final hull by combing the points
 		foreach (Vector2 v in pointsOnHUll_p1p2)
 		{
-			if (axis.x != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
-			else if (axis.y != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			if (normal.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(offset.x, v.x, v.y)));
+			else if (normal.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, offset.y, v.y)));
 			else
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, offset.z)));
 		}
 
 		foreach (Vector2 v in pointsOnHUll_p2p3)
 		{
-			if (axis.x != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
-			else if (axis.y != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			if (normal.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(offset.x, v.x, v.y)));
+			else if (normal.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, offset.y, v.y)));
 			else
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, offset.z)));
 		}
 
 		foreach (Vector2 v in pointsOnHUll_p3p1)
 		{
-			if (axis.x != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(axis.x, v.x, v.y)));
-			else if (axis.y != 0)
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, axis.y, v.y)));
+			if (normal.x != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(offset.x, v.x, v.y)));
+			else if (normal.y != 0)
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, offset.y, v.y)));
 			else
-				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, axis.z)));
+				convexHull.verts.Add(new HalfEdgeVert(new Vector3(v.x, v.y, offset.z)));
 		}
 
 		return convexHull;
@@ -975,7 +975,7 @@ public static class ConvexHull
 			return Mesh;
 		}
 
-		public Mesh ConvertToMesh(string meshName, Vector3 axis, Quaternion changeRotation)
+		public Mesh ConvertToMesh(string meshName, Vector3 normal, Quaternion changeRotation)
 		{
 			List<Vector3> Vertexes = new List<Vector3>();
 			List<int> Triangles = new List<int>();
@@ -996,7 +996,7 @@ public static class ConvexHull
 				else
 					currentTriangle++;
 			}
-			Mesh Mesh = GetExtrudedMeshFromPoints(Vertexes.ToArray(), Triangles.ToArray(), axis.normalized, changeRotation, 0.001f);
+			Mesh Mesh = GetExtrudedMeshFromPoints(Vertexes.ToArray(), Triangles.ToArray(), normal, changeRotation, 0.001f);
 			Mesh.name = meshName;
 			return Mesh;
 		}

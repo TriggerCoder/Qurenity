@@ -108,8 +108,9 @@ public class ThingsManager : MonoBehaviour
 				}
 
 				int angle = 0;
-				if (entityData.TryGetValue("angle", out strWord))
-					angle = int.Parse(strWord);
+				float fangle = 0;
+				if (entityData.TryGetNumValue("angle", out fangle))
+					angle = (int)fangle;
 
 				Vector3 origin = Vector3.zero;
 				if (entityData.TryGetValue("origin", out strWord))
@@ -515,12 +516,9 @@ public class ThingsManager : MonoBehaviour
 					AudioSource audioSource2D = null;
 					MultiAudioSource audioSource = null;
 					string audioFile = strWord;
+					audioSource = thingObject.AddComponent<MultiAudioSource>();
 					AudioClip audio = SoundLoader.LoadSound(audioFile);
-					if (audio != null)
-					{
-						audioSource = thingObject.AddComponent<MultiAudioSource>();
-						audioSource.AudioClip = audio;
-					}
+					audioSource.AudioClip = audio;
 
 					currentTransform.position = entity.origin;
 					if (entity.entityData.ContainsKey("spawnflags"))

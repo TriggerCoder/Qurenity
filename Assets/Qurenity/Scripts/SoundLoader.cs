@@ -7,6 +7,7 @@ using UnityEngine;
 public class SoundLoader : MonoBehaviour
 {
 	public static SoundLoader Instance;
+	public AudioClip silence;
 	public static Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 	public static Dictionary<string, AudioClip> OverrideSounds = new Dictionary<string, AudioClip>();
 	public SoundOverride[] _OverrideSounds = new SoundOverride[0];
@@ -46,13 +47,13 @@ public class SoundLoader : MonoBehaviour
 			WavSoudFile = PakManager.ZipToByteArray(path, ref zip);
 		}
 		else
-			return null;
+			return Instance.silence;
 
 		string[] soundFileName = path.Split('/');
 		AudioClip clip = ToAudioClip(WavSoudFile, 0, soundFileName[soundFileName.Length - 1]);
 
 		if (clip == null)
-			return null;
+			return Instance.silence;
 
 		Sounds.Add(soundName, clip);
 		if (FindHDSound(soundName))

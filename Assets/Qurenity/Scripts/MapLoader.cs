@@ -319,7 +319,7 @@ public static class MapLoader
 
 		for (int i = 0; i < models[0].numBrushes; i++)
 		{
-			Mesher.GenerateBrushCollider(brushes[models[0].firstBrush + i], ColliderGroup);
+			Mesher.GenerateBrushCollider(brushes[models[0].firstBrush + i], ColliderGroup, null, false);
 		}
 	}
 

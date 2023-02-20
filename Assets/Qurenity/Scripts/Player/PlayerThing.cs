@@ -220,12 +220,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 	public void PlayModelSound(string soundName)
 	{
 		soundName = "player/" + modelName + "/" + soundName;
-		AudioClip audioClip = SoundLoader.LoadSound(soundName);
-
-		if (audioClip == null)
-			return;
-
-		audioSource.AudioClip = audioClip;
+		audioSource.AudioClip = SoundLoader.LoadSound(soundName);
 		audioSource.Play();
 	}
 	public void Impulse(Vector3 direction, float force)

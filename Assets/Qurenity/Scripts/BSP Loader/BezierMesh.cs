@@ -60,7 +60,8 @@ public class BezierMesh
 	{
 		Transform parent = null;
 		float step, s, f, m;
-		bool Collinear;
+		int iterOne = level, interTwo = level;
+		bool Collinear, allCollinear = false;
 
 		// We'll use these two to hold our verts
 		int capacity = control.Count;
@@ -103,13 +104,33 @@ public class BezierMesh
 			Collinear &= ArePointsCollinear(p1sCache);
 			Collinear &= ArePointsCollinear(p2sCache);
 		}
+		else //Check if all control points are collinear
+		{
+			allCollinear = true;
+			for (int j = 0; j < 3; j++)
+			{
+				vertexCache.Clear();
+				for (int i = 0; i < 3; i++)
+					vertexCache.Add(control[(3 * i) + j]);
+				allCollinear &= ArePointsCollinear(vertexCache);
+				if (!allCollinear)
+					break;
+			}
+			if (allCollinear)
+			{
+				interTwo = 1;
+				vertexCache.Clear();
+				for (int i = 0; i < capacity; i++)
+					vertexCache.Add(control[i]);
+			}
+		}
 
 		step = 1f / level;
-		int iteration = level;
-		if (Collinear)
-			iteration = 1;
 
-		for (int i = 0; i < iteration; i++)
+		if (Collinear)
+			iterOne = 1;
+
+		for (int i = 0; i < iterOne; i++)
 		{
 			if (!Collinear)
 			{
@@ -136,34 +157,35 @@ public class BezierMesh
 				p2sCache.Add(BezCurve(f, control[6], control[7], control[8]));
 			}
 
-			for (int j = 0; j < level; j++)
+			for (int j = 0; j < interTwo; j++)
 			{
-				s = j * step;
-				f = (j + 1) * step;
-				m = (s + f) / 2f;
-				vertexCache.Clear();
+				if (!allCollinear)
+				{
+					s = j * step;
+					f = (j + 1) * step;
+					m = (s + f) / 2f;
+					vertexCache.Clear();
 
-				//Top row
-				vertexCache.Add(BezCurve(s, p0sCache[0], p1sCache[0], p2sCache[0]));
-				vertexCache.Add(BezCurve(m, p0sCache[0], p1sCache[0], p2sCache[0]));
-				vertexCache.Add(BezCurve(f, p0sCache[0], p1sCache[0], p2sCache[0]));
+					//Top row
+					vertexCache.Add(BezCurve(s, p0sCache[0], p1sCache[0], p2sCache[0]));
+					vertexCache.Add(BezCurve(m, p0sCache[0], p1sCache[0], p2sCache[0]));
+					vertexCache.Add(BezCurve(f, p0sCache[0], p1sCache[0], p2sCache[0]));
 
-				//Middle row
-				vertexCache.Add(BezCurve(s, p0sCache[1], p1sCache[1], p2sCache[1]));
-				vertexCache.Add(BezCurve(m, p0sCache[1], p1sCache[1], p2sCache[1]));
-				vertexCache.Add(BezCurve(f, p0sCache[1], p1sCache[1], p2sCache[1]));
+					//Middle row
+					vertexCache.Add(BezCurve(s, p0sCache[1], p1sCache[1], p2sCache[1]));
+					vertexCache.Add(BezCurve(m, p0sCache[1], p1sCache[1], p2sCache[1]));
+					vertexCache.Add(BezCurve(f, p0sCache[1], p1sCache[1], p2sCache[1]));
 
-				//Bottom row
-				vertexCache.Add(BezCurve(s, p0sCache[2], p1sCache[2], p2sCache[2]));
-				vertexCache.Add(BezCurve(m, p0sCache[2], p1sCache[2], p2sCache[2]));
-				vertexCache.Add(BezCurve(f, p0sCache[2], p1sCache[2], p2sCache[2]));
-
-				Axis axis = Axis.None;
+					//Bottom row
+					vertexCache.Add(BezCurve(s, p0sCache[2], p1sCache[2], p2sCache[2]));
+					vertexCache.Add(BezCurve(m, p0sCache[2], p1sCache[2], p2sCache[2]));
+					vertexCache.Add(BezCurve(f, p0sCache[2], p1sCache[2], p2sCache[2]));
+				}
+				Vector3 normal = Vector3.zero;
+				Axis axis;
 				bool is3D = true;
 				Vector3 offSet = Vector3.zero;
-				Vector3 normal = Vector3.zero;
 				Quaternion changeRotation = Quaternion.identity;
-//				if (!CanForm3DConvexHull(vertexCache, ref axis))
 				if (!CanForm3DConvexHull(vertexCache, ref normal))
 				{
 					if ((normal.x == 1) || (normal.x == -1))
@@ -174,7 +196,7 @@ public class BezierMesh
 						axis = Axis.Z;
 					else
 					{
-						Debug.LogError("Damn ROTATED 2D PLANE");
+						Debug.LogWarning("2D Plane is Rotated");
 						float x = Mathf.Abs(normal.x), y = Mathf.Abs(normal.y), z = Mathf.Abs(normal.z);
 						Vector3 normalRef = Vector3.zero;
 
@@ -257,7 +279,7 @@ public class BezierMesh
 				if (is3D)
 					patchMesh = ConvexHull.GenerateMeshFrom3DConvexHull("Collider_" + i + "_" + j, vertexCache);
 				else
-					patchMesh = ConvexHull.GenerateMeshFrom2DConvexHull("Collider_" + i + "_" + j, vertex2d, offSet, changeRotation);
+					patchMesh = ConvexHull.GenerateMeshFrom2DConvexHull("Collider_" + i + "_" + j, vertex2d, normal, offSet, changeRotation);
 				
 				GameObject objCollider = new GameObject(patchMesh.name + "_collider");
 				objCollider.layer = GameManager.ColliderLayer;
@@ -267,10 +289,12 @@ public class BezierMesh
 				mc.sharedMesh = patchMesh;
 				mc.convex = true;
 
+				/*
 				Rigidbody rb = objCollider.AddComponent<Rigidbody>();
 				rb.isKinematic = true;
 				rb.useGravity = false;
 				rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+				*/
 			}
 		}
 	}
@@ -288,10 +312,13 @@ public class BezierMesh
 	bool CanForm3DConvexHull(List<Vector3> points, ref Vector3 normal)
 	{
 		int i;
+		bool retry = false;
+
 		if (points.Count < 4)
 			return false;
 
-		// Calculate a normal vector 
+		// Calculate a normal vector
+tryagain:
 		for (i = 0; i < points.Count; i++)
 		{
 			Vector3 v1 = points[1] - points[i];
@@ -305,7 +332,16 @@ public class BezierMesh
 		}
 		//Check if we got a normal
 		if (i == points.Count)
-			return false;
+		{
+			if (retry)
+				return false;
+
+			retry = true;
+			points = Mesher.RemoveDuplicatedVectors(points);
+			goto tryagain;
+		}
+
+		
 
 		// Check if all points lie on the plane
 		for (i = 0; i < points.Count; i++)
@@ -351,51 +387,6 @@ public class BezierMesh
 			return false;
 
 		return true;
-	}
-	public bool CanForm3DConvexHull(List<Vector3> points, ref Axis axis)
-	{
-		const float EPSILON = 0.001f;
-
-		Vector3 min = points[0];
-		Vector3 max = points[0];
-
-		if (points.Count < 4)
-			return false;
-
-		for (int i = 1; i < points.Count; i++)
-		{
-			Vector3 p = points[i];
-
-			if (p.x < min.x)
-				min.x = p.x;
-			else if (p.x > max.x)
-				max.x = p.x;
-
-			if (p.y < min.y)
-				min.y = p.y;
-			else if (p.y > max.y)
-				max.y = p.y;
-
-			if (p.z < min.z)
-				min.z = p.z;
-			else if (p.z > max.z)
-				max.z = p.z;
-		}
-
-		float xWidth = Mathf.Abs(max.x - min.x);
-		float yWidth = Mathf.Abs(max.y - min.y);
-		float zWidth = Mathf.Abs(max.z - min.z);
-
-		if (xWidth < EPSILON)
-			axis = Axis.X;
-		else if (yWidth < EPSILON)
-			axis = Axis.Y;
-		else if (zWidth < EPSILON)
-			axis = Axis.Z;
-		else
-			return true;
-
-		return false;
 	}
 	public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
 	{
