@@ -38,6 +38,17 @@ public static class MapLoader
 	public static GameObject MapMesh;
 	public static GameObject MapColliders;
 
+	public static LightMapSize currentLightMapSize = LightMapSize.Q3_QL;
+	public enum LightMapSize
+	{
+		Q3_QL = 128,
+		QAA = 512
+	}
+	public enum LightMapLenght
+	{
+		Q3_QL = 49152,		//128*128*3
+		QAA = 786432		//512*512*3
+	}
 	public static bool IsSkyTexture(string textureName)
 	{
 		if (textureName.ToUpper().Contains("/SKIES/"))
@@ -203,6 +214,8 @@ public static class MapLoader
 			}
 		}
 
+		//We need to determine the max number in order to check lightmap type
+		int maxlightMapNum = 0;
 		//surfaces
 		{
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.Surfaces].Offset, SeekOrigin.Begin);
@@ -228,17 +241,30 @@ public static class MapLoader
 						BSPMap.ReadInt32(),
 						BSPMap.ReadInt32()
 					}));
+
+				if (surfaces[i].lightMapID > maxlightMapNum)
+					maxlightMapNum = surfaces[i].lightMapID;
 			}
+			//Need to count lightmap 0
+			maxlightMapNum++;
 		}
 
-		//lightmaps (128x128x3)
+		//Q3/QL lightmaps (128x128x3)
+		//QAA lightmaps (512x512x3)
 		{
+			//Check lightmap type
+			int lightMapLenght = (int)LightMapLenght.QAA;
+			if ((maxlightMapNum * lightMapLenght) > header.Directory[LumpType.LightMaps].Length)
+				lightMapLenght = (int)LightMapLenght.Q3_QL;
+			else
+				currentLightMapSize = LightMapSize.QAA;
+
 			BSPMap.BaseStream.Seek(header.Directory[LumpType.LightMaps].Offset, SeekOrigin.Begin);
-			int num = header.Directory[LumpType.LightMaps].Length / 49152;
+			int num = header.Directory[LumpType.LightMaps].Length / lightMapLenght;
 			lightMaps = new List<Texture2D>(num);
 			for (int i = 0; i < num; i++)
 			{
-				lightMaps.Add(TextureLoader.CreateLightmapTexture(BSPMap.ReadBytes(49152)));
+				lightMaps.Add(TextureLoader.CreateLightmapTexture(BSPMap.ReadBytes(lightMapLenght)));
 			}
 		}
 

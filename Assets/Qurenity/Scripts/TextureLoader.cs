@@ -236,16 +236,18 @@ public class TextureLoader : MonoBehaviour
 
 	public static Texture2D CreateLightmapTexture(byte[] rgb)
 	{
-		Texture2D tex = new Texture2D(128, 128, TextureFormat.RGBA32, false);
-		Color32[] colors = new Color32[128 * 128];
+		int pixelSize = (int)MapLoader.currentLightMapSize;
+		Texture2D tex = new Texture2D(pixelSize, pixelSize, TextureFormat.RGBA32, false);
+		Color32[] colors = new Color32[pixelSize * pixelSize];
 		int j = 0;
-		for (int i = 0; i < 128 * 128; i++)
-			colors[i] = ChangeColorLighting(rgb[j++], rgb[j++] , rgb[j++]);
+		for (int i = 0; i < pixelSize * pixelSize; i++)
+			colors[i] = ChangeColorLighting(rgb[j++], rgb[j++], rgb[j++]);
 		tex.SetPixels32(colors);
 		tex.wrapMode = TextureWrapMode.Clamp;
 		tex.Apply();
 		return tex;
 	}
+
 	public static Color32 ChangeColorLighting(byte r, byte g, byte b)
 	{
 		float scale = 1.0f, temp;
