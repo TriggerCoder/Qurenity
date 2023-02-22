@@ -72,9 +72,9 @@ public class PlasmagunWeapon : PlayerWeapon
 
 		//Projectile attack
 		{
-			Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
+			Vector3 d = playerInfo.playerCamera.cTransform.forward;
 			Vector2 r = GetDispersion();
-			d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
+			d += playerInfo.playerCamera.cTransform.right * r.x + playerInfo.playerCamera.cTransform.up * r.y;
 			d.Normalize();
 
 			PoolObject<Projectile> projectile = PoolManager.GetProjectileFromPool(AttackProjectileName);
@@ -83,7 +83,7 @@ public class PlasmagunWeapon : PlayerWeapon
 			if (muzzleObject != null)
 				plasma.transform.position = muzzleObject.transform.position;
 			else
-				plasma.transform.position = playerInfo.playerCamera.MainCamera.transform.position + (playerInfo.playerCamera.MainCamera.transform.right * spawnPos.x) + (playerInfo.playerCamera.MainCamera.transform.up * spawnPos.y) + (playerInfo.playerCamera.MainCamera.transform.forward * spawnPos.z);
+				plasma.transform.position = playerInfo.playerCamera.cTransform.position + (playerInfo.playerCamera.cTransform.right * spawnPos.x) + (playerInfo.playerCamera.cTransform.up * spawnPos.y) + (playerInfo.playerCamera.cTransform.forward * spawnPos.z);
 			plasma.transform.rotation = Quaternion.LookRotation(d);
 			plasma.transform.SetParent(GameManager.Instance.BaseThingsHolder);
 		}

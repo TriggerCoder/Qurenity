@@ -159,7 +159,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 			}
 			else
 			{
-				float angleDir = AngleDir(playerCamera.MainCamera.transform.forward, attacker.transform.position, playerCamera.MainCamera.transform.up);
+				float angleDir = AngleDir(playerCamera.cTransform.forward, attacker.transform.position, playerCamera.cTransform.up);
 				lookTime = 1f;
 				if (angleDir < 0)
 				{

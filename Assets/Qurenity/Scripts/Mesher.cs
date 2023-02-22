@@ -237,7 +237,7 @@ public static class Mesher
 		}
 */
 		BezierMesh bezPatch = new BezierMesh(GameManager.Instance.tessellations, patchNumber, bverts, uv, uv2, color);
-		bezPatch.BezierColliderMesh(GameManager.colliderTessellations, surface.surfaceId, patchNumber, bverts);
+		bezPatch.BezierColliderMesh(surface.surfaceId, patchNumber, bverts);
 		if (bezPatch.ColliderObject != null)
 			bezPatch.ColliderObject.transform.SetParent(MapLoader.ColliderGroup);
 
@@ -419,7 +419,7 @@ public static class Mesher
 			uvCache.Add(MapLoader.verts[vstep].textureCoord);
 			uv2Cache.Add(MapLoader.verts[vstep].lightmapCoord);
 			normalsCache.Add(MapLoader.verts[vstep].normal);
-			//Need to compensate for Gamma Change as lightmapped textures will change
+			//Need to compensate for Color lightning as lightmapped textures will change
 			if (lm_index >= 0)
 				vertsColor.Add(MapLoader.verts[vstep].color);
 			else
@@ -710,7 +710,7 @@ public static class Mesher
 
 		return mesh;
 	}
-	public static GameObject GenerateBrushCollider(QBrush brush, Transform holder, GameObject objCollider = null, bool addRigidBody = true)
+	public static bool GenerateBrushCollider(QBrush brush, Transform holder, GameObject objCollider = null)
 	{
 		//Remove brushed used for BSP Generations and for Details
 		uint type = MapLoader.mapTextures[brush.shaderId].contentsFlags;
@@ -718,7 +718,7 @@ public static class Mesher
 		if (((type & ContentFlags.Details) != 0) || ((type & ContentFlags.Structural) != 0))
 		{
 //			Debug.Log("brushSide: " + brush.brushSide + " Not used for collisions, Content Type is: " + type);
-			return null;
+			return false;
 		}
 
 		if (objCollider == null)
@@ -772,25 +772,18 @@ public static class Mesher
 
 		intersectPoint = RemoveDuplicatedVectors(intersectPoint);
 
-		if (intersectPoint.Count == 0)
+		Vector3 normal = Vector3.zero;
+		if (!ConvexHull.CanForm3DConvexHull(intersectPoint, ref normal))
 		{
-//			Debug.LogError("HOW DID THIS HAPPENED! " + brush.brushSide);
-			return null;
+			Debug.LogError("Cannot Form3D ConvexHull " + brush.brushSide + " this was a waste of time");
+			return false;
 		}
 
 		Mesh mesh = ConvexHull.GenerateMeshFrom3DConvexHull("brushSide: " + brush.brushSide,intersectPoint);
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
-/*
-		if (addRigidBody)
-		{
-			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-		}
-*/
+
 		ContentType contentType = objCollider.AddComponent<ContentType>();
 		contentType.Init(type);
 
@@ -813,7 +806,7 @@ public static class Mesher
 //		if ((type & SurfaceFlags.NonSolid) != 0)
 //			Debug.Log("brushSide: " + brush.brushSide + " Surface Type is: " + type);
 
-		return objCollider;
+		return true;
 	}
 
 	public static List<Vector3> RemoveDuplicatedVectors(List<Vector3> test)

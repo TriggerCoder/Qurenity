@@ -345,7 +345,7 @@ public static class MapLoader
 
 		for (int i = 0; i < models[0].numBrushes; i++)
 		{
-			Mesher.GenerateBrushCollider(brushes[models[0].firstBrush + i], ColliderGroup, null, false);
+			Mesher.GenerateBrushCollider(brushes[models[0].firstBrush + i], ColliderGroup);
 		}
 	}
 
@@ -391,7 +391,7 @@ public static class MapLoader
 
 	public static void GenerateGeometricCollider(Transform holder, int num, uint contentFlags = 0, bool isTrigger = false)
 	{
-		GenerateGeometricCollider(null, holder, num, contentFlags, isTrigger, !isTrigger);
+		GenerateGeometricCollider(null, holder, num, contentFlags, isTrigger);
 	}
 	public static void GenerateGeometricCollider(GameObject go, int num, uint contentFlags = 0, bool isTrigger = true)
 	{
@@ -399,7 +399,7 @@ public static class MapLoader
 		GenerateGeometricCollider(go, holder, num, contentFlags, isTrigger);
 	}
 
-	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num, uint contentFlags, bool isTrigger, bool addRigidbody = false)
+	public static void GenerateGeometricCollider(GameObject go, Transform holder, int num, uint contentFlags, bool isTrigger)
 	{
 		for (int i = 0; i < models[num].numBrushes; i++)
 		{
@@ -414,7 +414,9 @@ public static class MapLoader
 				modelObject.transform.localPosition = Vector3.zero;
 				modelObject.transform.localRotation = Quaternion.identity;
 			}
-			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, addRigidbody);
+
+			if (!Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject))
+				return;
 
 			if (contentFlags != 0)
 			{
@@ -434,7 +436,9 @@ public static class MapLoader
 	{
 		for (int i = 0; i < models[num].numBrushes; i++)
 		{
-			Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go, false);
+			if (!Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], ColliderGroup, go))
+				continue;
+
 			ContentType contentType = go.GetComponent<ContentType>();
 			contentType.Init(contentType.value | ContentFlags.JumpPad);
 			MeshCollider mc = go.GetComponent<MeshCollider>();

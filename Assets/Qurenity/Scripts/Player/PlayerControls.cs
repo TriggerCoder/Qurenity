@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Assets.MultiAudioListener;
@@ -76,6 +77,19 @@ public class PlayerControls : MonoBehaviour
 		Walk,
 		Run
 	}
+
+	//playerInputActions
+	InputAction Action_Move;
+	InputAction Action_Look;
+	InputAction Action_Fire;
+	InputAction Action_Jump;
+	InputAction Action_Crouch;
+	InputAction Action_Close;
+	InputAction Action_CameraSwitch;
+	InputAction Action_Run;
+	InputAction Action_WeaponSwitch;
+	InputAction[] Action_Weapon = new InputAction[10];
+
 	void Awake()
 	{
 		playerInput = GetComponentInParent<PlayerInput>();
@@ -88,6 +102,25 @@ public class PlayerControls : MonoBehaviour
 		playerWeapon = null;
 		moveSpeed = runSpeed;
 		currentMoveType = MoveType.Run;
+
+		//Set the actions
+		SetPlayerAction();
+	}
+
+	void SetPlayerAction()
+	{
+		Action_Move = playerInput.actions["Move"];
+		Action_Look = playerInput.actions["Look"];
+		Action_Fire = playerInput.actions["Fire"];
+		Action_Jump = playerInput.actions["Jump"];
+		Action_Crouch = playerInput.actions["Crouch"];
+		Action_Close = playerInput.actions["Close"];
+		Action_CameraSwitch = playerInput.actions["CameraSwitch"];
+		Action_Run = playerInput.actions["Run"];
+		Action_WeaponSwitch = playerInput.actions["WeaponSwitch"];
+
+		for (int i = 0; i < 10; i++)
+			Action_Weapon[i] = playerInput.actions["Weapon" + i];
 	}
 
 	void ApplyMove()
@@ -109,7 +142,7 @@ public class PlayerControls : MonoBehaviour
 		if (GameManager.Paused)
 			return;
 
-		if (playerInput.actions["Close"].WasPressedThisFrame())
+		if (Action_Close.WasPressedThisFrame())
 			Application.Quit();
 
 		if (playerThing.Dead)
@@ -128,7 +161,7 @@ public class PlayerControls : MonoBehaviour
 				deathTime += Time.deltaTime;
 			else
 			{
-				if (playerInput.actions["Jump"].WasPressedThisFrame() || playerInput.actions["Fire"].WasPressedThisFrame())
+				if (Action_Jump.WasPressedThisFrame() || Action_Fire.WasPressedThisFrame())
 				{
 					deathTime = 0;
 					viewDirection = Vector2.zero;
@@ -149,10 +182,10 @@ public class PlayerControls : MonoBehaviour
 		if (!playerThing.ready)
 			return;
 
-		if (playerInput.actions["CameraSwitch"].WasPressedThisFrame())
+		if (Action_CameraSwitch.WasPressedThisFrame())
 			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
 
-		Vector2 Look = playerInput.actions["Look"].ReadValue<Vector2>();
+		Vector2 Look = Action_Look.ReadValue<Vector2>();
 
 		if (playerInput.currentControlScheme == "Keyboard&Mouse")
 		{
@@ -181,10 +214,12 @@ public class PlayerControls : MonoBehaviour
 		transform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 
 		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
-		playerThing.avatar.CheckLegTurn(playerCamera.MainCamera.transform.forward);
+		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
 
-		
-		if (playerInput.actions["Crouch"].WasPressedThisFrame())
+		bool controllerIsGrounded = controller.isGrounded;
+
+		//Player can only crounch if it is grounded
+		if ((Action_Crouch.WasPressedThisFrame()) && (controllerIsGrounded))
 		{
 			if (oldSpeed == 0)
 				oldSpeed = moveSpeed;
@@ -192,7 +227,7 @@ public class PlayerControls : MonoBehaviour
 			currentMoveType = MoveType.Crouch;
 			ChangeHeight(false);
 		}
-		else if (playerInput.actions["Crouch"].WasReleasedThisFrame())
+		else if (Action_Crouch.WasReleasedThisFrame())
 		{
 			moveSpeed = oldSpeed;
 			if (moveSpeed == walkSpeed)
@@ -206,7 +241,7 @@ public class PlayerControls : MonoBehaviour
 		{
 			if (GameOptions.runToggle)
 			{
-				if (playerInput.actions["Run"].WasReleasedThisFrame())
+				if (Action_Run.WasReleasedThisFrame())
 				{
 					if (moveSpeed == walkSpeed)
 					{
@@ -222,7 +257,7 @@ public class PlayerControls : MonoBehaviour
 			}
 			else
 			{
-				if (playerInput.actions["Run"].IsPressed())
+				if (Action_Run.IsPressed())
 				{
 					moveSpeed = runSpeed;
 					currentMoveType = MoveType.Run;
@@ -235,12 +270,12 @@ public class PlayerControls : MonoBehaviour
 			}
 		}
 
-		playerThing.avatar.isGrounded = controller.isGrounded;
+		playerThing.avatar.isGrounded = controllerIsGrounded;
 
 		//Movement Checks
 		if (currentMoveType != MoveType.Crouch)
 			QueueJump();
-		if (controller.isGrounded)
+		if (controllerIsGrounded)
 			GroundMove();
 		else
 			AirMove();
@@ -252,7 +287,7 @@ public class PlayerControls : MonoBehaviour
 		if (jumpPadVel.sqrMagnitude > 0)
 		{
 			jumpPadVel.y -= (GameManager.Instance.gravity * Time.deltaTime);
-			if (controller.isGrounded)
+			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
 				jumpPadVel = Vector3.zero;
 		}
 
@@ -267,7 +302,7 @@ public class PlayerControls : MonoBehaviour
 				playerCamera.bopActive = false;
 
 			//use weapon
-			if (playerInput.actions["Fire"].IsPressed())
+			if (Action_Fire.IsPressed())
 			{
 				if (playerWeapon.Fire())
 				{
@@ -291,7 +326,7 @@ public class PlayerControls : MonoBehaviour
 				SwapWeapon = -1;
 			}
 		}
-		float wheel = playerInput.actions["WeaponSwitch"].ReadValue<float>();
+		float wheel = Action_WeaponSwitch.ReadValue<float>();
 
 		if (wheel > 0)
 		{
@@ -321,7 +356,7 @@ public class PlayerControls : MonoBehaviour
 
 		for (int i = 0; i < 10; i++)
 		{
-			if (playerInput.actions["Weapon" + i].WasPressedThisFrame())
+			if (Action_Weapon[i].WasPressedThisFrame())
 			{
 				TrySwapWeapon(i);
 				break;
@@ -358,7 +393,7 @@ public class PlayerControls : MonoBehaviour
 	}
 	private void SetMovementDir()
 	{
-		Vector2 Move = playerInput.actions["Move"].ReadValue<Vector2>();
+		Vector2 Move = Action_Move.ReadValue<Vector2>();
 
 		cMove.forwardSpeed = Move.y;
 		cMove.sidewaysSpeed = Move.x;
@@ -367,13 +402,13 @@ public class PlayerControls : MonoBehaviour
 	{
 		if (holdJumpToBhop)
 		{
-			wishJump = playerInput.actions["Jump"].IsPressed();
+			wishJump = Action_Jump.IsPressed();
 			return;
 		}
 
-		if (playerInput.actions["Jump"].WasPressedThisFrame() && !wishJump)
+		if (Action_Jump.WasPressedThisFrame() && !wishJump)
 			wishJump = true;
-		if (playerInput.actions["Jump"].WasReleasedThisFrame())
+		if (Action_Jump.WasReleasedThisFrame())
 			wishJump = false;
 	}
 
@@ -426,8 +461,8 @@ public class PlayerControls : MonoBehaviour
 		speed = vec.magnitude;
 		drop = 0.0f;
 
-		/* Only if the player is on the ground then apply friction */
-		if (controller.isGrounded)
+		//Player is always grounded when we are here, no need to re-check
+		//if (controller.isGrounded)
 		{
 			control = speed < runDeacceleration ? runDeacceleration : speed;
 			drop = control * GameManager.Instance.friction * Time.deltaTime * t;

@@ -56,11 +56,13 @@ public class BezierMesh
 		p2scolorCache = new List<Color>();
 	}
 
-	public void BezierColliderMesh(int level, int surfaceId, int patchNumber, List<Vector3> control)
+	public void BezierColliderMesh(int surfaceId, int patchNumber, List<Vector3> control)
 	{
+		const int colliderTessellations = 4;  //Do not modify
+		
 		Transform parent = null;
 		float step, s, f, m;
-		int iterOne = level, interTwo = level;
+		int iterOne = colliderTessellations, interTwo = colliderTessellations;
 		bool Collinear, allCollinear = false;
 
 		// We'll use these two to hold our verts
@@ -125,7 +127,7 @@ public class BezierMesh
 			}
 		}
 
-		step = 1f / level;
+		step = 1f / colliderTessellations;
 
 		if (Collinear)
 			iterOne = 1;
@@ -186,7 +188,7 @@ public class BezierMesh
 				bool is3D = true;
 				Vector3 offSet = Vector3.zero;
 				Quaternion changeRotation = Quaternion.identity;
-				if (!CanForm3DConvexHull(vertexCache, ref normal))
+				if (!ConvexHull.CanForm3DConvexHull(vertexCache, ref normal))
 				{
 					if ((normal.x == 1) || (normal.x == -1))
 						axis = Axis.X;
@@ -257,7 +259,7 @@ public class BezierMesh
 						}
 					}
 
-					if (!CanForm2DConvexHull(vertex2d))
+					if (!ConvexHull.CanForm2DConvexHull(vertex2d))
 					{
 						ColliderObject = null;
 						return;
@@ -288,13 +290,6 @@ public class BezierMesh
 				MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 				mc.sharedMesh = patchMesh;
 				mc.convex = true;
-
-				/*
-				Rigidbody rb = objCollider.AddComponent<Rigidbody>();
-				rb.isKinematic = true;
-				rb.useGravity = false;
-				rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-				*/
 			}
 		}
 	}
@@ -308,85 +303,6 @@ public class BezierMesh
 		Vector3 axis = crossProduct.normalized;
 
 		return Quaternion.AngleAxis(angle, axis);
-	}
-	bool CanForm3DConvexHull(List<Vector3> points, ref Vector3 normal)
-	{
-		int i;
-		bool retry = false;
-
-		if (points.Count < 4)
-			return false;
-
-		// Calculate a normal vector
-tryagain:
-		for (i = 0; i < points.Count; i++)
-		{
-			Vector3 v1 = points[1] - points[i];
-			Vector3 v2 = points[2] - points[i];
-			normal = Vector3.Cross(v1, v2);
-			// check that v1 and v2 were NOT collinear
-			if (normal.sqrMagnitude > 0)
-				break;
-			if (i == 0)
-				i = 2;
-		}
-		//Check if we got a normal
-		if (i == points.Count)
-		{
-			if (retry)
-				return false;
-
-			retry = true;
-			points = Mesher.RemoveDuplicatedVectors(points);
-			goto tryagain;
-		}
-
-		
-
-		// Check if all points lie on the plane
-		for (i = 0; i < points.Count; i++)
-		{
-			float dotProduct = Vector3.Dot(points[i] - points[0], normal);
-			//We really need precision here, or we will get false positives
-			if (Mathf.Abs(dotProduct) > Mathf.Epsilon)
-				return true;
-		}
-
-		normal.Normalize();
-		return false;
-	}
-	public bool CanForm2DConvexHull(List<Vector2> points)
-	{
-		const float EPSILON = 0.001f;
-
-		Vector2 min = points[0];
-		Vector2 max = points[0];
-
-		if (points.Count < 3)
-			return false;
-
-		for (int i = 1; i < points.Count; i++)
-		{
-			Vector2 p = points[i];
-
-			if (p.x < min.x)
-				min.x = p.x;
-			else if (p.x > max.x)
-				max.x = p.x;
-
-			if (p.y < min.y)
-				min.y = p.y;
-			else if (p.y > max.y)
-				max.y = p.y;
-		}
-
-		float xWidth = Mathf.Abs(max.x - min.x);
-		float yWidth = Mathf.Abs(max.y - min.y);
-
-		if ((xWidth < EPSILON) || (yWidth < EPSILON))
-			return false;
-
-		return true;
 	}
 	public BezierMesh(int level, int patchNumber, List<Vector3> control, List<Vector2> controlUvs, List<Vector2> controlUv2s, List<Color> controlColor)
 	{

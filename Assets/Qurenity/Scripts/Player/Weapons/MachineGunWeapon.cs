@@ -76,12 +76,12 @@ public class MachineGunWeapon : PlayerWeapon
 
 		//Hitscan attack
 		{
-			Vector3 d = playerInfo.playerCamera.MainCamera.transform.forward;
+			Vector3 d = playerInfo.playerCamera.cTransform.forward;
 			Vector2 r = GetDispersion();
-			d += playerInfo.playerCamera.MainCamera.transform.right * r.x + playerInfo.playerCamera.MainCamera.transform.up * r.y;
+			d += playerInfo.playerCamera.cTransform.right * r.x + playerInfo.playerCamera.cTransform.up * r.y;
 			d.Normalize();
 
-			Ray ray = new Ray(playerInfo.playerCamera.MainCamera.transform.position, d);
+			Ray ray = new Ray(playerInfo.playerCamera.cTransform.position, d);
 			RaycastHit hit;
 			if (Physics.Raycast(ray, out hit, maxRange, ~(GameManager.NoHit | (1 << playerInfo.playerLayer)), QueryTriggerInteraction.Ignore))
 			{

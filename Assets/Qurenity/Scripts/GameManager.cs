@@ -6,8 +6,7 @@ public class GameManager : MonoBehaviour
 {
 	public string autoloadMap = "";
 
-	public int tessellations = 6;
-	public const int colliderTessellations = 4;  //Do not modify
+	public int tessellations = 5;
 	public float colorLightning = 1f;
 	public static GameManager Instance;
 
