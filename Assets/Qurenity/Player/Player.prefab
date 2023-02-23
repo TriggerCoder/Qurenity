@@ -252,6 +252,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4853754259503296}
+  - {fileID: 4530601570485014}
   - {fileID: 743958849}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -324,7 +325,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInfo: {fileID: 0}
   playerControls: {fileID: 0}
-  playerCamera: {fileID: 0}
+  playerCamera: {fileID: 1441192285}
   modelName: major
   skinName: default
   player: {fileID: 0}
@@ -819,6 +820,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4853754259503296}
   - component: {fileID: 111704870}
+  - component: {fileID: 2444005386498886028}
   - component: {fileID: 111704871}
   m_Layer: 18
   m_Name: Controls
@@ -835,11 +837,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1746486306332202}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 4530601570485014}
+  m_Children: []
   m_Father: {fileID: 4911946283159206}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -882,8 +883,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   playerInfo: {fileID: 0}
   playerWeapon: {fileID: 0}
-  playerCamera: {fileID: 0}
+  playerCamera: {fileID: 1441192285}
   playerThing: {fileID: 0}
+  interpolationController: {fileID: 0}
   viewDirection: {x: 0, y: 0}
   lastPosition: {x: 0, y: 0, z: 0}
   impulseVector: {x: 0, y: 0, z: 0}
@@ -909,6 +911,20 @@ MonoBehaviour:
   CurrentWeapon: -1
   SwapWeapon: -1
   currentMoveType: 2
+  cTransform: {fileID: 0}
+  teleportDest: {x: 0, y: 0, z: 0}
+--- !u!114 &2444005386498886028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a88f5fda0a97028429f7e2c0de3b459e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &111704871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -922,7 +938,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerControls: {fileID: 0}
-  playerCamera: {fileID: 0}
+  playerCamera: {fileID: 1441192285}
   playerThing: {fileID: 0}
   playerHUD: {fileID: 0}
   player: {fileID: 0}
@@ -1111,6 +1127,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4530601570485014}
   - component: {fileID: 1441192285}
+  - component: {fileID: 3002941820814326007}
   m_Layer: 18
   m_Name: Main Cameras
   m_TagString: MainCamera
@@ -1126,7 +1143,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1916806255274296}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.35, z: 0}
+  m_LocalPosition: {x: 0, y: 0.85, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1134,8 +1151,8 @@ Transform:
   - {fileID: 4578417269688836}
   - {fileID: 4922398115351360}
   - {fileID: 4965662911938076}
-  m_Father: {fileID: 4853754259503296}
-  m_RootOrder: 0
+  m_Father: {fileID: 4911946283159206}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1441192285
 MonoBehaviour:
@@ -1149,17 +1166,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c6c45f1aca653b49b5332d1b3643824, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Instance: {fileID: 0}
   MainCamera: {fileID: 1916806255274296}
   SkyboxCamera: {fileID: 0}
   SkyholeCamera: {fileID: 0}
   UICamera: {fileID: 0}
   ThirdPerson: {fileID: 743958850}
-  playerControls: {fileID: 0}
-  yOffset: 0.35
+  playerControls: {fileID: 111704870}
+  yOffset: 0.85
   vBob: 0.01
   hBob: 0.05
+  cTransform: {fileID: 0}
   bopActive: 0
+--- !u!1773428102 &3002941820814326007
+ParentConstraint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916806255274296}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Weight: 1
+  m_TranslationAtRest: {x: 0, y: 0.85, z: 0}
+  m_RotationAtRest: {x: 0, y: 0, z: 0}
+  m_TranslationOffsets:
+  - {x: 0, y: 0.85, z: 0}
+  m_RotationOffsets:
+  - {x: 0, y: 0, z: 0}
+  m_AffectTranslationX: 1
+  m_AffectTranslationY: 1
+  m_AffectTranslationZ: 1
+  m_AffectRotationX: 0
+  m_AffectRotationY: 0
+  m_AffectRotationZ: 0
+  m_Active: 1
+  m_IsLocked: 0
+  m_Sources:
+  - sourceTransform: {fileID: 4853754259503296}
+    weight: 1
 --- !u!1 &2926129904374761625
 GameObject:
   m_ObjectHideFlags: 0

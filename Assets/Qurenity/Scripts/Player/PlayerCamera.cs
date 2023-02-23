@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-	public PlayerCamera Instance;
 	public GameObject MainCamera;
 	public Camera SkyboxCamera = null;
 	public Camera SkyholeCamera = null;
@@ -15,16 +14,11 @@ public class PlayerCamera : MonoBehaviour
 	public float vBob = .002f;
 	public float hBob = .002f;
 
-	private float pitch = .002f;
-	private float roll = .005f;
-
-	private Transform cTransform;
+	public Transform cTransform;
 	private float interp;
 	public bool bopActive;
 	void Awake()
 	{
-		Instance = this;
-
 		foreach (Transform child in MainCamera.transform)
 		{
 			if (child.gameObject.name == "SkyholeCamera")
@@ -35,7 +29,7 @@ public class PlayerCamera : MonoBehaviour
 				UICamera = child.gameObject.GetComponent<Camera>();
 		}
 
-		playerControls = GetComponentInParent<PlayerControls>();
+//		playerControls = GetComponentInParent<PlayerControls>();
 
 		cTransform = transform;
 	}
@@ -92,6 +86,8 @@ public class PlayerCamera : MonoBehaviour
 	}
 	void Update()
 	{
+		float deltaTime = Time.deltaTime;
+
 		if (GameManager.Paused)
 			return;
 
@@ -99,9 +95,9 @@ public class PlayerCamera : MonoBehaviour
 			return;
 
 		if (GameOptions.HeadBob && bopActive)
-			interp = Mathf.Lerp(interp, 1, Time.deltaTime * 5);
+			interp = Mathf.Lerp(interp, 1, deltaTime * 5);
 		else
-			interp = Mathf.Lerp(interp, 0, Time.deltaTime * 6);
+			interp = Mathf.Lerp(interp, 0, deltaTime * 6);
 
 		Vector3 position;
 
@@ -122,6 +118,6 @@ public class PlayerCamera : MonoBehaviour
 		cTransform.localPosition = new Vector3(0, yOffset + position.y, 0);
 
 		//look up and down
-		cTransform.localRotation = Quaternion.Euler(playerControls.viewDirection.x, 0, position.x);
+		cTransform.localRotation = Quaternion.Euler(playerControls.viewDirection.x, playerControls.viewDirection.y, position.x);
 	}
 }

@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Pathfinding.Ionic.Zip;
 using UnityEngine;
-
+[RequireComponent (typeof(InterpolationObjectController))]
 public class PlayerModel : MonoBehaviour, Damageable
 {
 	public int rotationFPS = 15;
@@ -135,8 +135,9 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private float lowerLerpTime = 0;
 	private float lowerCurrentLerpTime = 0;
 
+	private bool forceTurn = false;
 	private Vector3 turnTo = Vector3.zero;
-
+	private Vector3 newLocal = Vector3.zero;
 	private int hitpoints = 50;
 	private Rigidbody rb;
 
@@ -152,6 +153,30 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 	List<Vector3> currentVect = new List<Vector3>();
 	List<Vector3> nextVect = new List<Vector3>();
+
+	public class ChangeTransform
+	{
+		bool change = false;
+		Vector3 position = Vector3.zero;
+		Quaternion rotation = Quaternion.identity;
+		public void SetLocalPositionAndRotation(Vector3 position, Quaternion rotation)
+		{
+			this.change = true;
+			this.position = position;
+			this.rotation = rotation;
+		}
+		public void CheckAndChangeLocalPositionAndRotation(Transform trans)
+		{
+			if (!change)
+				return;
+
+			trans.SetLocalPositionAndRotation(position, rotation);
+			change = false;
+		}
+	}
+
+	ChangeTransform changeTransformHead = new ChangeTransform();
+	ChangeTransform changeTransformWeapon = new ChangeTransform();
 
 	void ApplySimpleMove()
 	{
@@ -184,16 +209,15 @@ public class PlayerModel : MonoBehaviour, Damageable
 			return;
 
 		if (ragDoll)
-		{
-			ApplySimpleMove();
 			return;
-		}
 
+//Moved to FixedUpdate
+/*
 		if (turnTo.sqrMagnitude > 0)
 		{
 			playerTransform.forward = Vector3.Slerp(playerTransform.forward, turnTo, rotationFPS * Time.deltaTime);
 		}
-
+*/
 		{
 			nextUpper = upperAnim[(int)upperAnimation];
 			nextLower = lowerAnim[(int)lowerAnimation];
@@ -267,10 +291,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 							if (_isGrounded)
 							{
 								if (turnTo.sqrMagnitude > 0)
-								{
-									playerTransform.forward = turnTo;
-									turnTo = Vector3.zero;
-								}
+									forceTurn = true;
 								lowerAnimation = LowerAnimation.Idle;
 								_enableOffset = true;
 							}
@@ -319,16 +340,16 @@ public class PlayerModel : MonoBehaviour, Damageable
 				currentOffset = baseRotation * upperHeadOrigin;
 				currentRotation = baseRotation * upperHeadRotation;
 
-				tagHeadTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
+				changeTransformHead.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
 				currentOffset = baseRotation * weaponOrigin;
 				currentRotation = baseRotation * weaponRotation;
 
-				weaponTransform.SetLocalPositionAndRotation(currentOffset, currentRotation);
+				changeTransformWeapon.SetLocalPositionAndRotation(currentOffset, currentRotation);
 
 
 //				if ((_enableOffset) || (ownerDead))
-					playerTransform.localPosition = lowerTorsoOrigin;
+					newLocal = lowerTorsoOrigin;
 //				else
 //					playerTransform.localPosition = Vector3.zero;
 
@@ -377,6 +398,39 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 	}
 
+	private void FixedUpdate()
+	{
+		if (GameManager.Paused)
+			return;
+
+		if (!loaded)
+			return;
+
+		if (ragDoll)
+		{
+			ApplySimpleMove();
+			return;
+		}
+
+		if (forceTurn)
+		{
+			forceTurn = false;
+			playerTransform.forward = turnTo;
+			turnTo = Vector3.zero;
+		}
+
+		if (turnTo.sqrMagnitude > 0)
+			playerTransform.forward = Vector3.Slerp(playerTransform.forward, turnTo, rotationFPS * Time.fixedDeltaTime);
+
+		if (newLocal.sqrMagnitude > 0)
+		{
+			playerTransform.localPosition = newLocal;
+			newLocal = Vector3.zero;
+		}
+
+		changeTransformHead.CheckAndChangeLocalPositionAndRotation(headTransform);
+		changeTransformWeapon.CheckAndChangeLocalPositionAndRotation(weaponTransform);
+	}
 	public void ChangeView(Vector2 viewDirection, float deltaTime)
 	{
 		if (ownerDead)

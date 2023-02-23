@@ -10,7 +10,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 	public PlayerInfo playerInfo;
 	[HideInInspector]
 	public PlayerControls playerControls;
-	[HideInInspector]
+
 	public PlayerCamera playerCamera;
 
 	MultiAudioSource audioSource;
@@ -45,14 +45,13 @@ public class PlayerThing : MonoBehaviour, Damageable
 		audioSource = GetComponent<MultiAudioSource>();
 		playerInfo = GetComponentInChildren<PlayerInfo>();
 		playerControls = GetComponentInChildren<PlayerControls>();
-		playerCamera = GetComponentInChildren<PlayerCamera>();
 	}
 
 	public void InitPlayer()
 	{
 		player = new GameObject();
 		avatar = player.AddComponent<PlayerModel>();
-		player.transform.SetParent(transform);
+		player.transform.SetParent(playerControls.transform);
 
 		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
 
@@ -60,6 +59,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 		Vector3 destination = SpawnerManager.FindSpawnLocation();
 		TeleporterThing.TelefragEverything(destination, gameObject);
 		transform.position = destination;
+		playerControls.teleportDest = destination;
 
 		playerControls.capsuleCollider.enabled = true;
 		playerControls.controller.enabled = true;

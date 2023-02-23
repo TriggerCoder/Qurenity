@@ -6,7 +6,7 @@ public class PlayerInfo : MonoBehaviour
 {
 	[HideInInspector]
 	public PlayerControls playerControls;
-	[HideInInspector]
+
 	public PlayerCamera playerCamera;
 	[HideInInspector]
 	public PlayerThing playerThing;
@@ -37,7 +37,7 @@ public class PlayerInfo : MonoBehaviour
 	{
 		playerControls = GetComponent<PlayerControls>();
 		playerThing = GetComponentInParent<PlayerThing>();
-		playerCamera = GetComponentInChildren<PlayerCamera>();
+//		playerCamera = GetComponentInChildren<PlayerCamera>();
 		playerHUD  = UICanvas.GetComponent<PlayerHUD>();
 		player = playerThing.gameObject;
 	}

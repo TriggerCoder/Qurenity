@@ -10,10 +10,11 @@ public class PlayerControls : MonoBehaviour
 	public PlayerInfo playerInfo;
 	[HideInInspector]
 	public PlayerWeapon playerWeapon;
-	[HideInInspector]
 	public PlayerCamera playerCamera;
 	[HideInInspector]
 	public PlayerThing playerThing;
+	[HideInInspector]
+	public InterpolationObjectController interpolationController;
 
 	private Vector2 centerHeight = new Vector2(0.2f, -.05f); // character controller center height, x standing, y crouched
 	private Vector2 height = new Vector2(2.0f, 1.5f); // character controller height, x standing, y crouched
@@ -90,21 +91,28 @@ public class PlayerControls : MonoBehaviour
 	InputAction Action_WeaponSwitch;
 	InputAction[] Action_Weapon = new InputAction[10];
 
+	//Cached Transform
+	public Transform cTransform;
+	public Vector3 teleportDest = Vector3.zero;
 	void Awake()
 	{
 		playerInput = GetComponentInParent<PlayerInput>();
 		controller = GetComponentInParent<CharacterController>();
 		capsuleCollider = GetComponentInParent<CapsuleCollider>();
 		audioSource = GetComponentInParent<MultiAudioSource>();
-		playerCamera = GetComponentInChildren<PlayerCamera>();
+//		playerCamera = GetComponentInChildren<PlayerCamera>();
 		playerInfo = GetComponent<PlayerInfo>();
 		playerThing = GetComponentInParent<PlayerThing>();
+		interpolationController = GetComponent<InterpolationObjectController>();
+
 		playerWeapon = null;
 		moveSpeed = runSpeed;
 		currentMoveType = MoveType.Run;
 
 		//Set the actions
 		SetPlayerAction();
+		//cache transform
+		cTransform = transform;
 	}
 
 	void SetPlayerAction()
@@ -123,15 +131,15 @@ public class PlayerControls : MonoBehaviour
 			Action_Weapon[i] = playerInput.actions["Weapon" + i];
 	}
 
-	void ApplyMove()
+	void ApplyMove(float deltaTime)
 	{
-		lastPosition = transform.position;
-		controller.Move((playerVelocity + impulseVector + jumpPadVel) * Time.deltaTime);
+		lastPosition = cTransform.position;
+		controller.Move((playerVelocity + impulseVector + jumpPadVel) * deltaTime);
 
 		//dampen impulse
 		if (impulseVector.sqrMagnitude > 0)
 		{
-			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * Time.deltaTime);
+			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * deltaTime);
 			if (impulseVector.sqrMagnitude < 1f)
 				impulseVector = Vector3.zero;
 		}
@@ -150,13 +158,14 @@ public class PlayerControls : MonoBehaviour
 			if (playerCamera != null)
 				playerCamera.bopActive = false;
 
+/* Moved to FixedUpdate
 			if (controller.enabled)
 			{
 				// Reset the gravity velocity
 				playerVelocity = Vector3.down * GameManager.Instance.gravity;
 				ApplyMove();
 			}
-
+*/
 			if (deathTime < respawnDelay)
 				deathTime += Time.deltaTime;
 			else
@@ -211,11 +220,12 @@ public class PlayerControls : MonoBehaviour
 		if (viewDirection.x < -85) viewDirection.x = -85;
 		if (viewDirection.x > 85) viewDirection.x = 85;
 
-		transform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
+		//Moved to FixedUpdate
+/*		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 
 		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
 		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
-
+*/
 		bool controllerIsGrounded = controller.isGrounded;
 
 		//Player can only crounch if it is grounded
@@ -275,6 +285,9 @@ public class PlayerControls : MonoBehaviour
 		//Movement Checks
 		if (currentMoveType != MoveType.Crouch)
 			QueueJump();
+
+/*Moved to FixedUpdate
+
 		if (controllerIsGrounded)
 			GroundMove();
 		else
@@ -290,10 +303,10 @@ public class PlayerControls : MonoBehaviour
 			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
 				jumpPadVel = Vector3.zero;
 		}
-
+*/
 		if (playerCamera.MainCamera.activeSelf)
 		{
-			if ((transform.position - lastPosition).sqrMagnitude > .0001f)
+			if ((cTransform.position - lastPosition).sqrMagnitude > .0001f)
 			{
 				if (playerCamera != null)
 					playerCamera.bopActive = true;
@@ -364,6 +377,57 @@ public class PlayerControls : MonoBehaviour
 		}
 	}
 
+	void FixedUpdate()
+	{
+		if (GameManager.Paused)
+			return;
+
+		if (teleportDest.sqrMagnitude > 0)
+		{
+			cTransform.position = teleportDest;
+			interpolationController.ResetTransforms();
+			teleportDest = Vector3.zero;
+			return;
+		}
+
+		if (playerThing.Dead)
+		{
+			if (controller.enabled)
+			{
+				// Reset the gravity velocity
+				playerVelocity = Vector3.down * GameManager.Instance.gravity;
+				ApplyMove(Time.fixedDeltaTime);
+			}
+			return;
+		}
+
+		if (!playerThing.ready)
+			return;
+
+		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
+		playerThing.avatar.ChangeView(viewDirection, Time.fixedDeltaTime);
+		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
+
+		bool controllerIsGrounded = controller.isGrounded;
+
+		//Movement Checks
+		if (controllerIsGrounded)
+			GroundMove(Time.fixedDeltaTime);
+		else
+			AirMove(Time.fixedDeltaTime);
+
+		//apply move
+		ApplyMove(Time.fixedDeltaTime);
+
+		//dampen jump pad impulse
+		if (jumpPadVel.sqrMagnitude > 0)
+		{
+			jumpPadVel.y -= (GameManager.Instance.gravity * Time.fixedDeltaTime);
+			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
+				jumpPadVel = Vector3.zero;
+		}
+	}
+
 	public void ChangeHeight(bool Standing)
 	{
 		float newCenter = centerHeight.y;
@@ -412,15 +476,15 @@ public class PlayerControls : MonoBehaviour
 			wishJump = false;
 	}
 
-	private void GroundMove()
+	private void GroundMove(float deltaTime)
 	{
 		Vector3 wishdir;
 
 		// Do not apply friction if the player is queueing up the next jump
 		if (!wishJump)
-			ApplyFriction(1.0f);
+			ApplyFriction(1.0f, deltaTime);
 		else
-			ApplyFriction(0);
+			ApplyFriction(0, deltaTime);
 
 		SetMovementDir();
 
@@ -430,16 +494,16 @@ public class PlayerControls : MonoBehaviour
 		}
 
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
-		wishdir = transform.TransformDirection(wishdir);
+		wishdir = cTransform.TransformDirection(wishdir);
 		wishdir.Normalize();
 
 		var wishspeed = wishdir.magnitude;
 		wishspeed *= moveSpeed;
 
-		Accelerate(wishdir, wishspeed, runAcceleration, runSpeed);
+		Accelerate(wishdir, wishspeed, runAcceleration, deltaTime, runSpeed);
 
 		// Reset the gravity velocity
-		playerVelocity.y = -GameManager.Instance.gravity * Time.deltaTime;
+		playerVelocity.y = -GameManager.Instance.gravity * deltaTime;
 
 		if (wishJump)
 		{
@@ -449,7 +513,7 @@ public class PlayerControls : MonoBehaviour
 		}
 	}
 
-	private void ApplyFriction(float t)
+	private void ApplyFriction(float t, float deltaTime)
 	{
 		Vector3 vec = playerVelocity;
 		float speed;
@@ -465,7 +529,7 @@ public class PlayerControls : MonoBehaviour
 		//if (controller.isGrounded)
 		{
 			control = speed < runDeacceleration ? runDeacceleration : speed;
-			drop = control * GameManager.Instance.friction * Time.deltaTime * t;
+			drop = control * GameManager.Instance.friction * deltaTime * t;
 		}
 
 		newspeed = speed - drop;
@@ -478,7 +542,7 @@ public class PlayerControls : MonoBehaviour
 		playerVelocity.x *= newspeed;
 		playerVelocity.z *= newspeed;
 	}
-	private void Accelerate(Vector3 wishdir, float wishspeed, float accel, float wishaccel = 0)
+	private void Accelerate(Vector3 wishdir, float wishspeed, float accel, float deltaTime, float wishaccel = 0)
 	{
 		float addspeed;
 		float accelspeed;
@@ -490,7 +554,7 @@ public class PlayerControls : MonoBehaviour
 			return;
 		if (wishaccel == 0)
 			wishaccel = wishspeed;
-		accelspeed = accel * Time.deltaTime * wishaccel;
+		accelspeed = accel * deltaTime * wishaccel;
 		if (accelspeed > addspeed)
 			accelspeed = addspeed;
 
@@ -498,7 +562,7 @@ public class PlayerControls : MonoBehaviour
 		playerVelocity.z += accelspeed * wishdir.z;
 	}
 
-	private void AirMove()
+	private void AirMove(float deltaTime)
 	{
 		Vector3 wishdir;
 		float accel;
@@ -508,7 +572,7 @@ public class PlayerControls : MonoBehaviour
 		playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
 
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
-		wishdir = transform.TransformDirection(wishdir);
+		wishdir = cTransform.TransformDirection(wishdir);
 
 		float wishspeed = wishdir.magnitude;
 		wishspeed *= moveSpeed;
@@ -529,18 +593,18 @@ public class PlayerControls : MonoBehaviour
 			accel = sideStrafeAcceleration;
 		}
 
-		Accelerate(wishdir, wishspeed, accel);
+		Accelerate(wishdir, wishspeed, accel, deltaTime);
 		if (airControl > 0)
-			AirControl(wishdir, wishspeed2);
+			AirControl(wishdir, wishspeed2, deltaTime);
 
 		// Apply gravity
 		if(jumpPadVel.sqrMagnitude > 0)
 			playerVelocity.y = 0;
 		else
-			playerVelocity.y -= GameManager.Instance.gravity * Time.deltaTime;
+			playerVelocity.y -= GameManager.Instance.gravity * deltaTime;
 	}
 
-	private void AirControl(Vector3 wishdir, float wishspeed)
+	private void AirControl(Vector3 wishdir, float wishspeed, float deltaTime)
 	{
 		float zspeed;
 		float speed;
@@ -558,7 +622,7 @@ public class PlayerControls : MonoBehaviour
 
 		dot = Vector3.Dot(playerVelocity, wishdir);
 		k = 32;
-		k *= airControl * dot * dot * Time.deltaTime;
+		k *= airControl * dot * dot * deltaTime;
 
 		// Change direction while slowing down
 		if (dot > 0)
