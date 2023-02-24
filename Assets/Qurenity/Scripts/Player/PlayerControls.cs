@@ -18,7 +18,7 @@ public class PlayerControls : MonoBehaviour
 
 	private Vector2 centerHeight = new Vector2(0.2f, -.05f); // character controller center height, x standing, y crouched
 	private Vector2 height = new Vector2(2.0f, 1.5f); // character controller height, x standing, y crouched
-	private float camerasHeight = .15f;
+	private float camerasHeight = .65f;
 	private float ccHeight = .05f;
 
 	public Vector2 viewDirection = new Vector2(0, 0);
@@ -57,6 +57,8 @@ public class PlayerControls : MonoBehaviour
 	public Vector3 playerVelocity = Vector3.zero;
 
 	private bool wishJump = false;
+	private bool wishFire = false;
+	private bool controllerIsGrounded = true;
 
 	private float deathTime = 0;
 	private float respawnDelay = 1.7f;
@@ -158,14 +160,6 @@ public class PlayerControls : MonoBehaviour
 			if (playerCamera != null)
 				playerCamera.bopActive = false;
 
-/* Moved to FixedUpdate
-			if (controller.enabled)
-			{
-				// Reset the gravity velocity
-				playerVelocity = Vector3.down * GameManager.Instance.gravity;
-				ApplyMove();
-			}
-*/
 			if (deathTime < respawnDelay)
 				deathTime += Time.deltaTime;
 			else
@@ -220,13 +214,11 @@ public class PlayerControls : MonoBehaviour
 		if (viewDirection.x < -85) viewDirection.x = -85;
 		if (viewDirection.x > 85) viewDirection.x = 85;
 
-		//Moved to FixedUpdate
-/*		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
-
 		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
 		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
-*/
-		bool controllerIsGrounded = controller.isGrounded;
+
+		controllerIsGrounded = controller.isGrounded;
+		playerThing.avatar.isGrounded = controllerIsGrounded;
 
 		//Player can only crounch if it is grounded
 		if ((Action_Crouch.WasPressedThisFrame()) && (controllerIsGrounded))
@@ -239,7 +231,8 @@ public class PlayerControls : MonoBehaviour
 		}
 		else if (Action_Crouch.WasReleasedThisFrame())
 		{
-			moveSpeed = oldSpeed;
+			if (oldSpeed != 0)
+				moveSpeed = oldSpeed;
 			if (moveSpeed == walkSpeed)
 				currentMoveType = MoveType.Walk;
 			else
@@ -280,30 +273,20 @@ public class PlayerControls : MonoBehaviour
 			}
 		}
 
-		playerThing.avatar.isGrounded = controllerIsGrounded;
-
 		//Movement Checks
 		if (currentMoveType != MoveType.Crouch)
 			QueueJump();
 
-/*Moved to FixedUpdate
-
 		if (controllerIsGrounded)
-			GroundMove();
-		else
-			AirMove();
-
-		//apply move
-		ApplyMove();
-
-		//dampen jump pad impulse
-		if (jumpPadVel.sqrMagnitude > 0)
 		{
-			jumpPadVel.y -= (GameManager.Instance.gravity * Time.deltaTime);
-			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
-				jumpPadVel = Vector3.zero;
+			if (playerThing.avatar.enableOffset)
+				playerThing.avatar.TurnLegs((int)currentMoveType, cMove.sidewaysSpeed, cMove.forwardSpeed);
+			if (wishJump)
+				AnimateLegsOnJump();
 		}
-*/
+		else
+			playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
+
 		if (playerCamera.MainCamera.activeSelf)
 		{
 			if ((cTransform.position - lastPosition).sqrMagnitude > .0001f)
@@ -316,13 +299,7 @@ public class PlayerControls : MonoBehaviour
 
 			//use weapon
 			if (Action_Fire.IsPressed())
-			{
-				if (playerWeapon.Fire())
-				{
-					playerInfo.playerHUD.HUDUpdateAmmoNum();
-					playerThing.avatar.Attack();
-				}
-			}
+				wishFire = true;
 		}
 
 		//swap weapon
@@ -405,10 +382,6 @@ public class PlayerControls : MonoBehaviour
 			return;
 
 		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
-		playerThing.avatar.ChangeView(viewDirection, Time.fixedDeltaTime);
-		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
-
-		bool controllerIsGrounded = controller.isGrounded;
 
 		//Movement Checks
 		if (controllerIsGrounded)
@@ -425,6 +398,16 @@ public class PlayerControls : MonoBehaviour
 			jumpPadVel.y -= (GameManager.Instance.gravity * Time.fixedDeltaTime);
 			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
 				jumpPadVel = Vector3.zero;
+		}
+
+		if (wishFire)
+		{
+			wishFire = false;
+			if (playerWeapon.Fire())
+			{
+				playerInfo.playerHUD.HUDUpdateAmmoNum();
+				playerThing.avatar.Attack();
+			}
 		}
 	}
 
@@ -488,11 +471,6 @@ public class PlayerControls : MonoBehaviour
 
 		SetMovementDir();
 
-		if (playerThing.avatar.enableOffset)
-		{
-			playerThing.avatar.TurnLegs((int)currentMoveType,cMove.sidewaysSpeed, cMove.forwardSpeed);
-		}
-
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
 		wishdir = cTransform.TransformDirection(wishdir);
 		wishdir.Normalize();
@@ -507,7 +485,6 @@ public class PlayerControls : MonoBehaviour
 
 		if (wishJump)
 		{
-			AnimateLegsOnJump();
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
 		}
@@ -568,8 +545,6 @@ public class PlayerControls : MonoBehaviour
 		float accel;
 
 		SetMovementDir();
-
-		playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
 
 		wishdir = new Vector3(cMove.sidewaysSpeed, 0, cMove.forwardSpeed);
 		wishdir = cTransform.TransformDirection(wishdir);

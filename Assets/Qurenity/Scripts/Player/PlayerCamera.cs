@@ -1,3 +1,4 @@
+using UnityEngine.Animations;
 using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
@@ -9,10 +10,11 @@ public class PlayerCamera : MonoBehaviour
 	public Camera ThirdPerson;
 
 	public PlayerControls playerControls;
-
-	public float yOffset = .35f;
+	public ParentConstraint parentConstraint;
+	public float yOffset = .85f;
 	public float vBob = .002f;
 	public float hBob = .002f;
+	private float learpYOffset = .85f;
 
 	public Transform cTransform;
 	private float interp;
@@ -30,7 +32,7 @@ public class PlayerCamera : MonoBehaviour
 		}
 
 //		playerControls = GetComponentInParent<PlayerControls>();
-
+		parentConstraint = GetComponent<ParentConstraint>();
 		cTransform = transform;
 	}
 
@@ -114,8 +116,14 @@ public class PlayerCamera : MonoBehaviour
 		if (playerControls.moveSpeed == playerControls.crouchSpeed) //Crouched
 			delta *= 5;
 		position.y = delta;
+
+		if (learpYOffset != yOffset)
+			learpYOffset = Mathf.Lerp(learpYOffset, yOffset, 10 * Time.deltaTime);
+
 		//apply bop
-		cTransform.localPosition = new Vector3(0, yOffset + position.y, 0);
+		//cTransform.localPosition = new Vector3(0, yOffset + position.y, 0);
+
+		parentConstraint.SetTranslationOffset(0, new Vector3(0, learpYOffset + position.y, 0));
 
 		//look up and down
 		cTransform.localRotation = Quaternion.Euler(playerControls.viewDirection.x, playerControls.viewDirection.y, position.x);

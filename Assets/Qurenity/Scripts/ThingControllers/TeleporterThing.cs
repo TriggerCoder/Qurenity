@@ -44,21 +44,6 @@ public class TeleporterThing : MonoBehaviour
 		}
 		return;
 	}
-	public void TeleportToDestination(Transform otherTransform)
-	{
-/*
-		GameObject effect1 = PoolManager.GetObjectFromPool("TeleportEffect", false);
-		effect1.transform.position = transform.position;
-		effect1.SetActive(true);
-*/
-		otherTransform.position = destination;
-
-/*
-		GameObject effect2 = PoolManager.GetObjectFromPool("TeleportEffect", false);
-		effect2.transform.position = transform.position;
-		effect2.SetActive(true);
-*/
-	}
 	void OnTriggerEnter(Collider other)
 	{
 		if (GameManager.Paused)
@@ -94,7 +79,8 @@ public class TeleporterThing : MonoBehaviour
 		
 			playerThing.playerInfo.CheckPVS(Time.frameCount, destination);
 			TelefragEverything(destination,gameObject);
-			TeleportToDestination(otherTransform);
+			otherTransform.position = destination;
+			playerThing.playerControls.teleportDest = destination;
 
 			if (!string.IsNullOrEmpty(TeleportInSound))
 				AudioManager.Create3DSound(destination, TeleportInSound, 1f);

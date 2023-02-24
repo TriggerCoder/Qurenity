@@ -1,5 +1,6 @@
 using UnityEngine;
 using Assets.MultiAudioListener;
+
 public class Projectile : MonoBehaviour
 {
 	public GameObject owner;
@@ -80,12 +81,14 @@ public class Projectile : MonoBehaviour
 	{
 
 	}
-	void Update()
+	void FixedUpdate()
 	{
 		if (GameManager.Paused)
 			return;
 
-		time += Time.deltaTime;
+		float deltaTime = Time.fixedDeltaTime;
+
+		time += deltaTime;
 
 		if (time >= _lifeTime)
 		{
@@ -104,7 +107,7 @@ public class Projectile : MonoBehaviour
 		RaycastHit Hit = new RaycastHit();
 		{
 			Vector3 dir = cTransform.forward;
-			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * Time.deltaTime, ~(GameManager.NoHit), QueryTriggerInteraction.Ignore);
+			int max = Physics.SphereCastNonAlloc(cTransform.position, projectileRadius, dir, hits, speed * deltaTime, ~(GameManager.NoHit), QueryTriggerInteraction.Ignore);
 
 			if (max > hits.Length)
 				max = hits.Length;
@@ -295,12 +298,12 @@ public class Projectile : MonoBehaviour
 		}
 		
 		if (rotateSpeed != 0)
-			cTransform.RotateAround(cTransform.position, cTransform.forward, rotateSpeed * Time.deltaTime);
+			cTransform.RotateAround(cTransform.position, cTransform.forward, rotateSpeed * deltaTime);
 		
 		if (goingUp)
-			cTransform.position = cTransform.position + cTransform.up * speed * Time.deltaTime;
+			cTransform.position = cTransform.position + cTransform.up * speed * deltaTime;
 		else
-			cTransform.position = cTransform.position + cTransform.forward * speed * Time.deltaTime;
+			cTransform.position = cTransform.position + cTransform.forward * speed * deltaTime;
 
 	}
 }

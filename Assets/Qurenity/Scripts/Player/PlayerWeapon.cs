@@ -184,37 +184,6 @@ public class PlayerWeapon : MonoBehaviour
 				}
 			}
 
-		if (fireTime <= 0f)
-		{
-			if ((useCooldown) && (cooldown))
-			{
-				coolTimer += Time.deltaTime;
-				if (coolTimer >= cooldownTime)
-				{
-					coolTimer = 0;
-					cooldown = false;
-				}
-			}
-		}
-		else
-		{
-			fireTime -= Time.deltaTime;
-
-			if (fireTime <= 0)
-			{
-				coolTimer = 0;
-				if (useCooldown)
-					cooldown = true;
-				else
-				{
-				}
-			}
-			else
-			{
-				coolTimer += Time.deltaTime;
-			}
-		}
-
 		MousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x + playerInfo.playerControls.playerVelocity.x;
 		MousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y + playerInfo.playerControls.playerVelocity.y;
 
@@ -236,6 +205,45 @@ public class PlayerWeapon : MonoBehaviour
 		transform.localPosition = new Vector3(0, LowerOffset * LowerAmount, 0);
 
 		OnUpdate();
+	}
+
+	void FixedUpdate()
+	{
+		if (GameManager.Paused)
+			return;
+
+		float deltaTime = Time.fixedDeltaTime;
+
+		if (fireTime <= 0f)
+		{
+			if ((useCooldown) && (cooldown))
+			{
+				coolTimer += deltaTime;
+				if (coolTimer >= cooldownTime)
+				{
+					coolTimer = 0;
+					cooldown = false;
+				}
+			}
+		}
+		else
+		{
+			fireTime -= deltaTime;
+
+			if (fireTime <= 0)
+			{
+				coolTimer = 0;
+				if (useCooldown)
+					cooldown = true;
+				else
+				{
+				}
+			}
+			else
+			{
+				coolTimer += deltaTime;
+			}
+		}
 	}
 	Quaternion GetRotation(Vector2 mouse)
 	{

@@ -28,7 +28,7 @@ public class ThirdPersonCamera : MonoBehaviour
 		cTransform = transform;
 	}
 
-	void LateUpdate()
+	void Update()
 	{
 		float yaw = playerControls.viewDirection.y;
 		float pitch = playerControls.viewDirection.x;

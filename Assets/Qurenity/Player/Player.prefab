@@ -1172,6 +1172,7 @@ MonoBehaviour:
   UICamera: {fileID: 0}
   ThirdPerson: {fileID: 743958850}
   playerControls: {fileID: 111704870}
+  parentConstraint: {fileID: 0}
   yOffset: 0.85
   vBob: 0.01
   hBob: 0.05
@@ -1200,7 +1201,7 @@ ParentConstraint:
   m_AffectRotationY: 0
   m_AffectRotationZ: 0
   m_Active: 1
-  m_IsLocked: 0
+  m_IsLocked: 1
   m_Sources:
   - sourceTransform: {fileID: 4853754259503296}
     weight: 1
