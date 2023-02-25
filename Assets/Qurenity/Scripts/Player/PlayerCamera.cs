@@ -101,21 +101,7 @@ public class PlayerCamera : MonoBehaviour
 		else
 			interp = Mathf.Lerp(interp, 0, deltaTime * 6);
 
-		Vector3 position;
-
-		float speed = playerControls.playerVelocity.magnitude;
-		float moveSpeed = playerControls.walkSpeed;
-		if (playerControls.moveSpeed != playerControls.walkSpeed)
-			moveSpeed = playerControls.runSpeed;
-		float delta = Mathf.Cos(Time.time * moveSpeed) * hBob * speed * interp;
-		if (playerControls.moveSpeed == playerControls.crouchSpeed) //Crouched
-			delta *= 5;
-		position.x = delta;
-
-		delta = Mathf.Sin(Time.time * moveSpeed) * vBob * speed * interp;
-		if (playerControls.moveSpeed == playerControls.crouchSpeed) //Crouched
-			delta *= 5;
-		position.y = delta;
+		Vector2 position = playerControls.GetBobDelta(hBob, vBob, interp);
 
 		if (learpYOffset != yOffset)
 			learpYOffset = Mathf.Lerp(learpYOffset, yOffset, 10 * Time.deltaTime);
