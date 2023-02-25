@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-public class ClientPlayer : PlayerControls
+public class ClientLocalControl : PlayerControls
 {
 	public AnimationCurve axisAnimationCurve;
 	public PlayerCamera playerCamera;
@@ -33,16 +33,7 @@ public class ClientPlayer : PlayerControls
 	const int Crouch = 7;
 	const int Weapon_Plus = 8;
 	const int Weapon_Minus = 9;
-	const int Weapon_0 = 10;
-	const int Weapon_1 = 11;
-	const int Weapon_2 = 12;
-	const int Weapon_3 = 13;
-	const int Weapon_4 = 14;
-	const int Weapon_5 = 15;
-	const int Weapon_6 = 16;
-	const int Weapon_7 = 17;
-	const int Weapon_8 = 18;
-	const int Weapon_9 = 19;
+	const int Weapon = 10;
 
 	bool[] inputs = new bool[20];
 	void Awake()
@@ -123,9 +114,9 @@ public class ClientPlayer : PlayerControls
 		for (int i = 0; i < 10; i++)
 		{
 			if (Action_Weapon[i].IsPressed())
-				inputs[Weapon_0 + i] = true;
+				inputs[Weapon + i] = true;
 			else
-				inputs[Weapon_0 + i] = false;
+				inputs[Weapon + i] = false;
 		}
 	}
 	void Update()

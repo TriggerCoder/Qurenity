@@ -1402,7 +1402,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: ServerLocalPlayer
       objectReference: {fileID: 0}
     - target: {fileID: 4911946283159206, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_RootOrder

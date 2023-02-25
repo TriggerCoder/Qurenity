@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 4530601570485014}
-  playerControls: {fileID: 3065182979520133436}
+  playerControls: {fileID: 7700971477605732459}
   cameraOffset: {x: 0.28, y: 0.25, z: -1.7}
   clipDistance: 0.5
   distance: 0.8
@@ -227,13 +227,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4911946283159206}
-  - component: {fileID: 143113606728799366}
+  - component: {fileID: 2467841530939418666}
   - component: {fileID: 6906618912183216077}
   - component: {fileID: 4338069678295091742}
   - component: {fileID: 41184706}
   - component: {fileID: 2043769949}
   m_Layer: 18
-  m_Name: ServerPlayer
+  m_Name: ClientLocalPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -257,32 +257,33 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!143 &143113606728799366
-CharacterController:
+--- !u!54 &2467841530939418666
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1340752516026800}
-  m_Material: {fileID: 0}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 90
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.05
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.2, z: 0}
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 1
 --- !u!114 &6906618912183216077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -819,7 +820,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4853754259503296}
-  - component: {fileID: 3065182979520133436}
+  - component: {fileID: 7700971477605732459}
   - component: {fileID: 2444005386498886028}
   - component: {fileID: 111704871}
   m_Layer: 18
@@ -844,7 +845,7 @@ Transform:
   m_Father: {fileID: 4911946283159206}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3065182979520133436
+--- !u!114 &7700971477605732459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -853,7 +854,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1746486306332202}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65721f9a38635ff40bbd28da41ca64dd, type: 3}
+  m_Script: {fileID: 11500000, guid: b0a5f3b392961514789c877bb144b55e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   audioSource: {fileID: 0}
@@ -912,7 +913,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   playerCamera: {fileID: 1441192285}
   playerInput: {fileID: 0}
-  controller: {fileID: 0}
+  rb: {fileID: 0}
 --- !u!114 &2444005386498886028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1171,7 +1172,7 @@ MonoBehaviour:
   SkyholeCamera: {fileID: 0}
   UICamera: {fileID: 0}
   ThirdPerson: {fileID: 743958850}
-  playerControls: {fileID: 3065182979520133436}
+  playerControls: {fileID: 7700971477605732459}
   parentConstraint: {fileID: 0}
   yOffset: 0.85
   vBob: 0.01

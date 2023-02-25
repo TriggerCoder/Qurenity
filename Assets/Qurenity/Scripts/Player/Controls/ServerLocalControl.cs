@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-public class ServerPlayer : PlayerControls
+public class ServerLocalControl : PlayerControls
 {
 	public AnimationCurve axisAnimationCurve;
 	public PlayerCamera playerCamera;
