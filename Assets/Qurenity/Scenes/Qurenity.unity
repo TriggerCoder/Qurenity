@@ -152,6 +152,7 @@ GameObject:
   - component: {fileID: 300009281}
   - component: {fileID: 300009286}
   - component: {fileID: 300009288}
+  - component: {fileID: 300009289}
   - component: {fileID: 300009284}
   - component: {fileID: 300009285}
   - component: {fileID: 300009287}
@@ -189,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: map20
+  autoloadMap: q3dm1
   tessellations: 5
   colorLightning: 2
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -1131,6 +1132,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4d28add8bbbe844cadb74c619bbc4b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &300009289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300009275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1dbcff1ed01a8845bfea8cb7f2126ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isServer: 1
+  ip: 127.0.0.1
+  port: 27960
+  maxClientCount: 32
 --- !u!1 &599665251
 GameObject:
   m_ObjectHideFlags: 0
@@ -1434,7 +1451,7 @@ PrefabInstance:
     - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561,
         type: 3}
       propertyPath: modelName
-      value: doom
+      value: sarge
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

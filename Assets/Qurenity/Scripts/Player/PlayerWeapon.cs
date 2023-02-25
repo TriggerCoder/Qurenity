@@ -146,8 +146,8 @@ public class PlayerWeapon : MonoBehaviour
 		
 		GameManager.SetLayerAllChildren(transform, playerInfo.playerLayer - 14);
 
-		oldMousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x;
-		oldMousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y;
+		oldMousePosition.x = playerInfo.playerControls.Look.x;
+		oldMousePosition.y = playerInfo.playerControls.Look.y;
 
 		playerInfo.playerHUD.HUDUpdateAmmoNum();
 		OnInit();
@@ -184,8 +184,8 @@ public class PlayerWeapon : MonoBehaviour
 				}
 			}
 
-		MousePosition.x = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().x + playerInfo.playerControls.playerVelocity.x;
-		MousePosition.y = playerInfo.playerControls.playerInput.actions["Look"].ReadValue<Vector2>().y + playerInfo.playerControls.playerVelocity.y;
+		MousePosition.x = playerInfo.playerControls.Look.x + playerInfo.playerControls.playerVelocity.x;
+		MousePosition.y = playerInfo.playerControls.Look.y + playerInfo.playerControls.playerVelocity.y;
 
 		ApplyRotation(GetRotation((MousePosition - oldMousePosition) * Sensitivity));
 		oldMousePosition = Vector2.Lerp(oldMousePosition,MousePosition, rotateSpeed * Time.deltaTime);

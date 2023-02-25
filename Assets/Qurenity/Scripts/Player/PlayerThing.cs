@@ -61,8 +61,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 		transform.position = destination;
 		playerControls.teleportDest = destination;
 
-		playerControls.capsuleCollider.enabled = true;
-		playerControls.controller.enabled = true;
+		playerControls.EnableColliders(true);
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
 
