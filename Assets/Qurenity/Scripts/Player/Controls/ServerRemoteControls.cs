@@ -1,77 +1,73 @@
 using System;
+using Riptide;
 using UnityEngine;
 using UnityEngine.InputSystem;
-public class ServerControls : PlayerControls
-{
-	public PlayerCamera playerCamera;
 
+public class ServerRemoteControls : PlayerControls
+{
 	public float impulseDampening = 4f;
 	[HideInInspector]
 	public CharacterController controller;
-	[HideInInspector]
-	public PlayerInput playerInput;
 
 	// Movement stuff
 	public float crouchSpeed = 3.0f;                // Crouch speed
-	public float walkSpeed = 5.0f;					// Walk speed
+	public float walkSpeed = 5.0f;                  // Walk speed
 	public float runSpeed = 7.0f;                   // Run speed
-	private float oldSpeed = 0;						// Previous move speed
+	private float oldSpeed = 0;                     // Previous move speed
 
-	public float moveSpeed;							// Ground move speed
-	public float runAcceleration = 14.0f;			// Ground accel
-	public float runDeacceleration = 10.0f;			// Deacceleration that occurs when running on the ground
-	public float airAcceleration = 2.0f;			// Air accel
-	public float airDecceleration = 2.0f;			// Deacceleration experienced when ooposite strafing
-	public float airControl = 0.3f;					// How precise air control is
-	public float sideStrafeAcceleration = 50.0f;	// How fast acceleration occurs to get up to sideStrafeSpeed when
-	public float sideStrafeSpeed = 1.0f;			// What the max speed to generate when side strafing
-	public float jumpSpeed = 8.0f;					// The speed at which the character's up axis gains when hitting jump
+	public float moveSpeed;                         // Ground move speed
+	public float runAcceleration = 14.0f;           // Ground accel
+	public float runDeacceleration = 10.0f;         // Deacceleration that occurs when running on the ground
+	public float airAcceleration = 2.0f;            // Air accel
+	public float airDecceleration = 2.0f;           // Deacceleration experienced when ooposite strafing
+	public float airControl = 0.3f;                 // How precise air control is
+	public float sideStrafeAcceleration = 50.0f;    // How fast acceleration occurs to get up to sideStrafeSpeed when
+	public float sideStrafeSpeed = 1.0f;            // What the max speed to generate when side strafing
+	public float jumpSpeed = 8.0f;                  // The speed at which the character's up axis gains when hitting jump
 	public bool holdJumpToBhop = false;             // When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
 
-	//playerInputActions
-	InputAction Action_Move;
-	InputAction Action_Look;
-	InputAction Action_Fire;
-	InputAction Action_Jump;
-	InputAction Action_Crouch;
-	InputAction Action_Close;
-	InputAction Action_CameraSwitch;
-	InputAction Action_Run;
-	InputAction Action_WeaponSwitch;
-	InputAction[] Action_Weapon = new InputAction[10];
+	//RemoteInputs
+	const int Forward = 0;
+	const int Backwards = 1;
+	const int Left = 2;
+	const int Right = 3;
+	const int Fire = 4;
+	const int Run = 5;
+	const int Jump = 6;
+	const int Crouch = 7;
+	const int Weapon_Plus = 8;
+	const int Weapon_Minus = 9;
+	const int Weapon = 10;
 
+	bool[] LastFrameInputs = new bool[20];
+	bool[] ThisFrameInputs = new bool[20];
+
+	Vector3 inputForward = Vector3.forward;
+	Vector2 viewForward = Vector2.zero;
 	void Awake()
 	{
-		playerInput = GetComponentInParent<PlayerInput>();
 		controller = GetComponentInParent<CharacterController>();
 		moveSpeed = runSpeed;
-		//Set the actions
-		SetPlayerAction();
 		OnAwake();
 	}
 
-	void SetPlayerAction()
+	void Start()
 	{
-		Action_Move = playerInput.actions["Move"];
-		Action_Look = playerInput.actions["Look"];
-		Action_Fire = playerInput.actions["Fire"];
-		Action_Jump = playerInput.actions["Jump"];
-		Action_Crouch = playerInput.actions["Crouch"];
-		Action_Close = playerInput.actions["Close"];
-		Action_CameraSwitch = playerInput.actions["CameraSwitch"];
-		Action_Run = playerInput.actions["Run"];
-		Action_WeaponSwitch = playerInput.actions["WeaponSwitch"];
+		InvalidateThisFrameInputs();
+	}
 
-		for (int i = 0; i < 10; i++)
-			Action_Weapon[i] = playerInput.actions["Weapon" + i];
+	void InvalidateThisFrameInputs()
+	{
+		for (int i = 0; i < ThisFrameInputs.Length; i++)
+		{
+			LastFrameInputs[i] = ThisFrameInputs[i];
+			ThisFrameInputs[i] = false;
+		}
 	}
 	void Update()
 	{
 		if (GameManager.Paused)
 			return;
-
-		if (Action_Close.WasPressedThisFrame())
-			Application.Quit();
 
 		OnUpdate();
 	}
@@ -90,10 +86,20 @@ public class ServerControls : PlayerControls
 		}
 
 		OnFixedUpdate();
+		InvalidateThisFrameInputs();
+		SendMovement();
 	}
 	private void SetMovementDir()
 	{
-		Vector2 Move = Action_Move.ReadValue<Vector2>();
+		Vector2 Move = Vector2.zero;
+		if (ThisFrameInputs[Forward])
+			Move.y += 1;
+		if (ThisFrameInputs[Backwards])
+			Move.y -= 1;
+		if (ThisFrameInputs[Left])
+			Move.x -= 1;
+		if (ThisFrameInputs[Right])
+			Move.x += 1;
 
 		cMove.forwardSpeed = Move.y;
 		cMove.sidewaysSpeed = Move.x;
@@ -212,7 +218,7 @@ public class ServerControls : PlayerControls
 			AirControl(wishdir, wishspeed2, deltaTime);
 
 		// Apply gravity
-		if(jumpPadVel.sqrMagnitude > 0)
+		if (jumpPadVel.sqrMagnitude > 0)
 			playerVelocity.y = 0;
 		else
 			playerVelocity.y -= GameManager.Instance.gravity * deltaTime;
@@ -252,42 +258,26 @@ public class ServerControls : PlayerControls
 		playerVelocity.y = zspeed; // Note this line
 		playerVelocity.z *= speed;
 	}
-	public override void SetCameraBobActive(bool active)
-	{
-		if (playerCamera != null)
-			playerCamera.bopActive = active;
-	}
 
-	public override bool JumpPressedThisFrame { get { return (Action_Jump.WasPressedThisFrame()); } }
-	public override bool JumpReleasedThisFrame { get { return (Action_Jump.WasReleasedThisFrame()); } }
-	public override bool JumpPressed { get { return (Action_Jump.IsPressed()); } }
-	public override bool FirePressedThisFrame { get { return (Action_Fire.WasPressedThisFrame()); } }
-	public override bool FirePressed { get { return (Action_Fire.IsPressed()); } }
-	public override void CheckCameraChange()
-	{
-		if (Action_CameraSwitch.WasPressedThisFrame())
-			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
-	}
+
+	public override bool JumpPressedThisFrame { get { return ((ThisFrameInputs[Jump]) && (!LastFrameInputs[Jump])); } }
+	public override bool JumpReleasedThisFrame { get { return ((ThisFrameInputs[Jump]) && (!LastFrameInputs[Jump])); } }
+	public override bool JumpPressed { get { return (ThisFrameInputs[Jump]); } }
+	public override bool FirePressedThisFrame { get { return ((ThisFrameInputs[Fire]) && (!LastFrameInputs[Fire])); } }
+	public override bool FirePressed { get { return (ThisFrameInputs[Fire]); } }
 	public override void SetViewDirection()
 	{
-		Vector2 Look = Action_Look.ReadValue<Vector2>();
+		viewForward.x = Vector3.SignedAngle(Vector3.forward, ForwardDir, Vector3.up);
+		viewForward.y = Vector3.SignedAngle(Vector3.forward, ForwardDir, Vector3.right);
 
-		if (playerInput.currentControlScheme == "Keyboard&Mouse")
-		{
-			viewDirection.y += Look.x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
-			viewDirection.x -= Look.y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
-		}
-		else
-		{
-			viewDirection.y += Look.x * GameOptions.GamePadSensitivity.x * axisAnimationCurve.Evaluate(Mathf.Abs(Look.x));
-			viewDirection.x -= Look.y * GameOptions.GamePadSensitivity.y * axisAnimationCurve.Evaluate(Mathf.Abs(Look.y));
-		}
+		viewDirection.y += Look.x;
+		viewDirection.x -= Look.y;
 	}
-	public override Vector2 Look { get { return Action_Look.ReadValue<Vector2>(); } }
-	public override Vector3 ForwardDir { get { return playerCamera.cTransform.forward; } }
+	public override Vector2 Look { get { return viewForward; } }
+	public override Vector3 ForwardDir { get { return inputForward; } }
 	public override bool IsControllerGrounded { get { return controller.isGrounded; } }
-	public override bool CrouchPressedThisFrame { get { return (Action_Crouch.WasPressedThisFrame()); } }
-	public override bool CrouchReleasedThisFrame { get { return (Action_Crouch.WasReleasedThisFrame()); } }
+	public override bool CrouchPressedThisFrame { get { return ((ThisFrameInputs[Crouch]) && (!LastFrameInputs[Crouch])); } }
+	public override bool CrouchReleasedThisFrame { get { return ((ThisFrameInputs[Crouch]) && (!LastFrameInputs[Crouch])); } }
 	public override void CrouchChangePlayerSpeed(bool Standing)
 	{
 		if (Standing)
@@ -321,14 +311,12 @@ public class ServerControls : PlayerControls
 
 		capsuleCollider.center = controller.center;
 		capsuleCollider.height = newHeight + ccHeight;
-
-		playerCamera.yOffset = newCenter + camerasHeight;
 	}
 	public override void CheckIfRunning()
 	{
 		if (GameOptions.runToggle)
 		{
-			if (Action_Run.WasReleasedThisFrame())
+			if ((ThisFrameInputs[Run]) && (!LastFrameInputs[Run]))
 			{
 				if (moveSpeed == walkSpeed)
 				{
@@ -344,7 +332,7 @@ public class ServerControls : PlayerControls
 		}
 		else
 		{
-			if (Action_Run.IsPressed())
+			if (ThisFrameInputs[Run])
 			{
 				moveSpeed = runSpeed;
 				currentMoveType = MoveType.Run;
@@ -361,19 +349,24 @@ public class ServerControls : PlayerControls
 	{
 		if (holdJumpToBhop)
 		{
-			wishJump = Action_Jump.IsPressed();
+			wishJump = JumpPressed;
 			return;
 		}
 
-		if (Action_Jump.WasPressedThisFrame() && !wishJump)
+		if (JumpPressedThisFrame && !wishJump)
 			wishJump = true;
-		if (Action_Jump.WasReleasedThisFrame())
+		if (JumpReleasedThisFrame)
 			wishJump = false;
 	}
 
 	public override void CheckMouseWheelWeaponChange()
 	{
-		float wheel = Action_WeaponSwitch.ReadValue<float>();
+		int wheel = 0;
+		if (ThisFrameInputs[Weapon_Plus])
+			wheel += 1;
+		if (ThisFrameInputs[Weapon_Minus])
+			wheel -= 1;
+
 		if (wheel > 0)
 		{
 			bool gotWeapon = false;
@@ -403,7 +396,7 @@ public class ServerControls : PlayerControls
 	{
 		for (int i = 0; i < 10; i++)
 		{
-			if (Action_Weapon[i].WasPressedThisFrame())
+			if ((ThisFrameInputs[Weapon + i]) && (!LastFrameInputs[Weapon + i]))
 			{
 				TrySwapWeapon(i);
 				break;
@@ -455,7 +448,7 @@ public class ServerControls : PlayerControls
 		controller.enabled = enable;
 	}
 
-	public override Vector2 GetBobDelta(float hBob, float vBob, float lerp) 
+	public override Vector2 GetBobDelta(float hBob, float vBob, float lerp)
 	{
 		Vector2 position;
 
@@ -473,5 +466,29 @@ public class ServerControls : PlayerControls
 			delta *= 5;
 		position.y = delta;
 		return position;
+	}
+	public override void RotateTorwardDir()
+	{
+		Vector3 dir = FlattenVector3(ForwardDir);
+		cTransform.forward = dir.normalized;
+	}
+
+	public override void SetInput(bool[] bInputs, Vector3 vForward)
+	{
+		ThisFrameInputs = bInputs;
+		inputForward = vForward;
+	}
+	Vector3 FlattenVector3(Vector3 vector)
+	{
+		vector.y = 0;
+		return vector;
+	}
+	void SendMovement()
+	{
+		Message message = Message.Create(MessageSendMode.Unreliable, ServerToClientId.playerMovement);
+		message.AddUShort(playerThing.playerId);
+		message.AddVector3(cTransform.position);
+		message.AddVector3(cTransform.forward);
+		NetworkManager.Instance.server.SendToAll(message);
 	}
 }

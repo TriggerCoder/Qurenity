@@ -4,9 +4,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ServerToClientId : ushort
+{
+	playerSpawned = 1,
+	playerMovement,
+}
+
 public enum ClientToServerId : ushort
 {
-	name = 1
+	name = 1,
+	input,
 }
 public class NetworkManager : MonoBehaviour
 {
@@ -30,6 +37,7 @@ public class NetworkManager : MonoBehaviour
 		{
 			server = new Server();
 			server.Start(port, maxClientCount);
+			server.ClientDisconnected += PlayerLeft;
 		}
 		else
 		{
@@ -74,6 +82,13 @@ public class NetworkManager : MonoBehaviour
 		if (isServer)
 			return;
 	}
+	void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
+	{
+		if (!isServer)
+			return;
+		if (GameManager.playerList.TryGetValue(e.Client.Id, out PlayerThing player))
+			Destroy(player.gameObject);
+	}
 	void SendName()
 	{
 		if (isServer)
@@ -82,5 +97,43 @@ public class NetworkManager : MonoBehaviour
 		Message msg = Message.Create(MessageSendMode.Reliable, ClientToServerId.name);
 		msg.AddString("Nombre");
 		client.Send(msg);
+	}
+	public void SendSpawned(PlayerThing otherPlayer)
+	{
+		server.SendToAll(AddSpawnData(Message.Create(MessageSendMode.Reliable, ServerToClientId.playerSpawned), otherPlayer));
+	}
+	private void SendSpawned(ushort toClientId, PlayerThing otherPlayer)
+	{
+		server.Send(AddSpawnData(Message.Create(MessageSendMode.Reliable, ServerToClientId.playerSpawned), otherPlayer), toClientId);
+	}
+
+	private Message AddSpawnData(Message message, PlayerThing otherPlayer)
+	{
+		message.AddUShort(otherPlayer.playerId);
+		message.AddString(otherPlayer.playerName);
+		message.AddVector3(otherPlayer.transform.position);
+		return message;
+	}
+
+	[MessageHandler((ushort)ClientToServerId.name)]
+	private static void Name(ushort fromClientId, Message message)
+	{
+		GameManager.SpawnPlayer(fromClientId, message.GetString());
+		foreach (PlayerThing otherPlayer in GameManager.playerList.Values)
+			Instance.SendSpawned(fromClientId, otherPlayer);
+	}
+
+	[MessageHandler((ushort)ClientToServerId.input)]
+	private static void Input(ushort fromClientId, Message message)
+	{
+		if (GameManager.playerList.TryGetValue(fromClientId, out PlayerThing player))
+			player.playerControls.SetInput(message.GetBools(6), message.GetVector3());
+	}
+
+	[MessageHandler((ushort)ServerToClientId.playerMovement)]
+	private static void PlayerMovement(Message message)
+	{
+		if (GameManager.playerList.TryGetValue(message.GetUShort(), out PlayerThing player))
+			player.playerControls.SetMove(message.GetVector3(), message.GetVector3());
 	}
 }

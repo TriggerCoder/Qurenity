@@ -1,0 +1,278 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1340752516026800
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4911946283159206}
+  - component: {fileID: 143113606728799366}
+  - component: {fileID: 6906618912183216077}
+  - component: {fileID: 4338069678295091742}
+  - component: {fileID: 41184706}
+  m_Layer: 18
+  m_Name: ServerRemotePlayer
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4911946283159206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4853754259503296}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!143 &143113606728799366
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 90
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.05
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0.2, z: 0}
+--- !u!114 &6906618912183216077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac209986762ffc442898707afa18ad2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _audioClip: {fileID: 0}
+  _output: {fileID: 0}
+  _mute: 0
+  _bypassEffects: 1
+  _bypassListenerEffects: 1
+  _bypassReverbZone: 1
+  _playOnAwake: 0
+  _loop: 0
+  _priority: 128
+  _volume: 0.5
+  _pitch: 1
+  _spread: 0
+  _volumeRolloff: 0
+  _minDistance: 1
+  _maxDistance: 500
+  OnlyPlayForClosestCamera: 1
+--- !u!114 &4338069678295091742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082d987867242374dadd2a490fc48a16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInfo: {fileID: 0}
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
+  playerName: Player
+  modelName: major
+  skinName: default
+  player: {fileID: 0}
+  avatar: {fileID: 0}
+  hitpoints: 100
+  armor: 0
+  painTime: 0
+  lookTime: 0.5
+  finished: 0
+  radsuit: 0
+  invul: 0
+  ready: 0
+  playerId: 0
+--- !u!136 &41184706
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340752516026800}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.55
+  m_Height: 2.05
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.2, z: 0}
+--- !u!1 &1746486306332202
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4853754259503296}
+  - component: {fileID: 111704870}
+  - component: {fileID: 2444005386498886028}
+  - component: {fileID: 111704871}
+  m_Layer: 18
+  m_Name: Controls
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4853754259503296
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4911946283159206}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &111704870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca253879cb9e347488c7c2416fabac7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  axisAnimationCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  audioSource: {fileID: 0}
+  playerInfo: {fileID: 0}
+  playerWeapon: {fileID: 0}
+  playerThing: {fileID: 0}
+  interpolationController: {fileID: 0}
+  viewDirection: {x: 0, y: 0}
+  lastPosition: {x: 0, y: 0, z: 0}
+  impulseVector: {x: 0, y: 0, z: 0}
+  jumpPadVel: {x: 0, y: 0, z: 0}
+  playerVelocity: {x: 0, y: 0, z: 0}
+  capsuleCollider: {fileID: 0}
+  CurrentWeapon: -1
+  SwapWeapon: -1
+  currentMoveType: 2
+  teleportDest: {x: 0, y: 0, z: 0}
+  cTransform: {fileID: 0}
+  impulseDampening: 4
+  controller: {fileID: 0}
+  crouchSpeed: 3
+  walkSpeed: 5
+  runSpeed: 7
+  moveSpeed: 0
+  runAcceleration: 14
+  runDeacceleration: 10
+  airAcceleration: 2
+  airDecceleration: 2
+  airControl: 0.3
+  sideStrafeAcceleration: 50
+  sideStrafeSpeed: 1
+  jumpSpeed: 8
+  holdJumpToBhop: 0
+--- !u!114 &2444005386498886028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a88f5fda0a97028429f7e2c0de3b459e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &111704871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746486306332202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d8788ea9cd780645b7c555a53342b58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isLocalPlayer: 0
+  playerControls: {fileID: 0}
+  playerCamera: {fileID: 0}
+  playerThing: {fileID: 0}
+  playerHUD: {fileID: 0}
+  player: {fileID: 0}
+  playerLayer: 18
+  UICanvas: {fileID: 0}
+  WeaponHand: {fileID: 0}
+  Ammo: 6400000000000000000000000000000000000000000000000000000000000000
+  Weapon: 000100000000000000
+  MaxAmmo: c8000000c8000000c8000000c8000000c8000000c8000000c8000000c8000000
+  godMode: 0
+  MaxHealth: 100
+  MaxBonusHealth: 200
+  MaxArmor: 100
+  MaxBonusArmor: 200
+  WeaponPrefabs:
+  - {fileID: 0}
+  - {fileID: 6390070097525064858, guid: 8f6a32473c202a04192d6635aded0bf7, type: 3}
+  - {fileID: 7800589690560894554, guid: 45aaec09b96c4b94caed8408599d2f68, type: 3}
+  - {fileID: 0}
+  - {fileID: 2948330587790430167, guid: 9ead3d799f5b03942ab3b628f35f6b75, type: 3}
+  - {fileID: 0}
+  - {fileID: 5580961529819052829, guid: 037ad689525996346859d98c951f3010, type: 3}
+  - {fileID: 6181765487028298, guid: d2d6f1cf97ab2c1438e88a0a50083d4b, type: 3}
+  - {fileID: 0}

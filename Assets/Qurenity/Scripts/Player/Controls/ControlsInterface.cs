@@ -27,4 +27,7 @@ public interface ControlsInterface
 	void CheckMovements();
 	void EnableColliders(bool enable);
 	Vector2 GetBobDelta(float hBob, float vBob, float lerp);
+	void RotateTorwardDir();
+	void SetInput(bool[] bInputs, Vector3 vForward);
+	void SetMove(Vector3 vPosition, Vector3 vForward);
 }

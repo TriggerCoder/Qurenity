@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class GameManager : MonoBehaviour
 {
 	public string autoloadMap = "";
@@ -14,6 +13,12 @@ public class GameManager : MonoBehaviour
 	public Transform BaseThingsHolder;
 
 	public List<PlayerInfo> Player = new List<PlayerInfo>();
+	public static Dictionary<ushort, PlayerThing> playerList = new Dictionary<ushort, PlayerThing>();
+
+	public GameObject ServerLocalPlayer;
+	public GameObject ServerRemotePlayer;
+	public GameObject ClientLocalPlayer;
+	public GameObject ClientRemotePlayer;
 
 	public GameObject Blood;
 	public GameObject BulletHit;
@@ -227,11 +232,19 @@ public class GameManager : MonoBehaviour
 			Player[3].playerThing.playerInfo.playerHUD.UpdateLayer(UI_P4Layer);
 		}
 	}
-
 	public static void SetLayerAllChildren(Transform root, int layer)
 	{
 		var children = root.GetComponentsInChildren<Transform>(includeInactive: true);
 		foreach (var child in children)
 			child.gameObject.layer = layer;
+	}
+
+	public static void SpawnPlayer(ushort id, string username)
+	{
+		PlayerThing newPlayer = Instantiate(Instance.ServerRemotePlayer).GetComponent<PlayerThing>();
+		newPlayer.playerName = (string.IsNullOrEmpty(username)) ? "Guest" : username;
+		newPlayer.name = "Player " + id +" "+ newPlayer.playerName;
+		newPlayer.playerId = id;
+		playerList.Add(id, newPlayer);
 	}
 }

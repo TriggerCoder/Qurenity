@@ -107,6 +107,9 @@ public class PlayerControls : MonoBehaviour, ControlsInterface
 	public virtual void CheckMovements() { }
 	public virtual void EnableColliders(bool enable) { capsuleCollider.enabled = enable; }
 	public virtual Vector2 GetBobDelta(float hBob, float vBob, float lerp) { return Vector2.zero; }
+	public virtual void RotateTorwardDir() { }
+	public virtual void SetInput(bool[] bInputs, Vector3 vForward) { }
+	public virtual void SetMove(Vector3 vPosition, Vector3 vForward) { }
 	public void OnAwake()
 	{
 		capsuleCollider = GetComponentInParent<CapsuleCollider>();
@@ -247,7 +250,7 @@ public class PlayerControls : MonoBehaviour, ControlsInterface
 		if (!playerThing.ready)
 			return;
 
-		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
+		RotateTorwardDir();
 
 		controllerIsGrounded = IsControllerGrounded;
 		//Movement Checks

@@ -197,6 +197,13 @@ MonoBehaviour:
   BaseThingsHolder: {fileID: 2028868021}
   Player:
   - {fileID: 111704871}
+  ServerLocalPlayer: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561,
+    type: 3}
+  ServerRemotePlayer: {fileID: 1340752516026800, guid: fe673e1cb92fcab4bb0a0595907995fe,
+    type: 3}
+  ClientLocalPlayer: {fileID: 1340752516026800, guid: 1242db0246491054d9c9fd811f9345f3,
+    type: 3}
+  ClientRemotePlayer: {fileID: 0}
   Blood: {fileID: 8145336117116166367, guid: fb114cce993c9a34bab563ddc4b13c72, type: 3}
   BulletHit: {fileID: 749880978353595937, guid: 9cdbe26b4207a134e93c7649d7bf27a0,
     type: 3}

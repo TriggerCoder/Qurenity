@@ -14,7 +14,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 	public PlayerCamera playerCamera;
 
 	MultiAudioSource audioSource;
-
+	public string playerName = "Player";
 	public string modelName = "sarge";
 	public string skinName = "default";
 	public GameObject player;
@@ -40,6 +40,12 @@ public class PlayerThing : MonoBehaviour, Damageable
 		Right = 2
 	}
 	private LookType whereToLook = LookType.Center;
+
+	public ushort playerId = 0;
+	private void OnDestroy()
+	{
+		GameManager.playerList.Remove(playerId);
+	}
 	void Awake()
 	{
 		audioSource = GetComponent<MultiAudioSource>();

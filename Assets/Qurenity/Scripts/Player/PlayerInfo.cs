@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerInfo : MonoBehaviour
 {
+	public bool isLocalPlayer = true;
 	[HideInInspector]
 	public PlayerControls playerControls;
 
@@ -44,6 +45,13 @@ public class PlayerInfo : MonoBehaviour
 
 	void Start()
 	{
+		if (!isLocalPlayer)
+		{
+			MapLoader.noMarks.Add(playerControls.capsuleCollider);
+			playerThing.InitPlayer();
+			NetworkManager.Instance.SendSpawned(playerThing);
+			return;
+		}
 		playerLayer += GameManager.Instance.Player.Count;
 		if (!GameManager.Instance.Player.Contains(this))
 		{
