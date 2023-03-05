@@ -326,7 +326,8 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   playerControls: {fileID: 0}
   playerCamera: {fileID: 1441192285}
-  modelName: major
+  playerName: Player
+  modelName: doom
   skinName: default
   player: {fileID: 0}
   avatar: {fileID: 0}
@@ -338,6 +339,7 @@ MonoBehaviour:
   radsuit: 0
   invul: 0
   ready: 0
+  playerId: 0
 --- !u!136 &41184706
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -937,6 +939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d8788ea9cd780645b7c555a53342b58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isLocalPlayer: 1
   playerControls: {fileID: 0}
   playerCamera: {fileID: 1441192285}
   playerThing: {fileID: 0}

@@ -153,7 +153,8 @@ GameObject:
   - component: {fileID: 300009286}
   - component: {fileID: 300009288}
   - component: {fileID: 300009289}
-  - component: {fileID: 300009284}
+  - component: {fileID: 300009290}
+  - component: {fileID: 300009291}
   - component: {fileID: 300009285}
   - component: {fileID: 300009287}
   m_Layer: 0
@@ -929,20 +930,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   silence: {fileID: 8300000, guid: ab8105bea00279042a24b71b314badda, type: 3}
   _OverrideSounds: []
---- !u!114 &300009284
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300009275}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc363be69a30a9d4a82456f6c30bb84b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  levelMusics: []
-  audioSource: {fileID: 0}
 --- !u!82 &300009285
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1155,6 +1142,104 @@ MonoBehaviour:
   ip: 127.0.0.1
   port: 27960
   maxClientCount: 32
+--- !u!114 &300009290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300009275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed685eb969188db4eb9b778043a7c6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainTracks:
+  - intesityLevel: 0
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: f12726883977af543ba4f5bcf1235bd9, type: 3}
+    hasOutro: 1
+    OutroFile: {fileID: 8300000, guid: a06cf258ae38d1b478ed7b0dc0f06d6f, type: 3}
+  - intesityLevel: 0
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 4bb0c508eb30d1c488544cf2a33d20f4, type: 3}
+    hasOutro: 1
+    OutroFile: {fileID: 8300000, guid: ca1faa47794e7f84c9e2e73f5c676385, type: 3}
+  - intesityLevel: 1
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: f9eaa1b069ed64243a99dc64d8529a40, type: 3}
+    hasOutro: 1
+    OutroFile: {fileID: 8300000, guid: 12502c9c025f7e84584a7a346998fb51, type: 3}
+  - intesityLevel: 2
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: d1aab744dc0b3664da19cec7d1fb7721, type: 3}
+    hasOutro: 1
+    OutroFile: {fileID: 8300000, guid: c03c64c007232504594ea4900bf418e8, type: 3}
+  - intesityLevel: 3
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 666e0aa93447ee649abbcff72cf7df2c, type: 3}
+    hasOutro: 1
+    OutroFile: {fileID: 8300000, guid: c275bae926b463f4aab68ef0fb7a0b0b, type: 3}
+  BlendTracks:
+  - intesityLevel: 0
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 7be2df022edc86046be903063631c33e, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 1
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 356a7b87e066ed048a090a7f0f0babc1, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 2
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 7a4257678bd0b824e83c1ee6ee13378c, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 3
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 3d8451e1ecf718b41914d7240bb7f80c, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 0
+    isRepeatable: 0
+    TrackFile: {fileID: 8300000, guid: a5c4965d6cdf8e745b56a21eb48fe078, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 2
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 4509cb39a623c054b904c455e3e3b17a, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  - intesityLevel: 1
+    isRepeatable: 1
+    TrackFile: {fileID: 8300000, guid: 75ac905133b0b9241888a57e995971fd, type: 3}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  track01: {fileID: 0}
+  track02: {fileID: 0}
+  currentTrack:
+    intesityLevel: 0
+    isRepeatable: 0
+    TrackFile: {fileID: 0}
+    hasOutro: 0
+    OutroFile: {fileID: 0}
+  currentIntensity: 0
+  musicIntensity: 0
+--- !u!114 &300009291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300009275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc363be69a30a9d4a82456f6c30bb84b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LevelMusics: []
+  audioSource: {fileID: 0}
 --- !u!1 &599665251
 GameObject:
   m_ObjectHideFlags: 0
@@ -1407,6 +1492,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2043769949, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
+      propertyPath: m_DefaultControlScheme
+      value: Gamepad
+      objectReference: {fileID: 0}
     - target: {fileID: 1340752516026800, guid: 0607bb188534d754db77d3cf1a751561, type: 3}
       propertyPath: m_Name
       value: ServerLocalPlayer

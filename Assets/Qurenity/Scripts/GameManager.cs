@@ -157,7 +157,10 @@ public class GameManager : MonoBehaviour
 		ready = true;
 
 		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);
-		MusicPlayer.Instance.Play(autoloadMap);
+		if (GameOptions.dynamicMusic)
+			AdaptativeMusicManager.Instance.GetTrackOnCurrentIntensity(0);
+		else
+			MusicPlayer.Instance.Play(autoloadMap);
 	}
 	void OnApplicationFocus(bool hasFocus)
 	{
