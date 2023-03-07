@@ -89,6 +89,8 @@ public class GameManager : MonoBehaviour
 
 	public bool ready = false;
 	public int skipFrames = 5;
+
+	public int currentDeathCount = 0;
 	void Awake()
 	{
 		Instance = this;
@@ -158,7 +160,7 @@ public class GameManager : MonoBehaviour
 
 		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);
 		if (GameOptions.dynamicMusic)
-			AdaptativeMusicManager.Instance.GetTrackOnCurrentIntensity(0);
+			AdaptativeMusicManager.Instance.StartMusic();
 		else
 			MusicPlayer.Instance.Play(autoloadMap);
 	}
@@ -249,5 +251,17 @@ public class GameManager : MonoBehaviour
 		newPlayer.name = "Player " + id +" "+ newPlayer.playerName;
 		newPlayer.playerId = id;
 		playerList.Add(id, newPlayer);
+	}
+
+	public void AddDeathCount()
+	{
+		currentDeathCount++;
+	}
+
+	public float GetDeathRatioAndReset()
+	{
+		float deathRatio = (currentDeathCount / Player.Count);
+		currentDeathCount = 0;
+		return deathRatio;
 	}
 }

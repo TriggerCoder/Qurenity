@@ -191,7 +191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ee9e1ce9b765449bbc41b2998f9922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoloadMap: q3dm1
+  autoloadMap: q3dm7
   tessellations: 5
   colorLightning: 2
   TemporaryObjectsHolder: {fileID: 1399079443}
@@ -229,6 +229,7 @@ MonoBehaviour:
   PlayerAmmoReceive: 1
   ready: 0
   skipFrames: 5
+  currentDeathCount: 0
 --- !u!114 &300009279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1155,63 +1156,75 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainTracks:
-  - intesityLevel: 0
+  - uniqueId: 0
+    intesityLevel: 0
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: f12726883977af543ba4f5bcf1235bd9, type: 3}
     hasOutro: 1
     OutroFile: {fileID: 8300000, guid: a06cf258ae38d1b478ed7b0dc0f06d6f, type: 3}
-  - intesityLevel: 0
+  - uniqueId: 0
+    intesityLevel: 0
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 4bb0c508eb30d1c488544cf2a33d20f4, type: 3}
     hasOutro: 1
     OutroFile: {fileID: 8300000, guid: ca1faa47794e7f84c9e2e73f5c676385, type: 3}
-  - intesityLevel: 1
+  - uniqueId: 0
+    intesityLevel: 1
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: f9eaa1b069ed64243a99dc64d8529a40, type: 3}
     hasOutro: 1
     OutroFile: {fileID: 8300000, guid: 12502c9c025f7e84584a7a346998fb51, type: 3}
-  - intesityLevel: 2
+  - uniqueId: 0
+    intesityLevel: 2
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: d1aab744dc0b3664da19cec7d1fb7721, type: 3}
     hasOutro: 1
     OutroFile: {fileID: 8300000, guid: c03c64c007232504594ea4900bf418e8, type: 3}
-  - intesityLevel: 3
+  - uniqueId: 0
+    intesityLevel: 3
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 666e0aa93447ee649abbcff72cf7df2c, type: 3}
     hasOutro: 1
     OutroFile: {fileID: 8300000, guid: c275bae926b463f4aab68ef0fb7a0b0b, type: 3}
   BlendTracks:
-  - intesityLevel: 0
+  - uniqueId: 0
+    intesityLevel: 0
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 7be2df022edc86046be903063631c33e, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 1
+  - uniqueId: 0
+    intesityLevel: 1
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 356a7b87e066ed048a090a7f0f0babc1, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 2
+  - uniqueId: 0
+    intesityLevel: 2
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 7a4257678bd0b824e83c1ee6ee13378c, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 3
+  - uniqueId: 0
+    intesityLevel: 3
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 3d8451e1ecf718b41914d7240bb7f80c, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 0
+  - uniqueId: 0
+    intesityLevel: 0
     isRepeatable: 0
     TrackFile: {fileID: 8300000, guid: a5c4965d6cdf8e745b56a21eb48fe078, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 2
+  - uniqueId: 0
+    intesityLevel: 2
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 4509cb39a623c054b904c455e3e3b17a, type: 3}
     hasOutro: 0
     OutroFile: {fileID: 0}
-  - intesityLevel: 1
+  - uniqueId: 0
+    intesityLevel: 1
     isRepeatable: 1
     TrackFile: {fileID: 8300000, guid: 75ac905133b0b9241888a57e995971fd, type: 3}
     hasOutro: 0
@@ -1219,13 +1232,15 @@ MonoBehaviour:
   track01: {fileID: 0}
   track02: {fileID: 0}
   currentTrack:
+    uniqueId: 0
     intesityLevel: 0
     isRepeatable: 0
     TrackFile: {fileID: 0}
     hasOutro: 0
     OutroFile: {fileID: 0}
+  baseVol: 0.4
   currentIntensity: 0
-  musicIntensity: 0
+  lastDeathRatio: 0
 --- !u!114 &300009291
 MonoBehaviour:
   m_ObjectHideFlags: 0

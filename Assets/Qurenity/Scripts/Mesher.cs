@@ -710,7 +710,7 @@ public static class Mesher
 
 		return mesh;
 	}
-	public static bool GenerateBrushCollider(QBrush brush, Transform holder, GameObject objCollider = null)
+	public static bool GenerateBrushCollider(QBrush brush, Transform holder, GameObject objCollider = null, bool addRigidBody = false)
 	{
 		//Remove brushed used for BSP Generations and for Details
 		uint type = MapLoader.mapTextures[brush.shaderId].contentsFlags;
@@ -783,6 +783,14 @@ public static class Mesher
 		MeshCollider mc = objCollider.AddComponent<MeshCollider>();
 		mc.sharedMesh = mesh;
 		mc.convex = true;
+
+		if (addRigidBody)
+		{
+			Rigidbody rb = objCollider.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+		}
 
 		ContentType contentType = objCollider.AddComponent<ContentType>();
 		contentType.Init(type);
