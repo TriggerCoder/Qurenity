@@ -107,14 +107,8 @@ public class PlayerWeapon : MonoBehaviour
 				playerInfo.playerThing.avatar.LoadWeapon(model, CompleteModelName, MuzzleModelName, playerInfo.playerLayer);
 		}
 
-		foreach (MD3Tag tag in model.tags)
-		{
-			if (string.Equals(tag.name, "tag_flash"))
-			{
-				MuzzleOffset = tag.origin;
-				break;
-			}
-		}
+		if (model.tagsIdbyName.TryGetValue("tag_flash", out int tagId))
+			MuzzleOffset = model.tagsbyId[tagId][0].origin;
 
 		cTransform = gameObject.transform;
 		for (int d = 0; d < cTransform.childCount; d++)

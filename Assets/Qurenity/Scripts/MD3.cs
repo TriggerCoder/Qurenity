@@ -26,8 +26,8 @@ public class MD3
 	public int numMeshes;				// The number of meshes in the model
 	public int numSkins;				// The number of skins in the model
 	public List<MD3Frame> frames;		// The list of frames in the model
-	public List<MD3Tag> tags;			// The list of tags in the model
-	public Dictionary<string, List<MD3Tag>> tagsbyName = new Dictionary<string, List<MD3Tag>>();
+	public Dictionary<string, int> tagsIdbyName = new Dictionary<string, int>(); // Get the index of tags list in the model by name
+	public List<List<MD3Tag>> tagsbyId = new List<List<MD3Tag>>(); // The list of tags in the model by Id
 	public List<MD3Mesh> meshes;		// The list of meshes in the model
 	public List<MD3Skin> skins;         // The list of skins in the model
 	public List<string> animations = new List<string>();               // This is the aditional animations for the mesh
@@ -117,10 +117,9 @@ public class MD3
 			md3Model.frames.Add(frame);
 		}
 
-		md3Model.tags = new List<MD3Tag>();
 		Md3ModelFile.BaseStream.Seek(ofsTags, SeekOrigin.Begin);
 
-		for (int i = 0; i < md3Model.numFrames * md3Model.numTags; i++)
+		for (int i = 0, tagId = 0; i < md3Model.numFrames * md3Model.numTags; i++)
 		{
 			MD3Tag tag = new MD3Tag();
 			name = (new string(Md3ModelFile.ReadChars(64))).Split('\0');
@@ -156,13 +155,13 @@ public class MD3
 			tag.rotation = Quaternion.Inverse(tag.orientation.ExtractRotation());
 			
 			tag.QuakeToUnityCoordSystem();
-			if (!md3Model.tagsbyName.ContainsKey(tag.name))
+			if (!md3Model.tagsIdbyName.ContainsKey(tag.name))
 			{
 				List<MD3Tag> tagList = new List<MD3Tag>();
-				md3Model.tagsbyName.Add(tag.name, tagList);
+				md3Model.tagsIdbyName.Add(tag.name, tagId++);
+				md3Model.tagsbyId.Add(tagList);
 			}
-			md3Model.tagsbyName[tag.name].Add(tag);
-			md3Model.tags.Add(tag);
+			md3Model.tagsbyId[md3Model.tagsIdbyName[tag.name]].Add(tag);
 		}
 
 		int offset = ofsMeshes;

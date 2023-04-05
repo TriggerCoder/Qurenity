@@ -1562,7 +1562,7 @@ PrefabInstance:
     - target: {fileID: 4338069678295091742, guid: 0607bb188534d754db77d3cf1a751561,
         type: 3}
       propertyPath: modelName
-      value: sarge
+      value: major
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
