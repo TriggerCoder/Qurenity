@@ -14,8 +14,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private MD3 lower;
 	private MD3 weapon;
 
-	public UpperAnimation upperAnimation = UpperAnimation.Stand;
-	public LowerAnimation lowerAnimation = LowerAnimation.Idle;
+	public int upperAnimation = UpperAnimation.Stand;
+	public int lowerAnimation = LowerAnimation.Idle;
 
 	private int airFrames = 0;
 	private const int readyToLand = 25;
@@ -67,56 +67,59 @@ public class PlayerModel : MonoBehaviour, Damageable
 			this.index = index;
 		}
 	}
-	public enum UpperAnimation
+
+	public static class UpperAnimation
 	{
-		Death1,
-		Dead1,
-		Death2,
-		Dead2,
-		Death3,
-		Dead3,
-		Gesture,
-		Attack,
-		Melee,
-		Drop,
-		Raise,
-		Stand,
-		Stand2
+		public const int Death1		= 0;
+		public const int Dead1		= 1;
+		public const int Death2		= 2;
+		public const int Dead2		= 3;
+		public const int Death3		= 4;
+		public const int Dead3		= 5;
+		public const int Gesture	= 6;
+		public const int Attack		= 7;
+		public const int Melee		= 8;
+		public const int Drop		= 9;
+		public const int Raise		= 10;
+		public const int Stand		= 11;
+		public const int Stand2		= 12;
 	}
-	public enum LowerAnimation
+	public static class LowerAnimation
 	{
-		Death1,
-		Dead1,
-		Death2,
-		Dead2,
-		Death3,
-		Dead3,
-		WalkCR,
-		Walk,
-		Run,
-		RunBack,
-		Swim,
-		Jump,
-		Land,
-		JumpBack,
-		LandBack,
-		Idle,
-		IdleCR,
-		Turn,
-		WalkCRBack,
-		Fall,
-		WalkBack,
-		FallBack
+		public const int Death1		= 0;
+		public const int Dead1		= 1;
+		public const int Death2		= 2;
+		public const int Dead2		= 3;
+		public const int Death3		= 4;
+		public const int Dead3		= 5;
+		public const int WalkCR		= 6;
+		public const int Walk		= 7;
+		public const int Run		= 8;
+		public const int RunBack	= 9;
+		public const int Swim		= 10;
+		public const int Jump		= 11;
+		public const int Land		= 12;
+		public const int JumpBack	= 13;
+		public const int LandBack	= 14;
+		public const int Idle		= 15;
+		public const int IdleCR		= 16;
+		public const int Turn		= 17;
+		public const int WalkCRBack = 18;
+		public const int Fall		= 19;
+		public const int WalkBack	= 20;
+		public const int FallBack	= 21;
 	}
 
-	public MoveType currentMoveType = MoveType.Run;
-	private MoveType nextMoveType = MoveType.Run;
-	public enum MoveType
+	public int currentMoveType = MoveType.Run;
+	private int nextMoveType = MoveType.Run;
+
+	public static class MoveType
 	{
-		Crouch,
-		Walk,
-		Run
+		public const int Crouch = 0;
+		public const int Walk = 1;
+		public const int Run = 2;
 	}
+
 	private const int TotalAnimation = 29;
 
 	private GameObject upperBody;
@@ -198,32 +201,32 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 
 		{
-			nextUpper = upperAnim[(int)upperAnimation];
-			nextLower = lowerAnim[(int)lowerAnimation];
+			nextUpper = upperAnim[upperAnimation];
+			nextLower = lowerAnim[lowerAnimation];
 
 			if (nextUpper.index == currentUpper.index)
 			{
 				nextFrameUpper = currentFrameUpper + 1;
 				if (nextFrameUpper >= currentUpper.endFrame)
 				{
-					switch ((UpperAnimation)nextUpper.index)
+					switch (nextUpper.index)
 					{
 						default:
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
 							break;
 						case UpperAnimation.Death1:
 						case UpperAnimation.Death2:
 						case UpperAnimation.Death3:
 							upperAnimation++;
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
 							ChangeToRagDoll();
 							return;
 						case UpperAnimation.Attack:
 						case UpperAnimation.Raise:
 							upperAnimation = UpperAnimation.Stand;
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
 							break;
 						case UpperAnimation.Drop:
@@ -244,7 +247,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 				 ((currentLower.nextFrame < 0)
 				 && (nextFrameLower <= currentLower.endFrame)))
 				{
-					switch ((LowerAnimation)nextLower.index)
+					switch (nextLower.index)
 					{
 						default:
 
@@ -279,7 +282,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 							}
 							break;
 					}
-					nextLower = lowerAnim[(int)lowerAnimation];
+					nextLower = lowerAnim[lowerAnimation];
 					nextFrameLower = currentLower.startFrame;
 				}
 			}
@@ -491,8 +494,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 		upperTransform.localRotation = Quaternion.identity;
 
 		int deathNum = 2 * UnityEngine.Random.Range(0, 3);
-		upperAnimation = (UpperAnimation)deathNum;
-		lowerAnimation = (LowerAnimation)deathNum;
+		upperAnimation = deathNum;
+		lowerAnimation = deathNum;
 
 		gameObject.layer = GameManager.RagdollLayer;
 		GameManager.SetLayerAllChildren(playerTransform, GameManager.RagdollLayer);
@@ -545,7 +548,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		if (ownerDead)
 			return;
 
-		nextMoveType = (MoveType)moveType;
+		nextMoveType = moveType;
 
 		Quaternion rotate = Quaternion.identity;
 		if (forwardMove > 0)

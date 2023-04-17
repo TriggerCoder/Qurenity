@@ -51,17 +51,18 @@ public class PlayerControls : MonoBehaviour, ControlsInterface
 
 	protected currentMove cMove;
 
-	public MoveType currentMoveType = MoveType.Run;
+	public int currentMoveType = MoveType.Run;
 
 	public Vector3 teleportDest = Vector3.zero;
 
 	//Cached Transform
 	public Transform cTransform;
-	public enum MoveType
+
+	public static class MoveType
 	{
-		Crouch,
-		Walk,
-		Run
+		public const int Crouch = 0;
+		public const int Walk = 1;
+		public const int Run = 2;
 	}
 	public virtual void SetCameraBobActive(bool active) { }
 	public virtual bool JumpPressedThisFrame { get { return false; } }
@@ -200,7 +201,7 @@ public class PlayerControls : MonoBehaviour, ControlsInterface
 		if (controllerIsGrounded)
 		{
 			if (playerThing.avatar.enableOffset)
-				playerThing.avatar.TurnLegs((int)currentMoveType, cMove.sidewaysSpeed, cMove.forwardSpeed);
+				playerThing.avatar.TurnLegs(currentMoveType, cMove.sidewaysSpeed, cMove.forwardSpeed);
 			if (wishJump)
 				AnimateLegsOnJump();
 		}
