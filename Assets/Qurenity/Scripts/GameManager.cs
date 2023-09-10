@@ -84,6 +84,8 @@ public class GameManager : MonoBehaviour
 
 	public bool ready = false;
 	public int skipFrames = 5;
+
+	public int currentDeathCount = 0;
 	void Awake()
 	{
 		Instance = this;
@@ -152,7 +154,10 @@ public class GameManager : MonoBehaviour
 		ready = true;
 
 		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);
-		MusicPlayer.Instance.Play(autoloadMap);
+		if (GameOptions.dynamicMusic)
+			AdaptativeMusicManager.Instance.StartMusic();
+		else
+			MusicPlayer.Instance.Play(autoloadMap);
 	}
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -233,5 +238,15 @@ public class GameManager : MonoBehaviour
 		var children = root.GetComponentsInChildren<Transform>(includeInactive: true);
 		foreach (var child in children)
 			child.gameObject.layer = layer;
+	}
+	public void AddDeathCount()
+	{
+		currentDeathCount++;
+	}
+	public float GetDeathRatioAndReset()
+	{
+		float deathRatio = (currentDeathCount / Player.Count);
+		currentDeathCount = 0;
+		return deathRatio;
 	}
 }

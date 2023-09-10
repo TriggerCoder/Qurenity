@@ -91,6 +91,28 @@ public class MaterialManager : MonoBehaviour
 		if (!OverrideMaterials.ContainsKey(textureName))
 			return false;
 
+
+		if (textureName == "models/weapons2/plasma/plasma_glo")
+		{
+			Texture tex = TextureLoader.Instance.GetTexture("models/weapons2/plasma/plasma_glo");
+			mat = Instantiate(Instance.rgbGenIdentity);
+			ShaderStack shaderStack = go.AddComponent<ShaderStack>();
+
+			Material rotate = Instantiate(Instance.tcModRotate);
+			Material scroll = Instantiate(Instance.tcModScroll);
+			float[] rotateparams = new float[1] { 33f };
+			float[] scrolleparams = new float[2] { .7f, .1f };
+
+			shaderStack.AddStackMaterial(tex, scroll, scrolleparams);
+			shaderStack.AddStackMaterial(null, rotate, rotateparams);
+			shaderStack.SetLastMaterial(mat);
+/*
+			mat = Instantiate(Instance.rgbGenIdentity);
+			mat.mainTexture = tex;
+*/
+			return true;
+		}
+
 		MaterialOverride mo = OverrideMaterials[textureName];
 		if (mo.material != null)
 			mat = Instantiate(mo.material);

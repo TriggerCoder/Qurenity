@@ -117,7 +117,12 @@ public class PlayerThing : MonoBehaviour, Damageable
 				amount = 0;
 
 		if (amount <= 0)
-			return;
+		{
+			if ((damageType == DamageType.Crusher) || (damageType == DamageType.Telefrag))
+				amount = 1000;
+			else
+				return;
+		}
 
 		if (armor > 0)
 		{
@@ -196,6 +201,7 @@ public class PlayerThing : MonoBehaviour, Damageable
 			PlayModelSound("death" + Random.Range(1, 4));
 			avatar.Die();
 			ready = false;
+			GameManager.Instance.AddDeathCount();
 		}
 		else if (painTime <= 0f)
 		{

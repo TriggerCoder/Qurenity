@@ -37,7 +37,8 @@ public class TextureLoader : MonoBehaviour
 
 	public static bool HasTexture(string textureName)
 	{
-		if (Textures.ContainsKey(textureName))
+		string upperName = textureName.ToUpper();
+		if (Textures.ContainsKey(upperName))
 			return true;
 
 		return false;
@@ -45,10 +46,11 @@ public class TextureLoader : MonoBehaviour
 
 	public Texture GetTexture(string textureName)
 	{
-		if (Textures.ContainsKey(textureName))
-			return Textures[textureName];
+		string upperName = textureName.ToUpper();
+		if (Textures.ContainsKey(upperName))
+			return Textures[upperName];
 
-		Debug.Log("TextureLoader: No texture \"" + textureName + "\"");
+		Debug.Log("TextureLoader: No texture \"" + upperName + "\"");
 		return illegal;
 	}
 
@@ -56,7 +58,8 @@ public class TextureLoader : MonoBehaviour
 	{
 		foreach (QShader tex in mapTextures)
 		{
-			string path = tex.name.ToUpper() + ".JPG";
+			string upperName = tex.name.ToUpper();
+			string path = upperName + ".JPG";
 			if (PakManager.ZipFiles.ContainsKey(path))
 			{
 				string FileName = PakManager.ZipFiles[path];
@@ -84,17 +87,17 @@ public class TextureLoader : MonoBehaviour
 #endif
 					readyTex.Apply();
 				}
-				readyTex.name = tex.name;
+				readyTex.name = upperName;
 				readyTex.filterMode = FilterMode.Bilinear;
 				CompressTextureNearestPowerOfTwo(ref readyTex);
 
-				if (Textures.ContainsKey(tex.name))
+				if (Textures.ContainsKey(upperName))
 				{
-					Debug.Log("Updating texture with name " + tex.name + ".jpg");
-					Textures[tex.name] = readyTex;
+					Debug.Log("Updating texture with name " + upperName + ".jpg");
+					Textures[upperName] = readyTex;
 				}
 				else
-					Textures.Add(tex.name, readyTex);
+					Textures.Add(upperName, readyTex);
 			}
 		}
 	}
@@ -103,7 +106,8 @@ public class TextureLoader : MonoBehaviour
 	{
 		foreach (QShader tex in mapTextures)
 		{
-			string path = tex.name.ToUpper() + ".TGA";
+			string upperName = tex.name.ToUpper();
+			string path = upperName + ".TGA";
 			if (PakManager.ZipFiles.ContainsKey(path))
 			{
 				string FileName = PakManager.ZipFiles[path];
@@ -115,17 +119,17 @@ public class TextureLoader : MonoBehaviour
 
 				Texture2D readyTex = LoadTGA(path, tgaBytes, tex.addAlpha);
 
-				readyTex.name = tex.name;
+				readyTex.name = upperName;
 				readyTex.filterMode = FilterMode.Bilinear;
 				readyTex.Compress(true);
 
-				if (Textures.ContainsKey(tex.name))
+				if (Textures.ContainsKey(upperName))
 				{
-					Debug.Log("Updating texture with name " + tex.name + ".tga");
-					Textures[tex.name] = readyTex;
+					Debug.Log("Updating texture with name " + upperName + ".tga");
+					Textures[upperName] = readyTex;
 				}
 				else
-					Textures.Add(tex.name, readyTex);
+					Textures.Add(upperName, readyTex);
 			}
 		}
 	}

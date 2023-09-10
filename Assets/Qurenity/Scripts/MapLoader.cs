@@ -415,7 +415,7 @@ public static class MapLoader
 				modelObject.transform.localRotation = Quaternion.identity;
 			}
 
-			if (!Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject))
+			if (!Mesher.GenerateBrushCollider(brushes[models[num].firstBrush + i], holder, modelObject, !isTrigger))
 				return;
 
 			if (contentFlags != 0)

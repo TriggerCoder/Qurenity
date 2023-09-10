@@ -14,8 +14,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private MD3 lower;
 	private MD3 weapon;
 
-	public UpperAnimation upperAnimation = UpperAnimation.Stand;
-	public LowerAnimation lowerAnimation = LowerAnimation.Idle;
+	public int upperAnimation = UpperAnimation.Stand;
+	public int lowerAnimation = LowerAnimation.Idle;
 
 	private int airFrames = 0;
 	private const int readyToLand = 25;
@@ -28,6 +28,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 	private List<ModelAnimation> lowerAnim = new List<ModelAnimation>();
 
 	private Dictionary<string, string> meshToSkin = new Dictionary<string, string>();
+	private int upper_tag_torso = 0;
+	private int lower_tag_torso = 0;
+	private int upper_tag_head = 0;
+	private int upper_tag_weapon = 0;
 
 	private MD3UnityConverted lowerModel;
 	private MD3UnityConverted upperModel;
@@ -64,56 +68,58 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 	}
 
-	public enum UpperAnimation
+	public static class UpperAnimation
 	{
-		Death1,
-		Dead1,
-		Death2,
-		Dead2,
-		Death3,
-		Dead3,
-		Gesture,
-		Attack,
-		Melee,
-		Drop,
-		Raise,
-		Stand,
-		Stand2
+		public const int Death1		= 0;
+		public const int Dead1		= 1;
+		public const int Death2		= 2;
+		public const int Dead2		= 3;
+		public const int Death3		= 4;
+		public const int Dead3		= 5;
+		public const int Gesture	= 6;
+		public const int Attack		= 7;
+		public const int Melee		= 8;
+		public const int Drop		= 9;
+		public const int Raise		= 10;
+		public const int Stand		= 11;
+		public const int Stand2		= 12;
 	}
-	public enum LowerAnimation
+	public static class LowerAnimation
 	{
-		Death1,
-		Dead1,
-		Death2,
-		Dead2,
-		Death3,
-		Dead3,
-		WalkCR,
-		Walk,
-		Run,
-		RunBack,
-		Swim,
-		Jump,
-		Land,
-		JumpBack,
-		LandBack,
-		Idle,
-		IdleCR,
-		Turn,
-		WalkCRBack,
-		Fall,
-		WalkBack,
-		FallBack
+		public const int Death1		= 0;
+		public const int Dead1		= 1;
+		public const int Death2		= 2;
+		public const int Dead2		= 3;
+		public const int Death3		= 4;
+		public const int Dead3		= 5;
+		public const int WalkCR		= 6;
+		public const int Walk		= 7;
+		public const int Run		= 8;
+		public const int RunBack	= 9;
+		public const int Swim		= 10;
+		public const int Jump		= 11;
+		public const int Land		= 12;
+		public const int JumpBack	= 13;
+		public const int LandBack	= 14;
+		public const int Idle		= 15;
+		public const int IdleCR		= 16;
+		public const int Turn		= 17;
+		public const int WalkCRBack = 18;
+		public const int Fall		= 19;
+		public const int WalkBack	= 20;
+		public const int FallBack	= 21;
 	}
 
-	public MoveType currentMoveType = MoveType.Run;
-	private MoveType nextMoveType = MoveType.Run;
-	public enum MoveType
+	public int currentMoveType = MoveType.Run;
+	private int nextMoveType = MoveType.Run;
+
+	public static class MoveType
 	{
-		Crouch,
-		Walk,
-		Run
+		public const int Crouch = 0;
+		public const int Walk = 1;
+		public const int Run = 2;
 	}
+
 	private const int TotalAnimation = 29;
 
 	private GameObject upperBody;
@@ -195,37 +201,37 @@ public class PlayerModel : MonoBehaviour, Damageable
 		}
 
 		{
-			nextUpper = upperAnim[(int)upperAnimation];
-			nextLower = lowerAnim[(int)lowerAnimation];
+			nextUpper = upperAnim[upperAnimation];
+			nextLower = lowerAnim[lowerAnimation];
 
 			if (nextUpper.index == currentUpper.index)
 			{
 				nextFrameUpper = currentFrameUpper + 1;
 				if (nextFrameUpper >= currentUpper.endFrame)
 				{
-					switch ((UpperAnimation)nextUpper.index)
+					switch (nextUpper.index)
 					{
 						default:
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
-						break;
+							break;
 						case UpperAnimation.Death1:
 						case UpperAnimation.Death2:
 						case UpperAnimation.Death3:
 							upperAnimation++;
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
 							ChangeToRagDoll();
 							return;
 						case UpperAnimation.Attack:
 						case UpperAnimation.Raise:
 							upperAnimation = UpperAnimation.Stand;
-							nextUpper = upperAnim[(int)upperAnimation];
+							nextUpper = upperAnim[upperAnimation];
 							nextFrameUpper = nextUpper.startFrame;
 							break;
 						case UpperAnimation.Drop:
 							nextFrameUpper = currentUpper.endFrame;
-						break;
+							break;
 					}
 				}
 			}
@@ -241,26 +247,26 @@ public class PlayerModel : MonoBehaviour, Damageable
 				 ((currentLower.nextFrame < 0)
 				 && (nextFrameLower <= currentLower.endFrame)))
 				{
-					switch ((LowerAnimation)nextLower.index)
+					switch (nextLower.index)
 					{
 						default:
-							
-						break;
+
+							break;
 						case LowerAnimation.Death1:
 						case LowerAnimation.Death2:
 						case LowerAnimation.Death3:
 							lowerAnimation++;
-						break;
+							break;
 						case LowerAnimation.Jump:
 							lowerAnimation = LowerAnimation.Land;
-						break;
+							break;
 						case LowerAnimation.JumpBack:
 							lowerAnimation = LowerAnimation.LandBack;
-						break;
+							break;
 						case LowerAnimation.Land:
 						case LowerAnimation.LandBack:
 							lowerAnimation += 7;
-						break;
+							break;
 						case LowerAnimation.Turn:
 						case LowerAnimation.Fall:
 						case LowerAnimation.FallBack:
@@ -274,25 +280,25 @@ public class PlayerModel : MonoBehaviour, Damageable
 								lowerAnimation = LowerAnimation.Idle;
 								_enableOffset = true;
 							}
-						break;
+							break;
 					}
-					nextLower = lowerAnim[(int)lowerAnimation];
+					nextLower = lowerAnim[lowerAnimation];
 					nextFrameLower = currentLower.startFrame;
 				}
 			}
 			else
 				nextFrameLower = nextLower.startFrame;
 
-			Quaternion upperTorsoRotation = Quaternion.Slerp(upper.tagsbyName["tag_torso"][currentFrameUpper].rotation, upper.tagsbyName["tag_torso"][nextFrameUpper].rotation, upperCurrentLerpTime);
-			Quaternion upperHeadRotation = Quaternion.Slerp(upper.tagsbyName["tag_head"][currentFrameUpper].rotation, upper.tagsbyName["tag_head"][nextFrameUpper].rotation, upperCurrentLerpTime);
-			Quaternion lowerTorsoRotation = Quaternion.Slerp(lower.tagsbyName["tag_torso"][currentFrameLower].rotation, lower.tagsbyName["tag_torso"][nextFrameLower].rotation, lowerCurrentLerpTime);
-			Quaternion weaponRotation = Quaternion.Slerp(upper.tagsbyName["tag_weapon"][currentFrameUpper].rotation, upper.tagsbyName["tag_weapon"][nextFrameUpper].rotation, upperCurrentLerpTime);
+			Quaternion upperTorsoRotation = Quaternion.Slerp(upper.tagsbyId[upper_tag_torso][currentFrameUpper].rotation, upper.tagsbyId[upper_tag_torso][nextFrameUpper].rotation, upperCurrentLerpTime);
+			Quaternion upperHeadRotation = Quaternion.Slerp(upper.tagsbyId[upper_tag_head][currentFrameUpper].rotation, upper.tagsbyId[upper_tag_head][nextFrameUpper].rotation, upperCurrentLerpTime);
+			Quaternion lowerTorsoRotation = Quaternion.Slerp(lower.tagsbyId[lower_tag_torso][currentFrameLower].rotation, lower.tagsbyId[lower_tag_torso][nextFrameLower].rotation, lowerCurrentLerpTime);
+			Quaternion weaponRotation = Quaternion.Slerp(upper.tagsbyId[upper_tag_weapon][currentFrameUpper].rotation, upper.tagsbyId[upper_tag_weapon][nextFrameUpper].rotation, upperCurrentLerpTime);
 
 
-			Vector3 upperTorsoOrigin = Vector3.Lerp(upper.tagsbyName["tag_torso"][currentFrameUpper].origin, upper.tagsbyName["tag_torso"][nextFrameUpper].origin, upperCurrentLerpTime);
-			Vector3 upperHeadOrigin = Vector3.Lerp(upper.tagsbyName["tag_head"][currentFrameUpper].origin, upper.tagsbyName["tag_head"][nextFrameUpper].origin, upperCurrentLerpTime);
-			Vector3 lowerTorsoOrigin = Vector3.Lerp(lower.tagsbyName["tag_torso"][currentFrameLower].origin, lower.tagsbyName["tag_torso"][nextFrameLower].origin, lowerCurrentLerpTime);
-			Vector3 weaponOrigin = Vector3.Lerp(upper.tagsbyName["tag_weapon"][currentFrameUpper].origin, upper.tagsbyName["tag_weapon"][nextFrameUpper].origin, upperCurrentLerpTime);
+			Vector3 upperTorsoOrigin = Vector3.Lerp(upper.tagsbyId[upper_tag_torso][currentFrameUpper].origin, upper.tagsbyId[upper_tag_torso][nextFrameUpper].origin, upperCurrentLerpTime);
+			Vector3 upperHeadOrigin = Vector3.Lerp(upper.tagsbyId[upper_tag_head][currentFrameUpper].origin, upper.tagsbyId[upper_tag_head][nextFrameUpper].origin, upperCurrentLerpTime);
+			Vector3 lowerTorsoOrigin = Vector3.Lerp(lower.tagsbyId[lower_tag_torso][currentFrameLower].origin, lower.tagsbyId[lower_tag_torso][nextFrameLower].origin, lowerCurrentLerpTime);
+			Vector3 weaponOrigin = Vector3.Lerp(upper.tagsbyId[upper_tag_weapon][currentFrameUpper].origin, upper.tagsbyId[upper_tag_weapon][nextFrameUpper].origin, upperCurrentLerpTime);
 
 			{
 				Vector3 currentOffset = lowerTorsoRotation * upperTorsoOrigin;
@@ -489,8 +495,8 @@ public class PlayerModel : MonoBehaviour, Damageable
 		upperTransform.localRotation = Quaternion.identity;
 
 		int deathNum = 2 * UnityEngine.Random.Range(0, 3);
-		upperAnimation = (UpperAnimation)deathNum;
-		lowerAnimation = (LowerAnimation)deathNum;
+		upperAnimation = deathNum;
+		lowerAnimation = deathNum;
 
 		gameObject.layer = GameManager.RagdollLayer;
 		GameManager.SetLayerAllChildren(playerTransform, GameManager.RagdollLayer);
@@ -543,7 +549,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		if (ownerDead)
 			return;
 
-		nextMoveType = (MoveType)moveType;
+		nextMoveType = moveType;
 
 		Quaternion rotate = Quaternion.identity;
 		if (forwardMove > 0)
@@ -669,14 +675,10 @@ public class PlayerModel : MonoBehaviour, Damageable
 				Mesher.FillModelFromProcessedData(newWeapon, barrel);
 			barrel.transform.SetParent(weaponModel.go.transform);
 			barrel.layer = weaponModel.go.layer;
-			foreach (MD3Tag tag in weapon.tags)
-			{
-				if (string.Equals(tag.name, "tag_barrel"))
-				{
-					OffSet = tag.origin;
-					break;
-				}
-			}
+
+			if (weapon.tagsIdbyName.TryGetValue("tag_barrel", out int tagId))
+				OffSet = weapon.tagsbyId[tagId][0].origin;
+
 			barrel.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
 		}
 
@@ -686,7 +688,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 		{
 			MD3UnityConverted muzzleUnityConverted;
 			Vector3 OffSet = Vector3.zero;
-			List<MD3Tag> weaponTags;
+			MD3 weaponModelTags;
 			muzzleFlash = new GameObject("muzzle_flash");
 			MD3 muzzle = ModelsManager.GetModel(muzzleModelName, true);
 
@@ -707,21 +709,17 @@ public class PlayerModel : MonoBehaviour, Damageable
 			if (barrel == null)
 			{
 				muzzleFlash.transform.SetParent(weaponModel.go.transform);
-				weaponTags = weapon.tags;
+				weaponModelTags = weapon;
 			}
 			else
 			{
 				muzzleFlash.transform.SetParent(barrel.transform);
-				weaponTags = newWeapon.tags;
+				weaponModelTags = newWeapon;
 			}
-			foreach (MD3Tag tag in weaponTags)
-			{
-				if (string.Equals(tag.name, "tag_flash"))
-				{
-					OffSet = tag.origin;
-					break;
-				}
-			}
+
+			if (weaponModelTags.tagsIdbyName.TryGetValue("tag_flash", out int tagId))
+				OffSet = weaponModelTags.tagsbyId[tagId][0].origin;
+
 			muzzleFlash.transform.SetLocalPositionAndRotation(OffSet, Quaternion.identity);
 			muzzleFlash.SetActive(false);
 		}
@@ -777,6 +775,11 @@ public class PlayerModel : MonoBehaviour, Damageable
 			return false;
 		if (!LoadSkin(head, headSkin))
 			return false;
+
+		upper_tag_torso = upper.tagsIdbyName["tag_torso"];
+		lower_tag_torso = lower.tagsIdbyName["tag_torso"];
+		upper_tag_head = upper.tagsIdbyName["tag_head"];
+		upper_tag_weapon = upper.tagsIdbyName["tag_weapon"];
 
 		LoadAnimations(animationFile, upperAnim, lowerAnim);
 		currentUpper = upperAnim[(int)UpperAnimation.Stand];

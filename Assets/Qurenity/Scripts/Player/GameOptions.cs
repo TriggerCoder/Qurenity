@@ -15,6 +15,7 @@ public static class GameOptions
 	public static int crosshairIndex = 4;
 	public static float crossHairAlpha = .4f;
 
+	public static bool dynamicMusic = true;
 	public static bool runToggle = true;
 	public static bool UseMuzzleLight = true;
 	public static bool HeadBob = true;

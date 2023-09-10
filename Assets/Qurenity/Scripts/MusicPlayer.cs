@@ -1,5 +1,6 @@
-using UnityEngine;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class MusicPlayer : MonoBehaviour
 {
@@ -10,7 +11,8 @@ public class MusicPlayer : MonoBehaviour
 		public AudioClip MusicFile;
 	}
 
-	public LevelMusic[] levelMusics = new LevelMusic[0];
+	public LevelMusic[] LevelMusics = new LevelMusic[0];
+	public static Dictionary<string, AudioClip> levelMusics = new Dictionary<string, AudioClip>();
 
 	public static MusicPlayer Instance;
 	[HideInInspector]
@@ -20,21 +22,19 @@ public class MusicPlayer : MonoBehaviour
 	{
 		Instance = this;
 		audioSource = GetComponent<AudioSource>();
+		foreach (LevelMusic music in LevelMusics)
+			levelMusics.Add(music.LevelName, music.MusicFile);
 	}
 
 	public bool Play(string levelName)
 	{
 		audioSource.Stop();
-
-		foreach (LevelMusic music in levelMusics)
+		if (levelMusics.TryGetValue(levelName, out AudioClip audioClip))
 		{
-			if (music.LevelName == levelName)
-			{
-				audioSource.clip = music.MusicFile;
-				audioSource.volume = 0.2f;
-				audioSource.Play();
-				return true;
-			}
+			audioSource.clip = audioClip;
+			audioSource.volume = 0.2f;
+			audioSource.Play();
+			return true;
 		}
 		return false;
 	}
