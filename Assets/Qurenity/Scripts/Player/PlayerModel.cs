@@ -480,8 +480,7 @@ public class PlayerModel : MonoBehaviour, Damageable
 
 
 		impulseVector = playerControls.impulseVector;
-		playerControls.capsuleCollider.enabled = false;
-		playerControls.controller.enabled = false;
+		playerControls.EnableColliders(false);
 		ragDoll = true;
 
 		DestroyAfterTime destroyAfterTime = playerTransform.gameObject.AddComponent<DestroyAfterTime>();

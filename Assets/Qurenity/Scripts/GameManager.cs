@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class GameManager : MonoBehaviour
 {
@@ -153,6 +154,9 @@ public class GameManager : MonoBehaviour
 		}
 		ready = true;
 
+		if (Player.Count == 0)
+			return;
+
 		MapLoader.noMarks.Add(Player[0].playerControls.capsuleCollider);
 		if (GameOptions.dynamicMusic)
 			AdaptativeMusicManager.Instance.StartMusic();
@@ -182,7 +186,10 @@ public class GameManager : MonoBehaviour
 				if (skipFrames == 0)
 				{
 					paused = false;
-					Player[0].playerThing.InitPlayer();
+					if (Player.Count != 0)
+						Player[0].playerThing.InitPlayer();
+					NetworkManager.Singleton.StartHost();
+//					NetworkManager.Singleton.StartClient();
 				}
 			}
 		}

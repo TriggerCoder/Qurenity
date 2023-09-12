@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 using Assets.MultiAudioListener;
 
 [RequireComponent(typeof(MultiAudioSource))]
-public class PlayerThing : MonoBehaviour, Damageable
+public class PlayerThing : NetworkBehaviour, Damageable
 {
 	[HideInInspector]
 	public PlayerInfo playerInfo;
@@ -49,46 +50,13 @@ public class PlayerThing : MonoBehaviour, Damageable
 
 	public void InitPlayer()
 	{
-		player = new GameObject();
-		avatar = player.AddComponent<PlayerModel>();
-		player.transform.SetParent(playerControls.transform);
+		if (!IsHost)
+			return;
 
-		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
-
-		gameObject.layer = playerInfo.playerLayer;
 		Vector3 destination = SpawnerManager.FindSpawnLocation();
 		TeleporterThing.TelefragEverything(destination, gameObject);
-		transform.position = destination;
-		playerControls.teleportDest = destination;
 
-		playerControls.capsuleCollider.enabled = true;
-		playerControls.controller.enabled = true;
-		playerInfo.playerHUD.pickupFlashTime = 0f;
-		playerInfo.playerHUD.painFlashTime = 0f;
-
-		int playerLayer = ((1 << GameManager.Player1Layer) |
-							(1 << GameManager.Player2Layer) |
-							(1 << GameManager.Player3Layer) |
-							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
-
-		playerCamera.SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
-													(1 << (GameManager.DebrisLayer)) |
-													(1 << (GameManager.ThingsLayer)) |
-													(1 << (GameManager.RagdollLayer)) |
-													(1 << (GameManager.CombinesMapMeshesLayer)) |
-													(1 << (playerInfo.playerLayer - 5)) |
-													playerLayer));
-
-		if (playerControls.playerWeapon == null)
-			playerControls.SwapToBestWeapon();
-
-		playerInfo.playerHUD.HUDUpdateHealthNum();
-		playerInfo.playerHUD.HUDUpdateArmorNum();
-
-		playerCamera.ChangeThirdPersonCamera(false);
-
-		playerControls.enabled = true;
-		ready = true;
+		InitPlayerClientRpc(destination);
 	}
 
 	void Update()
@@ -297,5 +265,51 @@ public class PlayerThing : MonoBehaviour, Damageable
 		{
 			return 0.0f;
 		}
+	}
+
+	[ClientRpc]
+	private void InitPlayerClientRpc(Vector3 destination)
+	{
+		player = new GameObject();
+		avatar = player.AddComponent<PlayerModel>();
+		player.transform.SetParent(playerControls.transform);
+
+		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
+
+		gameObject.layer = playerInfo.playerLayer;
+		AudioManager.Create3DSound(destination, "world/telein", 1f);
+		TeleporterThing.TelefragEverything(destination, gameObject);
+		transform.position = destination;
+		playerControls.teleportDest = destination;
+
+		playerControls.EnableColliders(true);
+		playerInfo.playerHUD.pickupFlashTime = 0f;
+		playerInfo.playerHUD.painFlashTime = 0f;
+
+		int playerLayer = ((1 << GameManager.Player1Layer) |
+							(1 << GameManager.Player2Layer) |
+							(1 << GameManager.Player3Layer) |
+							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
+
+		playerCamera.SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.DebrisLayer)) |
+													(1 << (GameManager.ThingsLayer)) |
+													(1 << (GameManager.RagdollLayer)) |
+													(1 << (GameManager.CombinesMapMeshesLayer)) |
+													(1 << (playerInfo.playerLayer - 5)) |
+													playerLayer));
+
+		if (playerControls.playerWeapon == null)
+			playerControls.SwapToBestWeapon();
+
+		playerInfo.playerHUD.HUDUpdateHealthNum();
+		playerInfo.playerHUD.HUDUpdateArmorNum();
+
+		playerCamera.ChangeThirdPersonCamera(false);
+
+		if (!IsOwner)
+			playerCamera.gameObject.SetActive(false);
+		playerControls.enabled = true;
+		ready = true;
 	}
 }

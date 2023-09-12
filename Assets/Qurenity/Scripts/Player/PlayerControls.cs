@@ -1,8 +1,11 @@
 using System;
 using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.InputSystem;
 using Assets.MultiAudioListener;
-public class PlayerControls : MonoBehaviour
+using System.Collections.Generic;
+
+public class PlayerControls : NetworkBehaviour
 {
 	public AnimationCurve axisAnimationCurve;
 	public MultiAudioSource audioSource;
@@ -10,9 +13,16 @@ public class PlayerControls : MonoBehaviour
 	public PlayerInfo playerInfo;
 	[HideInInspector]
 	public PlayerWeapon playerWeapon;
-	public PlayerCamera playerCamera;
 	[HideInInspector]
 	public PlayerThing playerThing;
+
+	public PlayerCamera playerCamera;
+	[HideInInspector]
+	public CapsuleCollider capsuleCollider;
+	[HideInInspector]
+	public CharacterController controller;
+	[HideInInspector]
+	private PlayerInput playerInput;
 	[HideInInspector]
 	public InterpolationObjectController interpolationController;
 
@@ -29,57 +39,26 @@ public class PlayerControls : MonoBehaviour
 
 	public Vector3 jumpPadVel = Vector3.zero;
 
+	public Vector3 playerVelocity = Vector3.zero;
+
 	public float impulseDampening = 4f;
-	[HideInInspector]
-	public CharacterController controller;
-	[HideInInspector]
-	public CapsuleCollider capsuleCollider;
-	[HideInInspector]
-	public PlayerInput playerInput;
 
 	// Movement stuff
 	public float crouchSpeed = 3.0f;                // Crouch speed
-	public float walkSpeed = 5.0f;					// Walk speed
+	public float walkSpeed = 5.0f;                  // Walk speed
 	public float runSpeed = 7.0f;                   // Run speed
-	private float oldSpeed = 0;						// Previous move speed
+	private float oldSpeed = 0;                     // Previous move speed
 
-	public float moveSpeed;							// Ground move speed
-	public float runAcceleration = 14.0f;			// Ground accel
-	public float runDeacceleration = 10.0f;			// Deacceleration that occurs when running on the ground
-	public float airAcceleration = 2.0f;			// Air accel
-	public float airDecceleration = 2.0f;			// Deacceleration experienced when ooposite strafing
-	public float airControl = 0.3f;					// How precise air control is
-	public float sideStrafeAcceleration = 50.0f;	// How fast acceleration occurs to get up to sideStrafeSpeed when
-	public float sideStrafeSpeed = 1.0f;			// What the max speed to generate when side strafing
-	public float jumpSpeed = 8.0f;					// The speed at which the character's up axis gains when hitting jump
-	public bool holdJumpToBhop = false;				// When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
-
-	public Vector3 playerVelocity = Vector3.zero;
-
-	private bool wishJump = false;
-	private bool wishFire = false;
-	private bool controllerIsGrounded = true;
-
-	private float deathTime = 0;
-	private float respawnDelay = 1.7f;
-	struct currentMove
-	{
-		public float forwardSpeed;
-		public float sidewaysSpeed;
-	}
-
-	private currentMove cMove;
-
-	public int CurrentWeapon = -1;
-	public int SwapWeapon = -1;
-
-	public MoveType currentMoveType = MoveType.Run;
-	public enum MoveType
-	{
-		Crouch,
-		Walk,
-		Run
-	}
+	public float moveSpeed;                         // Ground move speed
+	public float runAcceleration = 14.0f;           // Ground accel
+	public float runDeacceleration = 10.0f;         // Deacceleration that occurs when running on the ground
+	public float airAcceleration = 2.0f;            // Air accel
+	public float airDecceleration = 2.0f;           // Deacceleration experienced when ooposite strafing
+	public float airControl = 0.3f;                 // How precise air control is
+	public float sideStrafeAcceleration = 50.0f;    // How fast acceleration occurs to get up to sideStrafeSpeed when
+	public float sideStrafeSpeed = 1.0f;            // What the max speed to generate when side strafing
+	public float jumpSpeed = 8.0f;                  // The speed at which the character's up axis gains when hitting jump
+	public bool holdJumpToBhop = false;             // When enabled allows player to just hold jump button to keep on bhopping perfectly. Beware: smells like casual.
 
 	//playerInputActions
 	InputAction Action_Move;
@@ -93,30 +72,107 @@ public class PlayerControls : MonoBehaviour
 	InputAction Action_WeaponSwitch;
 	InputAction[] Action_Weapon = new InputAction[10];
 
-	//Cached Transform
-	public Transform cTransform;
-	public Vector3 teleportDest = Vector3.zero;
-	void Awake()
+	private bool wishJump = false;
+	private bool wishFire = false;
+	private bool controllerIsGrounded = true;
+
+	private float deathTime = 0;
+	private float respawnDelay = 1.7f;
+
+	public int CurrentWeapon = -1;
+	public int SwapWeapon = -1;
+	private struct currentMove
 	{
-		playerInput = GetComponentInParent<PlayerInput>();
-		controller = GetComponentInParent<CharacterController>();
-		capsuleCollider = GetComponentInParent<CapsuleCollider>();
-		audioSource = GetComponentInParent<MultiAudioSource>();
-//		playerCamera = GetComponentInChildren<PlayerCamera>();
-		playerInfo = GetComponent<PlayerInfo>();
-		playerThing = GetComponentInParent<PlayerThing>();
-		interpolationController = GetComponent<InterpolationObjectController>();
-
-		playerWeapon = null;
-		moveSpeed = runSpeed;
-		currentMoveType = MoveType.Run;
-
-		//Set the actions
-		SetPlayerAction();
-		//cache transform
-		cTransform = transform;
+		public float forwardSpeed;
+		public float sidewaysSpeed;
 	}
 
+	private currentMove cMove;
+
+	public int currentMoveType = MoveType.Run;
+
+	public Vector3 teleportDest = Vector3.zero;
+
+	//Cached Transform
+	public Transform cTransform;
+
+	public static class MoveType
+	{
+		public const int Crouch = 0;
+		public const int Walk = 1;
+		public const int Run = 2;
+	}
+
+	struct PlayerInputs : INetworkSerializable
+	{
+		public Vector2 Move;
+		public Vector2 Look;
+		public Vector2 ViewDirection;
+		public Vector3 ForwardDir;
+		public bool Fire;
+		public bool Jump;
+		public bool Crouch;
+		public int CurrentWeapon;
+		public int CurrentTick;
+		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+		{
+			serializer.SerializeValue(ref Move);
+			serializer.SerializeValue(ref Look);
+			serializer.SerializeValue(ref ViewDirection);
+			serializer.SerializeValue(ref ForwardDir);
+			serializer.SerializeValue(ref Fire);
+			serializer.SerializeValue(ref Jump);
+			serializer.SerializeValue(ref Crouch);
+			serializer.SerializeValue(ref CurrentWeapon);
+			serializer.SerializeValue(ref CurrentTick);
+		}
+	}
+	struct PlayerState : INetworkSerializable
+	{
+		public Vector3 Position;
+		public Vector3 Velocity;
+		public Quaternion ViewAngles;
+		public bool isGrounded;
+		public bool isFiring;
+		public int MoveType;
+		public int Weapon;
+		public int Tick;
+		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+		{
+			serializer.SerializeValue(ref Position);
+			serializer.SerializeValue(ref Velocity);
+			serializer.SerializeValue(ref ViewAngles);
+			serializer.SerializeValue(ref isGrounded);
+			serializer.SerializeValue(ref MoveType);
+			serializer.SerializeValue(ref isFiring);
+			serializer.SerializeValue(ref Weapon);
+			serializer.SerializeValue(ref Tick);
+		}
+	}
+
+	private Queue<PlayerInputs> clientInputs = new Queue<PlayerInputs>();
+	private PlayerInputs lastFrameInput;
+	private PlayerInputs currentFrameInput;
+
+	private PlayerState lastFramePlayerState;
+	private PlayerState currentFramePlayerState;
+	void Awake()
+	{
+		
+		controller = GetComponentInParent<CharacterController>();
+		moveSpeed = runSpeed;
+		OnAwake();
+	}
+
+	void Start()
+	{
+		if (!IsOwner)
+			return;
+
+		playerInput = GetComponentInParent<PlayerInput>();
+		//Set the actions
+		SetPlayerAction();
+	}
 	void SetPlayerAction()
 	{
 		Action_Move = playerInput.actions["Move"];
@@ -132,226 +188,20 @@ public class PlayerControls : MonoBehaviour
 		for (int i = 0; i < 10; i++)
 			Action_Weapon[i] = playerInput.actions["Weapon" + i];
 	}
-
-	void ApplyMove(float deltaTime)
-	{
-		lastPosition = cTransform.position;
-		controller.Move((playerVelocity + impulseVector + jumpPadVel) * deltaTime);
-
-		//dampen impulse
-		if (impulseVector.sqrMagnitude > 0)
-		{
-			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * deltaTime);
-			if (impulseVector.sqrMagnitude < 1f)
-				impulseVector = Vector3.zero;
-		}
-	}
-
 	void Update()
 	{
 		if (GameManager.Paused)
 			return;
 
-		if (Action_Close.WasPressedThisFrame())
-			Application.Quit();
+		if (IsOwner)
+			if (Action_Close.WasPressedThisFrame())
+				Application.Quit();
 
-		if (playerThing.Dead)
-		{
-			if (playerCamera != null)
-				playerCamera.bopActive = false;
+		if (IsServer)
+			DequeueClientInputs();
 
-			if (deathTime < respawnDelay)
-				deathTime += Time.deltaTime;
-			else
-			{
-				if (Action_Jump.WasPressedThisFrame() || Action_Fire.WasPressedThisFrame())
-				{
-					deathTime = 0;
-					viewDirection = Vector2.zero;
-
-					if (playerWeapon != null)
-					{
-						Destroy(playerWeapon.gameObject);
-						playerWeapon = null;
-					}
-
-					playerInfo.Reset();
-					playerThing.InitPlayer();
-				}
-			}
-			return;
-		}
-
-		if (!playerThing.ready)
-			return;
-
-		if (Action_CameraSwitch.WasPressedThisFrame())
-			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
-
-		Vector2 Look = Action_Look.ReadValue<Vector2>();
-
-		if (playerInput.currentControlScheme == "Keyboard&Mouse")
-		{
-			viewDirection.y += Look.x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
-			viewDirection.x -= Look.y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
-		}
-		else
-		{
-			viewDirection.y +=  Look.x * GameOptions.GamePadSensitivity.x * axisAnimationCurve.Evaluate(Mathf.Abs(Look.x));
-			viewDirection.x -=  Look.y * GameOptions.GamePadSensitivity.y * axisAnimationCurve.Evaluate(Mathf.Abs(Look.y));
-		}
-		//so you don't fall when no-clipping
-		bool outerSpace = false;
-
-		if (gameObject.layer != playerInfo.playerLayer)
-			outerSpace = true;
-
-		if (viewDirection.y < -180) viewDirection.y += 360;
-		if (viewDirection.y > 180) viewDirection.y -= 360;
-
-		//restricted up/down looking angle as sprites look really bad when looked at steep angle
-		//also the game doesn't really require such as originally there was no way to rotate camera pitch
-		if (viewDirection.x < -85) viewDirection.x = -85;
-		if (viewDirection.x > 85) viewDirection.x = 85;
-
-		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
-		playerThing.avatar.CheckLegTurn(playerCamera.cTransform.forward);
-
-		controllerIsGrounded = controller.isGrounded;
-		playerThing.avatar.isGrounded = controllerIsGrounded;
-
-		//Player can only crounch if it is grounded
-		if ((Action_Crouch.WasPressedThisFrame()) && (controllerIsGrounded))
-		{
-			if (oldSpeed == 0)
-				oldSpeed = moveSpeed;
-			moveSpeed = crouchSpeed;
-			currentMoveType = MoveType.Crouch;
-			ChangeHeight(false);
-		}
-		else if (Action_Crouch.WasReleasedThisFrame())
-		{
-			if (oldSpeed != 0)
-				moveSpeed = oldSpeed;
-			if (moveSpeed == walkSpeed)
-				currentMoveType = MoveType.Walk;
-			else
-				currentMoveType = MoveType.Run;
-			ChangeHeight(true);
-			oldSpeed = 0;
-		}
-		else //CheckRun
-		{
-			if (GameOptions.runToggle)
-			{
-				if (Action_Run.WasReleasedThisFrame())
-				{
-					if (moveSpeed == walkSpeed)
-					{
-						moveSpeed = runSpeed;
-						currentMoveType = MoveType.Run;
-					}
-					else
-					{
-						moveSpeed = walkSpeed;
-						currentMoveType = MoveType.Walk;
-					}
-				}
-			}
-			else
-			{
-				if (Action_Run.IsPressed())
-				{
-					moveSpeed = runSpeed;
-					currentMoveType = MoveType.Run;
-				}
-				else
-				{
-					moveSpeed = walkSpeed;
-					currentMoveType = MoveType.Walk;
-				}
-			}
-		}
-
-		//Movement Checks
-		if (currentMoveType != MoveType.Crouch)
-			QueueJump();
-
-		if (controllerIsGrounded)
-		{
-			if (playerThing.avatar.enableOffset)
-				playerThing.avatar.TurnLegs((int)currentMoveType, cMove.sidewaysSpeed, cMove.forwardSpeed);
-			if (wishJump)
-				AnimateLegsOnJump();
-		}
-		else
-			playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
-
-		if (playerCamera.MainCamera.activeSelf)
-		{
-			if ((cTransform.position - lastPosition).sqrMagnitude > .0001f)
-			{
-				if (playerCamera != null)
-					playerCamera.bopActive = true;
-			}
-			else if (playerCamera != null)
-				playerCamera.bopActive = false;
-
-			//use weapon
-			if (Action_Fire.IsPressed())
-				wishFire = true;
-		}
-
-		//swap weapon
-		if (playerWeapon == null)
-		{
-			if (SwapWeapon == -1)
-				SwapToBestWeapon();
-
-			if (SwapWeapon > -1)
-			{
-				CurrentWeapon = SwapWeapon;
-				playerWeapon = Instantiate(playerInfo.WeaponPrefabs[CurrentWeapon]);
-				playerWeapon.Init(playerInfo);
-				SwapWeapon = -1;
-			}
-		}
-		float wheel = Action_WeaponSwitch.ReadValue<float>();
-
-		if (wheel > 0)
-		{
-			bool gotWeapon = false;
-			for (int NextWeapon = CurrentWeapon + 1; NextWeapon < 9; NextWeapon++)
-			{
-				gotWeapon = TrySwapWeapon(NextWeapon);
-				if (gotWeapon)
-					break;
-			}
-			if (!gotWeapon)
-				TrySwapWeapon(0);
-		}
-
-		if (wheel < 0)
-		{
-			bool gotWeapon = false;
-			for (int NextWeapon = CurrentWeapon - 1; NextWeapon >= 0; NextWeapon--)
-			{
-				gotWeapon = TrySwapWeapon(NextWeapon);
-				if (gotWeapon)
-					break;
-			}
-			if (!gotWeapon)
-				SwapToBestWeapon();
-		}
-
-		for (int i = 0; i < 10; i++)
-		{
-			if (Action_Weapon[i].WasPressedThisFrame())
-			{
-				TrySwapWeapon(i);
-				break;
-			}
-		}
+		if ((IsOwner) || (IsServer))
+			OnUpdate();
 	}
 
 	void FixedUpdate()
@@ -367,98 +217,15 @@ public class PlayerControls : MonoBehaviour
 			return;
 		}
 
-		if (playerThing.Dead)
-		{
-			if (controller.enabled)
-			{
-				// Reset the gravity velocity
-				playerVelocity = Vector3.down * GameManager.Instance.gravity;
-				ApplyMove(Time.fixedDeltaTime);
-			}
-			return;
-		}
-
-		if (!playerThing.ready)
-			return;
-
-		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
-
-		//Movement Checks
-		if (controllerIsGrounded)
-			GroundMove(Time.fixedDeltaTime);
-		else
-			AirMove(Time.fixedDeltaTime);
-
-		//apply move
-		ApplyMove(Time.fixedDeltaTime);
-
-		//dampen jump pad impulse
-		if (jumpPadVel.sqrMagnitude > 0)
-		{
-			jumpPadVel.y -= (GameManager.Instance.gravity * Time.fixedDeltaTime);
-			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
-				jumpPadVel = Vector3.zero;
-		}
-
-		if (wishFire)
-		{
-			wishFire = false;
-			if (playerWeapon.Fire())
-			{
-				playerInfo.playerHUD.HUDUpdateAmmoNum();
-				playerThing.avatar.Attack();
-			}
-		}
-	}
-
-	public void ChangeHeight(bool Standing)
-	{
-		float newCenter = centerHeight.y;
-		float newHeight = height.y;
-
-		if (Standing)
-		{
-			newCenter = centerHeight.x;
-			newHeight = height.x;
-		}
-		controller.center = new Vector3(0, newCenter, 0);
-		controller.height = newHeight;
-
-		capsuleCollider.center = controller.center;
-		capsuleCollider.height = newHeight + ccHeight;
-
-		playerCamera.yOffset = newCenter + camerasHeight;
-	}
-	public void AnimateLegsOnJump()
-	{
-		if (cMove.forwardSpeed >= 0)
-			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.Jump;
-		else if (cMove.forwardSpeed < 0)
-			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
-		playerThing.avatar.enableOffset = false;
-		playerThing.PlayModelSound("jump1");
+		OnFixedUpdate();
 	}
 	private void SetMovementDir()
 	{
-		Vector2 Move = Action_Move.ReadValue<Vector2>();
+		Vector2 currentMove = Move();
 
-		cMove.forwardSpeed = Move.y;
-		cMove.sidewaysSpeed = Move.x;
+		cMove.forwardSpeed = currentMove.y;
+		cMove.sidewaysSpeed = currentMove.x;
 	}
-	private void QueueJump()
-	{
-		if (holdJumpToBhop)
-		{
-			wishJump = Action_Jump.IsPressed();
-			return;
-		}
-
-		if (Action_Jump.WasPressedThisFrame() && !wishJump)
-			wishJump = true;
-		if (Action_Jump.WasReleasedThisFrame())
-			wishJump = false;
-	}
-
 	private void GroundMove(float deltaTime)
 	{
 		Vector3 wishdir;
@@ -573,7 +340,7 @@ public class PlayerControls : MonoBehaviour
 			AirControl(wishdir, wishspeed2, deltaTime);
 
 		// Apply gravity
-		if(jumpPadVel.sqrMagnitude > 0)
+		if (jumpPadVel.sqrMagnitude > 0)
 			playerVelocity.y = 0;
 		else
 			playerVelocity.y -= GameManager.Instance.gravity * deltaTime;
@@ -612,6 +379,188 @@ public class PlayerControls : MonoBehaviour
 		playerVelocity.x *= speed;
 		playerVelocity.y = zspeed; // Note this line
 		playerVelocity.z *= speed;
+	}
+	public void OnAwake()
+	{
+		capsuleCollider = GetComponentInParent<CapsuleCollider>();
+		audioSource = GetComponentInParent<MultiAudioSource>();
+		playerInfo = GetComponent<PlayerInfo>();
+		playerThing = GetComponentInParent<PlayerThing>();
+		interpolationController = GetComponent<InterpolationObjectController>();
+
+		playerWeapon = null;
+		currentMoveType = MoveType.Run;
+		//cache transform
+		cTransform = transform;
+	}
+
+	private void OnUpdate()
+	{
+		if (playerThing.Dead)
+		{
+			SetCameraBobActive(false);
+
+			if (deathTime < respawnDelay)
+				deathTime += Time.deltaTime;
+			else
+			{
+				if (JumpPressedThisFrame() || FirePressedThisFrame())
+				{
+					deathTime = 0;
+					viewDirection = Vector2.zero;
+
+					if (playerWeapon != null)
+					{
+						Destroy(playerWeapon.gameObject);
+						playerWeapon = null;
+					}
+
+					playerInfo.Reset();
+					playerThing.InitPlayer();
+				}
+			}
+			return;
+		}
+
+		if (!playerThing.ready)
+			return;
+
+		CheckCameraChange();
+
+		SetViewDirection();
+
+		//so you don't fall when no-clipping
+		bool outerSpace = false;
+
+		if (gameObject.layer != playerInfo.playerLayer)
+			outerSpace = true;
+
+		if (viewDirection.y < -180) viewDirection.y += 360;
+		if (viewDirection.y > 180) viewDirection.y -= 360;
+
+		//restricted up/down looking angle
+		if (viewDirection.x < -85) viewDirection.x = -85;
+		if (viewDirection.x > 85) viewDirection.x = 85;
+
+		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
+		playerThing.avatar.CheckLegTurn(ForwardDir());
+
+		controllerIsGrounded = IsControllerGrounded();
+		playerThing.avatar.isGrounded = controllerIsGrounded;
+
+		//Player can only crouch if it is grounded
+		if ((CrouchPressedThisFrame()) && (controllerIsGrounded))
+		{
+			CrouchChangePlayerSpeed(false);
+			ChangeHeight(false);
+		}
+		else if (CrouchReleasedThisFrame())
+		{
+			CrouchChangePlayerSpeed(true);
+			ChangeHeight(true);
+		}
+
+		if (currentMoveType != MoveType.Crouch)
+		{
+			CheckIfRunning();
+			QueueJump();
+		}
+
+		//Movement Checks
+		if (controllerIsGrounded)
+		{
+			if (playerThing.avatar.enableOffset)
+				playerThing.avatar.TurnLegs(currentMoveType, cMove.sidewaysSpeed, cMove.forwardSpeed);
+			if (wishJump)
+				AnimateLegsOnJump();
+		}
+		else
+			playerThing.avatar.TurnLegsOnJump(cMove.sidewaysSpeed);
+
+		//	if (playerCamera.MainCamera.activeSelf)
+		{
+			if ((cTransform.position - lastPosition).sqrMagnitude > .0001f)
+				SetCameraBobActive(true);
+			else
+				SetCameraBobActive(false);
+
+			//use weapon
+			if (FirePressed())
+				wishFire = true;
+		}
+
+		//swap weapon
+		if (playerWeapon == null)
+		{
+			if (SwapWeapon == -1)
+				SwapToBestWeapon();
+
+			if (SwapWeapon > -1)
+			{
+				CurrentWeapon = SwapWeapon;
+				playerWeapon = Instantiate(playerInfo.WeaponPrefabs[CurrentWeapon]);
+				playerWeapon.Init(playerInfo);
+				SwapWeapon = -1;
+			}
+		}
+
+		CheckMouseWheelWeaponChange();
+
+		CheckWeaponChangeByIndex();
+
+		if ((IsOwner) && (!IsHost))
+			SendDataServerRpc(new PlayerInputs
+			{
+					Move = Move(),
+					Look = Look(),
+					ViewDirection = viewDirection,
+					ForwardDir = ForwardDir(),
+					Fire = FirePressed(),
+					Jump = JumpPressed(),
+					Crouch = CrouchPressed(),
+					CurrentWeapon = CurrentWeapon,
+					CurrentTick = 0
+			}) ;
+	}
+
+	private void OnFixedUpdate()
+	{
+		if (playerThing.Dead)
+		{
+			ApplySimpleGravity();
+			return;
+		}
+
+		if (!playerThing.ready)
+			return;
+
+		RotateTorwardDir();
+
+		controllerIsGrounded = IsControllerGrounded();
+		//Movement Checks
+		CheckMovements();
+
+		//apply move
+		ApplyMove();
+
+		if (wishFire)
+		{
+			wishFire = false;
+			if (playerWeapon.Fire())
+			{
+				playerInfo.playerHUD.HUDUpdateAmmoNum();
+				playerThing.avatar.Attack();
+			}
+		}
+	}
+	public void AnimateLegsOnJump()
+	{
+		if (cMove.forwardSpeed >= 0)
+			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.Jump;
+		else if (cMove.forwardSpeed < 0)
+			playerThing.avatar.lowerAnimation = PlayerModel.LowerAnimation.JumpBack;
+		playerThing.avatar.enableOffset = false;
+		playerThing.PlayModelSound("jump1");
 	}
 
 	public bool TrySwapWeapon(int weapon)
@@ -687,5 +636,436 @@ public class PlayerControls : MonoBehaviour
 		if (TrySwapWeapon(4)) return; //rocketlauncher
 		if (TrySwapWeapon(3)) return; //grenade launcher
 		if (TrySwapWeapon(0)) return; //gauntlet
+	}
+
+	public void SetCameraBobActive(bool active)
+	{
+		if (!IsOwner)
+			return;
+
+		if (playerCamera != null)
+			playerCamera.bopActive = active;
+	}
+	public bool JumpPressedThisFrame()
+	{
+		if (!IsOwner)
+		{
+			if (lastFrameInput.Jump)
+				return false;
+			if (currentFrameInput.Jump)
+				return true;
+			return false;
+		}
+		return (Action_Jump.WasPressedThisFrame()); 
+	
+	}
+	public bool JumpReleasedThisFrame()
+	{ 
+		if (!IsOwner)
+		{
+			if (!lastFrameInput.Jump)
+				return false;
+			if (!currentFrameInput.Jump)
+				return true;
+			return false;
+		}
+		return (Action_Jump.WasReleasedThisFrame());
+	}
+	public bool JumpPressed()
+	{ 
+		if (!IsOwner)
+			return currentFrameInput.Jump;
+		
+		return (Action_Jump.IsPressed());
+	}
+	public bool FirePressedThisFrame()
+	{ 
+		if (!IsOwner)
+		{
+			if (lastFrameInput.Fire)
+				return false;
+			if (currentFrameInput.Fire)
+				return true;
+			return false;
+		}
+		return (Action_Fire.WasPressedThisFrame());
+	}
+	public bool FirePressed()
+	{ 
+		if (!IsOwner)
+		{
+			if (IsHost)
+				return currentFrameInput.Fire;
+			else
+				return currentFramePlayerState.isFiring;
+		}
+		return (Action_Fire.IsPressed());
+	}
+
+	public void CheckCameraChange()
+	{
+		if (!IsOwner)
+			return;
+
+		if (Action_CameraSwitch.WasPressedThisFrame())
+			playerCamera.ChangeThirdPersonCamera(!playerCamera.ThirdPerson.enabled);
+	}
+	public void SetViewDirection()
+	{
+		if (!IsOwner)
+		{
+			if (IsHost)
+				viewDirection = currentFrameInput.ViewDirection;
+			else
+				Debug.LogWarning("Don't Forget to add SetViewDirection");
+			return;
+		}
+		Vector2 Look = Action_Look.ReadValue<Vector2>();
+
+		if (playerInput.currentControlScheme == "Keyboard&Mouse")
+		{
+			viewDirection.y += Look.x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
+			viewDirection.x -= Look.y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
+		}
+		else
+		{
+			viewDirection.y += Look.x * GameOptions.GamePadSensitivity.x * axisAnimationCurve.Evaluate(Mathf.Abs(Look.x));
+			viewDirection.x -= Look.y * GameOptions.GamePadSensitivity.y * axisAnimationCurve.Evaluate(Mathf.Abs(Look.y));
+		}
+	}
+	public Vector2 Move()
+	{
+		if (!IsOwner)
+			return currentFrameInput.Move;
+
+		return Action_Move.ReadValue<Vector2>();
+	}
+	public Vector2 Look()
+	{ 
+		if (!IsOwner) 
+			return currentFrameInput.Look;
+		
+		return Action_Look.ReadValue<Vector2>(); 
+	}
+	public Vector3 ForwardDir()
+	{ 
+		if (!IsOwner)
+			return currentFrameInput.ForwardDir;
+
+		return playerCamera.cTransform.forward;
+	}
+	public bool IsControllerGrounded()
+	{ 
+		if (!IsOwner)
+			if (!IsHost)
+				return currentFramePlayerState.isGrounded;
+
+		return controller.isGrounded; 
+	}
+	public bool CrouchPressedThisFrame()
+	{ 
+		if (!IsOwner)
+		{
+			if (IsHost)
+			{
+				if (lastFrameInput.Crouch)
+					return false;
+				if (currentFrameInput.Crouch)
+					return true;
+				return false;
+			}
+			else
+			{
+				if (lastFramePlayerState.MoveType == MoveType.Crouch)
+					return false;
+				if (currentFramePlayerState.MoveType == MoveType.Crouch)
+					return true;
+				return false;
+			}
+		}
+		return (Action_Crouch.WasPressedThisFrame()); 
+	}
+
+	public bool CrouchPressed()
+	{
+		if (!IsOwner)
+			return currentFrameInput.Crouch;
+		return (Action_Crouch.IsPressed());
+	}
+	public bool CrouchReleasedThisFrame() 
+	{ 
+		if (!IsOwner)
+		{
+			if (IsHost)
+			{
+				if (!lastFrameInput.Crouch)
+					return false;
+				if (!currentFrameInput.Crouch)
+					return true;
+				return false;
+			}
+			else
+			{
+				if (lastFramePlayerState.MoveType != MoveType.Crouch)
+					return false;
+				if (currentFramePlayerState.MoveType != MoveType.Crouch)
+					return true;
+				return false;
+			}
+		}
+		return (Action_Crouch.WasReleasedThisFrame());
+	}
+	public void CrouchChangePlayerSpeed(bool Standing)
+	{
+		if ((!IsOwner) && (!IsHost))
+		{
+			if (Standing)
+			{
+				currentMoveType = MoveType.Run;
+				return;
+			}
+			currentMoveType = MoveType.Crouch;
+			return;
+		}
+
+		if (Standing)
+		{
+			if (oldSpeed != 0)
+				moveSpeed = oldSpeed;
+			if (moveSpeed == walkSpeed)
+				currentMoveType = MoveType.Walk;
+			else
+				currentMoveType = MoveType.Run;
+			oldSpeed = 0;
+			return;
+		}
+		if (oldSpeed == 0)
+			oldSpeed = moveSpeed;
+		moveSpeed = crouchSpeed;
+		currentMoveType = MoveType.Crouch;
+	}
+	public void ChangeHeight(bool Standing)
+	{
+		float newCenter = centerHeight.y;
+		float newHeight = height.y;
+
+		if (!IsOwner)
+		{
+			if (Standing)
+			{
+				newCenter = centerHeight.x;
+				newHeight = height.x;
+			}
+			capsuleCollider.center = new Vector3(0, newCenter, 0);
+			capsuleCollider.height = newHeight + ccHeight;
+			return;
+		}
+
+		if (Standing)
+		{
+			newCenter = centerHeight.x;
+			newHeight = height.x;
+		}
+		controller.center = new Vector3(0, newCenter, 0);
+		controller.height = newHeight;
+
+		capsuleCollider.center = controller.center;
+		capsuleCollider.height = newHeight + ccHeight;
+
+		playerCamera.yOffset = newCenter + camerasHeight;
+	}
+	public void CheckIfRunning()
+	{
+		if (!IsOwner)
+			return;
+
+		if (GameOptions.runToggle)
+		{
+			if (Action_Run.WasReleasedThisFrame())
+			{
+				if (moveSpeed == walkSpeed)
+				{
+					moveSpeed = runSpeed;
+					currentMoveType = MoveType.Run;
+				}
+				else
+				{
+					moveSpeed = walkSpeed;
+					currentMoveType = MoveType.Walk;
+				}
+			}
+		}
+		else
+		{
+			if (Action_Run.IsPressed())
+			{
+				moveSpeed = runSpeed;
+				currentMoveType = MoveType.Run;
+			}
+			else
+			{
+				moveSpeed = walkSpeed;
+				currentMoveType = MoveType.Walk;
+			}
+		}
+	}
+	public void QueueJump()
+	{
+		if (!IsOwner)
+			return;
+
+		if (holdJumpToBhop)
+		{
+			wishJump = Action_Jump.IsPressed();
+			return;
+		}
+
+		if (Action_Jump.WasPressedThisFrame() && !wishJump)
+			wishJump = true;
+		if (Action_Jump.WasReleasedThisFrame())
+			wishJump = false;
+	}
+
+	public void CheckMouseWheelWeaponChange()
+	{
+		if (!IsOwner)
+			return;
+
+		float wheel = Action_WeaponSwitch.ReadValue<float>();
+		if (wheel > 0)
+		{
+			bool gotWeapon = false;
+			for (int NextWeapon = CurrentWeapon + 1; NextWeapon < 9; NextWeapon++)
+			{
+				gotWeapon = TrySwapWeapon(NextWeapon);
+				if (gotWeapon)
+					break;
+			}
+			if (!gotWeapon)
+				TrySwapWeapon(0);
+		}
+		else if (wheel < 0)
+		{
+			bool gotWeapon = false;
+			for (int NextWeapon = CurrentWeapon - 1; NextWeapon >= 0; NextWeapon--)
+			{
+				gotWeapon = TrySwapWeapon(NextWeapon);
+				if (gotWeapon)
+					break;
+			}
+			if (!gotWeapon)
+				SwapToBestWeapon();
+		}
+	}
+	public void CheckWeaponChangeByIndex()
+	{
+		if (!IsOwner)
+			return;
+
+		for (int i = 0; i < 10; i++)
+		{
+			if (Action_Weapon[i].WasPressedThisFrame())
+			{
+				TrySwapWeapon(i);
+				break;
+			}
+		}
+	}
+	public void ApplySimpleGravity()
+	{
+		if (!IsOwner)
+			return;
+
+		if (controller.enabled)
+		{
+			// Reset the gravity velocity
+			playerVelocity = Vector3.down * GameManager.Instance.gravity;
+			ApplyMove();
+		}
+	}
+	public void ApplyMove()
+	{
+		if (!IsOwner)
+			return;
+
+		float deltaTime = Time.fixedDeltaTime;
+		lastPosition = cTransform.position;
+		controller.Move((playerVelocity + impulseVector + jumpPadVel) * deltaTime);
+
+		//dampen impulse
+		if (impulseVector.sqrMagnitude > 0)
+		{
+			impulseVector = Vector3.Lerp(impulseVector, Vector3.zero, impulseDampening * deltaTime);
+			if (impulseVector.sqrMagnitude < 1f)
+				impulseVector = Vector3.zero;
+		}
+
+		//dampen jump pad impulse
+		if (jumpPadVel.sqrMagnitude > 0)
+		{
+			jumpPadVel.y -= (GameManager.Instance.gravity * Time.fixedDeltaTime);
+			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
+				jumpPadVel = Vector3.zero;
+		}
+	}
+	public void CheckMovements()
+	{
+		if (!IsOwner)
+			return;
+
+		if (controllerIsGrounded)
+			GroundMove(Time.fixedDeltaTime);
+		else
+			AirMove(Time.fixedDeltaTime);
+	}
+	public void EnableColliders(bool enable)
+	{
+
+		capsuleCollider.enabled = enable;
+		if (!IsOwner)
+			return;
+
+		controller.enabled = enable;
+	}
+	public Vector2 GetBobDelta(float hBob, float vBob, float lerp)
+	{
+		Vector2 position;
+
+		if (!IsOwner)
+			return Vector2.zero;
+
+		float speed = playerVelocity.magnitude;
+		float moveSpeed = walkSpeed;
+		if (moveSpeed != walkSpeed)
+			moveSpeed = runSpeed;
+		float delta = Mathf.Cos(Time.time * moveSpeed) * hBob * speed * lerp;
+		if (moveSpeed == crouchSpeed) //Crouched
+			delta *= 5;
+		position.x = delta;
+
+		delta = Mathf.Sin(Time.time * moveSpeed) * vBob * speed * lerp;
+		if (moveSpeed == crouchSpeed) //Crouched
+			delta *= 5;
+		position.y = delta;
+		return position;
+	}
+	public void RotateTorwardDir()
+	{
+		if (!IsOwner)
+			return;
+
+		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
+	}
+	public void DequeueClientInputs()
+	{
+		lastFrameInput = currentFrameInput;
+		if (clientInputs.Count != 0)
+			currentFrameInput = clientInputs.Dequeue();
+	}
+
+	[ServerRpc]
+	private void SendDataServerRpc(PlayerInputs playerInputs)
+	{
+		clientInputs.Enqueue(playerInputs);
 	}
 }

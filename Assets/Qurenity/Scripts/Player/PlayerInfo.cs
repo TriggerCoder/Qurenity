@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class PlayerInfo : MonoBehaviour
+using Unity.Netcode;
+public class PlayerInfo : NetworkBehaviour
 {
 	[HideInInspector]
 	public PlayerControls playerControls;
@@ -44,6 +44,12 @@ public class PlayerInfo : MonoBehaviour
 
 	void Start()
 	{
+		if (!IsOwner)
+		{
+			playerThing.InitPlayer();
+			MapLoader.noMarks.Add(playerControls.capsuleCollider);
+			return;
+		}
 		playerLayer += GameManager.Instance.Player.Count;
 		if (!GameManager.Instance.Player.Contains(this))
 		{
