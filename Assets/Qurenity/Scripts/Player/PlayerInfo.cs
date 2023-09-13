@@ -46,28 +46,26 @@ public class PlayerInfo : NetworkBehaviour
 	{
 		if (!IsOwner)
 		{
-			playerThing.InitPlayer();
+			if (!IsHost)
+				playerThing.GetPlayerDataServerRpc();
 			MapLoader.noMarks.Add(playerControls.capsuleCollider);
 			return;
 		}
-		playerLayer += GameManager.Instance.Player.Count;
-		if (!GameManager.Instance.Player.Contains(this))
-		{
-			playerLayer++;
-			GameManager.Instance.Player.Add(this);
-			MapLoader.noMarks.Add(playerControls.capsuleCollider);
+		
+		playerLayer++;
+		GameManager.Instance.Player.Add(this);
+		MapLoader.noMarks.Add(playerControls.capsuleCollider);
 
-			if (GameManager.Instance.Player.Count == 3)
-				playerThing.modelName = "Visor";
-			playerThing.InitPlayer();
-		}
+		if (GameManager.Instance.Player.Count == 3)
+			playerThing.modelName = "Visor";
+		playerThing.InitPlayerServerRpc();
 		GameManager.Instance.UpdatePlayers();
 	}
 
 	public void Reset()
 	{
-		Ammo = new int[8] { 100, 0, 0, 0, 0, 100, 0, 0 };
-		Weapon = new bool[9] { false, true, false, false, false, false, true, false, false };
+		Ammo = new int[8] { 100, 0, 0, 0, 0, 0, 0, 0 };
+		Weapon = new bool[9] { false, true, false, false, false, false, false, false, false };
 		MaxAmmo = new int[8] { 200, 200, 200, 200, 200, 200, 200, 200 };
 
 		godMode = false;
@@ -89,6 +87,9 @@ public class PlayerInfo : NetworkBehaviour
 	}
 	void Update()
     {
+		if (!IsOwner)
+			return;
+			
 		int currentFrame = Time.frameCount;
 
 		if (GameManager.Paused)

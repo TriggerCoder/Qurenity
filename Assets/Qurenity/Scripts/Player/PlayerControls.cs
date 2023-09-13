@@ -103,7 +103,7 @@ public class PlayerControls : NetworkBehaviour
 		public const int Run = 2;
 	}
 
-	struct PlayerInputs : INetworkSerializable
+	struct PlayerInputs
 	{
 		public Vector2 Move;
 		public Vector2 Look;
@@ -114,6 +114,55 @@ public class PlayerControls : NetworkBehaviour
 		public bool Crouch;
 		public int CurrentWeapon;
 		public int CurrentTick;
+		public void Get (PlayerHalfInputs playerHalfInputs)
+		{
+			Move = HalfToVec2(playerHalfInputs.Move);
+			Look = HalfToVec2(playerHalfInputs.Look);
+			ViewDirection = HalfToVec2(playerHalfInputs.ViewDirection);
+			ForwardDir = HalfToVec3(playerHalfInputs.ForwardDir);
+			Fire = playerHalfInputs.Fire;
+			Jump = playerHalfInputs.Jump;
+			Crouch = playerHalfInputs.Crouch;
+			CurrentWeapon = playerHalfInputs.CurrentWeapon;
+			CurrentTick = playerHalfInputs.CurrentTick;
+		}
+		private Vector2 HalfToVec2(Vector2Half half)
+		{
+			Vector2 vec2 = Vector2.zero;
+			vec2.Set(Mathf.HalfToFloat(half.x), Mathf.HalfToFloat(half.y));
+			return vec2;
+		}
+		private Vector3 HalfToVec3(Vector3Half half)
+		{
+			Vector3 vec3 = Vector3.zero;
+			vec3.Set(Mathf.HalfToFloat(half.x), Mathf.HalfToFloat(half.y), Mathf.HalfToFloat(half.z));
+			return vec3;
+		}
+	}
+	struct PlayerHalfInputs : INetworkSerializable
+	{
+		public Vector2Half Move;
+		public Vector2Half Look;
+		public Vector2Half ViewDirection;
+		public Vector3Half ForwardDir;
+		public bool Fire;
+		public bool Jump;
+		public bool Crouch;
+		public int CurrentWeapon;
+		public int CurrentTick;
+
+		public void Set(Vector2 move, Vector2 look, Vector2 viewDir, Vector3 forwardDir, bool fire, bool jump, bool crouch, int currentW, int currentT)
+		{
+			Move.Set(move);
+			Look.Set(look);
+			ViewDirection.Set(viewDir);
+			ForwardDir.Set(forwardDir);
+			Fire = fire;
+			Jump = jump;
+			Crouch = crouch;
+			CurrentWeapon = currentW;
+			CurrentTick = currentT;
+		}
 		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
 		{
 			serializer.SerializeValue(ref Move);
@@ -151,6 +200,8 @@ public class PlayerControls : NetworkBehaviour
 	}
 
 	private Queue<PlayerInputs> clientInputs = new Queue<PlayerInputs>();
+	private PlayerHalfInputs inputsToSend = new PlayerHalfInputs();
+	private PlayerInputs inputsReceived = new PlayerInputs();
 	private PlayerInputs lastFrameInput;
 	private PlayerInputs currentFrameInput;
 
@@ -200,8 +251,7 @@ public class PlayerControls : NetworkBehaviour
 		if (IsServer)
 			DequeueClientInputs();
 
-		if ((IsOwner) || (IsServer))
-			OnUpdate();
+		OnUpdate();
 	}
 
 	void FixedUpdate()
@@ -396,7 +446,7 @@ public class PlayerControls : NetworkBehaviour
 
 	private void OnUpdate()
 	{
-		if (playerThing.Dead)
+		if ((IsOwner) && (playerThing.Dead))
 		{
 			SetCameraBobActive(false);
 
@@ -408,15 +458,7 @@ public class PlayerControls : NetworkBehaviour
 				{
 					deathTime = 0;
 					viewDirection = Vector2.zero;
-
-					if (playerWeapon != null)
-					{
-						Destroy(playerWeapon.gameObject);
-						playerWeapon = null;
-					}
-
-					playerInfo.Reset();
-					playerThing.InitPlayer();
+					playerThing.InitPlayerServerRpc();
 				}
 			}
 			return;
@@ -509,18 +551,18 @@ public class PlayerControls : NetworkBehaviour
 		CheckWeaponChangeByIndex();
 
 		if ((IsOwner) && (!IsHost))
-			SendDataServerRpc(new PlayerInputs
-			{
-					Move = Move(),
-					Look = Look(),
-					ViewDirection = viewDirection,
-					ForwardDir = ForwardDir(),
-					Fire = FirePressed(),
-					Jump = JumpPressed(),
-					Crouch = CrouchPressed(),
-					CurrentWeapon = CurrentWeapon,
-					CurrentTick = 0
-			}) ;
+		{
+			inputsToSend.Set(Move(), 
+							Look(),
+							viewDirection,
+							ForwardDir(),
+							FirePressed(),
+							JumpPressed(),
+							CrouchPressed(),
+							CurrentWeapon,
+							0);
+			SendDataServerRpc(inputsToSend);
+		}
 	}
 
 	private void OnFixedUpdate()
@@ -749,8 +791,8 @@ public class PlayerControls : NetworkBehaviour
 	}
 	public Vector3 ForwardDir()
 	{ 
-		if (!IsOwner)
-			return currentFrameInput.ForwardDir;
+//		if (!IsOwner)
+//			return currentFrameInput.ForwardDir;
 
 		return playerCamera.cTransform.forward;
 	}
@@ -1020,11 +1062,7 @@ public class PlayerControls : NetworkBehaviour
 	}
 	public void EnableColliders(bool enable)
 	{
-
 		capsuleCollider.enabled = enable;
-		if (!IsOwner)
-			return;
-
 		controller.enabled = enable;
 	}
 	public Vector2 GetBobDelta(float hBob, float vBob, float lerp)
@@ -1051,8 +1089,8 @@ public class PlayerControls : NetworkBehaviour
 	}
 	public void RotateTorwardDir()
 	{
-		if (!IsOwner)
-			return;
+//		if (!IsOwner)
+//			return;
 
 		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 	}
@@ -1063,9 +1101,16 @@ public class PlayerControls : NetworkBehaviour
 			currentFrameInput = clientInputs.Dequeue();
 	}
 
-	[ServerRpc]
-	private void SendDataServerRpc(PlayerInputs playerInputs)
+	[ServerRpc(Delivery = RpcDelivery.Unreliable)]
+	private void SendDataServerRpc(PlayerHalfInputs playerHalfInputs)
 	{
-		clientInputs.Enqueue(playerInputs);
+		inputsReceived.Get(playerHalfInputs);
+		clientInputs.Enqueue(inputsReceived);
+	}
+
+	[ClientRpc]
+	private void GetDataClientRpc(PlayerState playerstate)
+	{
+//		clientInputs.Enqueue(playerInputs);
 	}
 }

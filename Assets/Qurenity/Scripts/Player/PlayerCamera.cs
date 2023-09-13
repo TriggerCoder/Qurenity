@@ -43,10 +43,11 @@ public class PlayerCamera : MonoBehaviour
 		UICamera.rect = viewRect;
 		ThirdPerson.rect = viewRect;
 
-		int playerLayer = ((1 << GameManager.Player1Layer) |
-					(1 << GameManager.Player2Layer) |
-					(1 << GameManager.Player3Layer) |
-					(1 << GameManager.Player4Layer)) & ~(1 << (playerControls.playerInfo.playerLayer));
+		int playerLayer = ((1 << GameManager.DamageablesLayer) |
+							(1 << GameManager.Player1Layer) |
+							(1 << GameManager.Player2Layer) |
+							(1 << GameManager.Player3Layer) |
+							(1 << GameManager.Player4Layer)) & ~(1 << (playerControls.playerInfo.playerLayer));
 
 		SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
 													(1 << (GameManager.DebrisLayer)) |
@@ -62,6 +63,7 @@ public class PlayerCamera : MonoBehaviour
 													(1 << (GameManager.RagdollLayer)) |
 													(1 << (GameManager.CombinesMapMeshesLayer)) |
 													(1 << (playerControls.playerInfo.playerLayer - 5)) |
+													(1 << GameManager.DamageablesLayer) |
 													(1 << GameManager.Player1Layer) |
 													(1 << GameManager.Player2Layer) |
 													(1 << GameManager.Player3Layer) |

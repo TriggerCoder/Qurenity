@@ -186,8 +186,6 @@ public class GameManager : MonoBehaviour
 				if (skipFrames == 0)
 				{
 					paused = false;
-					if (Player.Count != 0)
-						Player[0].playerThing.InitPlayer();
 					NetworkManager.Singleton.StartHost();
 //					NetworkManager.Singleton.StartClient();
 				}

@@ -48,15 +48,31 @@ public class PlayerThing : NetworkBehaviour, Damageable
 		playerControls = GetComponentInChildren<PlayerControls>();
 	}
 
-	public void InitPlayer()
+	[ServerRpc]
+	public void InitPlayerServerRpc()
 	{
-		if (!IsHost)
-			return;
-
 		Vector3 destination = SpawnerManager.FindSpawnLocation();
 		TeleporterThing.TelefragEverything(destination, gameObject);
 
 		InitPlayerClientRpc(destination);
+	}
+
+	[ServerRpc(RequireOwnership = false)]
+	public void GetPlayerDataServerRpc(ServerRpcParams serverRpcParams = default)
+	{
+		ulong clientId = serverRpcParams.Receive.SenderClientId;
+		if (NetworkManager.ConnectedClients.ContainsKey(clientId))
+		{
+//			NetworkClient client = NetworkManager.ConnectedClients[clientId];
+			ClientRpcParams clientRpcParams = new ClientRpcParams
+			{
+				Send = new ClientRpcSendParams
+				{
+					TargetClientIds = new ulong[] { clientId }
+				}
+			};
+			FillPlayerClientRpc(modelName, skinName, clientRpcParams);
+		}
 	}
 
 	void Update()
@@ -276,7 +292,8 @@ public class PlayerThing : NetworkBehaviour, Damageable
 
 		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
 
-		gameObject.layer = playerInfo.playerLayer;
+		if (IsOwner)
+			gameObject.layer = playerInfo.playerLayer;
 		AudioManager.Create3DSound(destination, "world/telein", 1f);
 		TeleporterThing.TelefragEverything(destination, gameObject);
 		transform.position = destination;
@@ -286,7 +303,63 @@ public class PlayerThing : NetworkBehaviour, Damageable
 		playerInfo.playerHUD.pickupFlashTime = 0f;
 		playerInfo.playerHUD.painFlashTime = 0f;
 
-		int playerLayer = ((1 << GameManager.Player1Layer) |
+		int playerLayer = ((1 << GameManager.DamageablesLayer) | 
+							(1 << GameManager.Player1Layer) |
+							(1 << GameManager.Player2Layer) |
+							(1 << GameManager.Player3Layer) |
+							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
+
+		playerCamera.SkyholeCamera.cullingMask = (((1 << (GameManager.DefaultLayer)) |
+													(1 << (GameManager.DebrisLayer)) |
+													(1 << (GameManager.ThingsLayer)) |
+													(1 << (GameManager.RagdollLayer)) |
+													(1 << (GameManager.CombinesMapMeshesLayer)) |
+													(1 << (playerInfo.playerLayer - 5)) |
+													playerLayer));
+
+		playerInfo.Reset();
+
+		if (playerControls.playerWeapon != null)
+		{
+			Destroy(playerControls.playerWeapon.gameObject);
+			playerControls.playerWeapon = null;
+		}
+
+		if (playerControls.playerWeapon == null)
+			playerControls.SwapToBestWeapon();
+
+		playerInfo.playerHUD.HUDUpdateHealthNum();
+		playerInfo.playerHUD.HUDUpdateArmorNum();
+
+		playerCamera.ChangeThirdPersonCamera(false);
+
+		if (!IsOwner)
+		{
+			playerCamera.ThirdPerson.enabled = false;
+			playerCamera.SkyholeCamera.enabled = false;
+			playerCamera.SkyboxCamera.enabled = false;
+			playerCamera.UICamera.enabled = false;
+		}
+		playerControls.enabled = true;
+		ready = true;
+	}
+
+	[ClientRpc]
+	private void FillPlayerClientRpc(string currentModel, string currentSkin, ClientRpcParams clientRpcParams = default)
+	{
+		player = new GameObject();
+		avatar = player.AddComponent<PlayerModel>();
+		player.transform.SetParent(playerControls.transform);
+		modelName = currentModel;
+		skinName = currentSkin;
+		avatar.LoadPlayer(modelName, skinName, playerInfo.playerLayer, playerControls);
+
+		playerControls.EnableColliders(true);
+		playerInfo.playerHUD.pickupFlashTime = 0f;
+		playerInfo.playerHUD.painFlashTime = 0f;
+
+		int playerLayer = ((1 << GameManager.DamageablesLayer) |
+							(1 << GameManager.Player1Layer) |
 							(1 << GameManager.Player2Layer) |
 							(1 << GameManager.Player3Layer) |
 							(1 << GameManager.Player4Layer)) & ~(1 << (playerInfo.playerLayer));
@@ -307,8 +380,7 @@ public class PlayerThing : NetworkBehaviour, Damageable
 
 		playerCamera.ChangeThirdPersonCamera(false);
 
-		if (!IsOwner)
-			playerCamera.gameObject.SetActive(false);
+		playerCamera.gameObject.SetActive(false);
 		playerControls.enabled = true;
 		ready = true;
 	}
