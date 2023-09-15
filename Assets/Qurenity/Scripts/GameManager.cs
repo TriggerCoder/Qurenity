@@ -171,8 +171,8 @@ public class GameManager : MonoBehaviour
 			Cursor.visible = false;
 			paused = false;
 		}
-		else
-			paused = true;
+//		else
+//			paused = true;
 	}
 	void Update()
     {

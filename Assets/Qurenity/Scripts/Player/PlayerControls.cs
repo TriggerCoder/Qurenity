@@ -108,7 +108,6 @@ public class PlayerControls : NetworkBehaviour
 		public Vector2 Move;
 		public Vector2 Look;
 		public Vector2 ViewDirection;
-		public Vector3 ForwardDir;
 		public bool Fire;
 		public bool Jump;
 		public bool Crouch;
@@ -119,12 +118,74 @@ public class PlayerControls : NetworkBehaviour
 			Move = HalfToVec2(playerHalfInputs.Move);
 			Look = HalfToVec2(playerHalfInputs.Look);
 			ViewDirection = HalfToVec2(playerHalfInputs.ViewDirection);
-			ForwardDir = HalfToVec3(playerHalfInputs.ForwardDir);
 			Fire = playerHalfInputs.Fire;
 			Jump = playerHalfInputs.Jump;
 			Crouch = playerHalfInputs.Crouch;
 			CurrentWeapon = playerHalfInputs.CurrentWeapon;
 			CurrentTick = playerHalfInputs.CurrentTick;
+		}
+		private Vector2 HalfToVec2(Vector2Half half)
+		{
+			Vector2 vec2 = Vector2.zero;
+			vec2.Set(Mathf.HalfToFloat(half.x), Mathf.HalfToFloat(half.y));
+			return vec2;
+		}
+	}
+	struct PlayerHalfInputs : INetworkSerializable
+	{
+		public Vector2Half Move;
+		public Vector2Half Look;
+		public Vector2Half ViewDirection;
+		public bool Fire;
+		public bool Jump;
+		public bool Crouch;
+		public int CurrentWeapon;
+		public int CurrentTick;
+
+		public void Set(Vector2 move, Vector2 look, Vector2 viewDir, bool fire, bool jump, bool crouch, int currentW, int currentT)
+		{
+			Move.Set(move);
+			Look.Set(look);
+			ViewDirection.Set(viewDir);
+			Fire = fire;
+			Jump = jump;
+			Crouch = crouch;
+			CurrentWeapon = currentW;
+			CurrentTick = currentT;
+		}
+		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+		{
+			serializer.SerializeValue(ref Move);
+			serializer.SerializeValue(ref Look);
+			serializer.SerializeValue(ref ViewDirection);
+			serializer.SerializeValue(ref Fire);
+			serializer.SerializeValue(ref Jump);
+			serializer.SerializeValue(ref Crouch);
+			serializer.SerializeValue(ref CurrentWeapon);
+			serializer.SerializeValue(ref CurrentTick);
+		}
+	}
+	struct PlayerState
+	{
+		public Vector3 Position;
+		public Vector3 Motion;
+		public Vector2 ViewDirection;
+		public bool isGrounded;
+		public bool isFiring;
+		public int MoveType;
+		public int Weapon;
+		public int Tick;
+
+		public void Get(PlayerHalfState playerHalfState)
+		{
+			Position = HalfToVec3(playerHalfState.Position);
+			Motion = HalfToVec3(playerHalfState.Motion);
+			ViewDirection = HalfToVec2(playerHalfState.ViewDirection);
+			isGrounded = playerHalfState.isGrounded;
+			isFiring = playerHalfState.isFiring;
+			MoveType = playerHalfState.MoveType;
+			Weapon = playerHalfState.Weapon;
+			Tick = playerHalfState.Tick;
 		}
 		private Vector2 HalfToVec2(Vector2Half half)
 		{
@@ -139,58 +200,33 @@ public class PlayerControls : NetworkBehaviour
 			return vec3;
 		}
 	}
-	struct PlayerHalfInputs : INetworkSerializable
+	struct PlayerHalfState : INetworkSerializable
 	{
-		public Vector2Half Move;
-		public Vector2Half Look;
+		public Vector3Half Position;
+		public Vector3Half Motion;
 		public Vector2Half ViewDirection;
-		public Vector3Half ForwardDir;
-		public bool Fire;
-		public bool Jump;
-		public bool Crouch;
-		public int CurrentWeapon;
-		public int CurrentTick;
-
-		public void Set(Vector2 move, Vector2 look, Vector2 viewDir, Vector3 forwardDir, bool fire, bool jump, bool crouch, int currentW, int currentT)
-		{
-			Move.Set(move);
-			Look.Set(look);
-			ViewDirection.Set(viewDir);
-			ForwardDir.Set(forwardDir);
-			Fire = fire;
-			Jump = jump;
-			Crouch = crouch;
-			CurrentWeapon = currentW;
-			CurrentTick = currentT;
-		}
-		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-		{
-			serializer.SerializeValue(ref Move);
-			serializer.SerializeValue(ref Look);
-			serializer.SerializeValue(ref ViewDirection);
-			serializer.SerializeValue(ref ForwardDir);
-			serializer.SerializeValue(ref Fire);
-			serializer.SerializeValue(ref Jump);
-			serializer.SerializeValue(ref Crouch);
-			serializer.SerializeValue(ref CurrentWeapon);
-			serializer.SerializeValue(ref CurrentTick);
-		}
-	}
-	struct PlayerState : INetworkSerializable
-	{
-		public Vector3 Position;
-		public Vector3 Velocity;
-		public Quaternion ViewAngles;
 		public bool isGrounded;
 		public bool isFiring;
 		public int MoveType;
 		public int Weapon;
 		public int Tick;
+
+		public void Set(Vector3 position, Vector3 motion, Vector2 viewDir, bool isgrounded, bool isfiring, int movetype, int weapon, int tick)
+		{
+			Position.Set(position);
+			Motion.Set(motion);
+			ViewDirection.Set(viewDir);
+			isGrounded = isgrounded;
+			isFiring = isfiring;
+			MoveType = movetype;
+			Weapon = weapon;
+			Tick = tick;
+		}
 		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
 		{
 			serializer.SerializeValue(ref Position);
-			serializer.SerializeValue(ref Velocity);
-			serializer.SerializeValue(ref ViewAngles);
+			serializer.SerializeValue(ref Motion);
+			serializer.SerializeValue(ref ViewDirection);
 			serializer.SerializeValue(ref isGrounded);
 			serializer.SerializeValue(ref MoveType);
 			serializer.SerializeValue(ref isFiring);
@@ -205,8 +241,9 @@ public class PlayerControls : NetworkBehaviour
 	private PlayerInputs lastFrameInput;
 	private PlayerInputs currentFrameInput;
 
-	private PlayerState lastFramePlayerState;
-	private PlayerState currentFramePlayerState;
+	private PlayerHalfState stateToSend = new PlayerHalfState();
+	private PlayerState lastFramePlayerState = new PlayerState();
+	private PlayerState currentFramePlayerState = new PlayerState();
 	void Awake()
 	{
 		
@@ -248,7 +285,7 @@ public class PlayerControls : NetworkBehaviour
 			if (Action_Close.WasPressedThisFrame())
 				Application.Quit();
 
-		if (IsServer)
+		if (IsHost)
 			DequeueClientInputs();
 
 		OnUpdate();
@@ -259,6 +296,8 @@ public class PlayerControls : NetworkBehaviour
 		if (GameManager.Paused)
 			return;
 
+//DequeClients on Loop
+
 		if (teleportDest.sqrMagnitude > 0)
 		{
 			cTransform.position = teleportDest;
@@ -267,7 +306,21 @@ public class PlayerControls : NetworkBehaviour
 			return;
 		}
 
-		OnFixedUpdate();
+		if ((IsOwner) && (!IsHost))
+		{
+			inputsToSend.Set(Move(),
+							Look(),
+							viewDirection,
+							wishFire,
+							wishJump,
+							CrouchPressed(),
+							CurrentWeapon,
+							0);
+			SendInputDataServerRpc(inputsToSend);
+		}
+
+		if ((IsOwner) || (IsHost))
+			OnFixedUpdate();
 	}
 	private void SetMovementDir()
 	{
@@ -550,26 +603,26 @@ public class PlayerControls : NetworkBehaviour
 
 		CheckWeaponChangeByIndex();
 
-		if ((IsOwner) && (!IsHost))
-		{
-			inputsToSend.Set(Move(), 
-							Look(),
-							viewDirection,
-							ForwardDir(),
-							FirePressed(),
-							JumpPressed(),
-							CrouchPressed(),
-							CurrentWeapon,
-							0);
-			SendDataServerRpc(inputsToSend);
-		}
 	}
 
 	private void OnFixedUpdate()
 	{
+		Vector3 motion;
 		if (playerThing.Dead)
 		{
-			ApplySimpleGravity();
+			motion = ApplySimpleGravity();
+			if (IsHost)
+			{
+				stateToSend.Set(cTransform.position,
+							motion,
+							viewDirection,
+							IsControllerGrounded(),
+							false,
+							currentMoveType,
+							CurrentWeapon,
+							0);
+				SendStateDataClientRpc(stateToSend);
+			}
 			return;
 		}
 
@@ -583,7 +636,20 @@ public class PlayerControls : NetworkBehaviour
 		CheckMovements();
 
 		//apply move
-		ApplyMove();
+		motion = ApplyMove();
+
+		if (IsHost)
+		{
+			stateToSend.Set(cTransform.position,
+				motion,
+				viewDirection,
+				IsControllerGrounded(),
+				wishFire,
+				currentMoveType,
+				CurrentWeapon,
+				0);
+			SendStateDataClientRpc(stateToSend);
+		}
 
 		if (wishFire)
 		{
@@ -594,6 +660,7 @@ public class PlayerControls : NetworkBehaviour
 				playerThing.avatar.Attack();
 			}
 		}
+			
 	}
 	public void AnimateLegsOnJump()
 	{
@@ -604,7 +671,6 @@ public class PlayerControls : NetworkBehaviour
 		playerThing.avatar.enableOffset = false;
 		playerThing.PlayModelSound("jump1");
 	}
-
 	public bool TrySwapWeapon(int weapon)
 	{
 		if (CurrentWeapon == weapon || SwapWeapon != -1)
@@ -791,9 +857,6 @@ public class PlayerControls : NetworkBehaviour
 	}
 	public Vector3 ForwardDir()
 	{ 
-//		if (!IsOwner)
-//			return currentFrameInput.ForwardDir;
-
 		return playerCamera.cTransform.forward;
 	}
 	public bool IsControllerGrounded()
@@ -953,19 +1016,24 @@ public class PlayerControls : NetworkBehaviour
 	}
 	public void QueueJump()
 	{
-		if (!IsOwner)
+		if ((!IsOwner) && (!IsHost))
 			return;
 
-		if (holdJumpToBhop)
+		if ((IsOwner) && (holdJumpToBhop))
 		{
 			wishJump = Action_Jump.IsPressed();
 			return;
 		}
 
-		if (Action_Jump.WasPressedThisFrame() && !wishJump)
-			wishJump = true;
-		if (Action_Jump.WasReleasedThisFrame())
-			wishJump = false;
+		if (IsOwner)
+		{
+			if (JumpPressedThisFrame() && !wishJump)
+				wishJump = true;
+			if (JumpReleasedThisFrame())
+				wishJump = false;
+		}
+		else
+			wishJump = currentFrameInput.Jump;
 	}
 
 	public void CheckMouseWheelWeaponChange()
@@ -1013,26 +1081,30 @@ public class PlayerControls : NetworkBehaviour
 			}
 		}
 	}
-	public void ApplySimpleGravity()
+	public Vector3 ApplySimpleGravity()
 	{
+		Vector3 motion = Vector3.zero;
 		if (!IsOwner)
-			return;
+			return motion;
 
 		if (controller.enabled)
 		{
 			// Reset the gravity velocity
 			playerVelocity = Vector3.down * GameManager.Instance.gravity;
-			ApplyMove();
+			motion = ApplyMove();
 		}
+		return motion;
 	}
-	public void ApplyMove()
+	public Vector3 ApplyMove()
 	{
-		if (!IsOwner)
-			return;
+		Vector3 motion = Vector3.zero;
+		if ((!IsOwner) && (!IsHost))
+			return motion;
 
 		float deltaTime = Time.fixedDeltaTime;
 		lastPosition = cTransform.position;
-		controller.Move((playerVelocity + impulseVector + jumpPadVel) * deltaTime);
+		motion = (playerVelocity + impulseVector + jumpPadVel) * deltaTime;
+		controller.Move(motion);
 
 		//dampen impulse
 		if (impulseVector.sqrMagnitude > 0)
@@ -1049,10 +1121,11 @@ public class PlayerControls : NetworkBehaviour
 			if ((jumpPadVel.y < 0) && (controllerIsGrounded))
 				jumpPadVel = Vector3.zero;
 		}
+		return motion;
 	}
 	public void CheckMovements()
 	{
-		if (!IsOwner)
+		if ((!IsOwner) && (!IsHost))
 			return;
 
 		if (controllerIsGrounded)
@@ -1102,15 +1175,16 @@ public class PlayerControls : NetworkBehaviour
 	}
 
 	[ServerRpc(Delivery = RpcDelivery.Unreliable)]
-	private void SendDataServerRpc(PlayerHalfInputs playerHalfInputs)
+	private void SendInputDataServerRpc(PlayerHalfInputs playerHalfInputs)
 	{
 		inputsReceived.Get(playerHalfInputs);
 		clientInputs.Enqueue(inputsReceived);
 	}
 
-	[ClientRpc]
-	private void GetDataClientRpc(PlayerState playerstate)
+	[ClientRpc(Delivery = RpcDelivery.Unreliable)]
+	private void SendStateDataClientRpc(PlayerHalfState playerHalfState)
 	{
-//		clientInputs.Enqueue(playerInputs);
+		lastFramePlayerState = currentFramePlayerState;
+		currentFramePlayerState.Get(playerHalfState);
 	}
 }
