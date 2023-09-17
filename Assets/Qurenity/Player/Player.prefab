@@ -593,7 +593,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1626833134530822}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 3
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -723,7 +723,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1706779028083494}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 4
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -906,17 +906,17 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   playerInfo: {fileID: 0}
   playerWeapon: {fileID: 0}
-  playerCamera: {fileID: 1441192285}
   playerThing: {fileID: 0}
+  playerCamera: {fileID: 1441192285}
+  capsuleCollider: {fileID: 0}
+  controller: {fileID: 0}
   interpolationController: {fileID: 0}
   viewDirection: {x: 0, y: 0}
   lastPosition: {x: 0, y: 0, z: 0}
   impulseVector: {x: 0, y: 0, z: 0}
   jumpPadVel: {x: 0, y: 0, z: 0}
+  playerVelocity: {x: 0, y: 0, z: 0}
   impulseDampening: 4
-  controller: {fileID: 0}
-  capsuleCollider: {fileID: 0}
-  playerInput: {fileID: 0}
   crouchSpeed: 3
   walkSpeed: 5
   runSpeed: 7
@@ -930,12 +930,11 @@ MonoBehaviour:
   sideStrafeSpeed: 1
   jumpSpeed: 8
   holdJumpToBhop: 0
-  playerVelocity: {x: 0, y: 0, z: 0}
   CurrentWeapon: -1
   SwapWeapon: -1
   currentMoveType: 2
-  cTransform: {fileID: 0}
   teleportDest: {x: 0, y: 0, z: 0}
+  cTransform: {fileID: 0}
 --- !u!114 &2444005386498886028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1028,7 +1027,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835987207524526}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}

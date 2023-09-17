@@ -333,12 +333,11 @@ public class PlayerThing : NetworkBehaviour, Damageable
 
 		playerCamera.ChangeThirdPersonCamera(false);
 
-		if (!IsOwner)
+		if (IsOwner)
 		{
-			playerCamera.ThirdPerson.enabled = false;
-			playerCamera.SkyholeCamera.enabled = false;
-			playerCamera.SkyboxCamera.enabled = false;
-			playerCamera.UICamera.enabled = false;
+			playerCamera.SkyholeCamera.enabled = true;
+			playerCamera.SkyboxCamera.enabled = true;
+			playerCamera.UICamera.enabled = true;
 		}
 		playerControls.enabled = true;
 		ready = true;

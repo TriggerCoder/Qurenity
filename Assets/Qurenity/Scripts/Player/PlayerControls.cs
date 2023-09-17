@@ -74,7 +74,7 @@ public class PlayerControls : NetworkBehaviour
 
 	private bool wishJump = false;
 	private bool wishFire = false;
-	private bool controllerIsGrounded = true;
+	private bool controllerIsGrounded = false;
 
 	private float deathTime = 0;
 	private float respawnDelay = 1.7f;
@@ -96,6 +96,9 @@ public class PlayerControls : NetworkBehaviour
 	//Cached Transform
 	public Transform cTransform;
 
+	//CurrentPlayer Prediction
+	private PlayerMovPrediction playerMovPrediction = null;
+	private int lastCorrectedTick = 0;
 	public static class MoveType
 	{
 		public const int Crouch = 0;
@@ -103,7 +106,7 @@ public class PlayerControls : NetworkBehaviour
 		public const int Run = 2;
 	}
 
-	struct PlayerInputs
+	public class PlayerInputs
 	{
 		public Vector2 Move;
 		public Vector2 Look;
@@ -131,7 +134,7 @@ public class PlayerControls : NetworkBehaviour
 			return vec2;
 		}
 	}
-	struct PlayerHalfInputs : INetworkSerializable
+	public struct PlayerHalfInputs : INetworkSerializable
 	{
 		public Vector2Half Move;
 		public Vector2Half Look;
@@ -165,7 +168,7 @@ public class PlayerControls : NetworkBehaviour
 			serializer.SerializeValue(ref CurrentTick);
 		}
 	}
-	struct PlayerState
+	public class PlayerState
 	{
 		public Vector3 Position;
 		public Vector3 Motion;
@@ -174,7 +177,7 @@ public class PlayerControls : NetworkBehaviour
 		public bool isFiring;
 		public int MoveType;
 		public int Weapon;
-		public int Tick;
+		public int Tick = 0;
 
 		public void Get(PlayerHalfState playerHalfState)
 		{
@@ -200,7 +203,7 @@ public class PlayerControls : NetworkBehaviour
 			return vec3;
 		}
 	}
-	struct PlayerHalfState : INetworkSerializable
+	public struct PlayerHalfState : INetworkSerializable
 	{
 		public Vector3Half Position;
 		public Vector3Half Motion;
@@ -238,11 +241,12 @@ public class PlayerControls : NetworkBehaviour
 	private Queue<PlayerInputs> clientInputs = new Queue<PlayerInputs>();
 	private PlayerHalfInputs inputsToSend = new PlayerHalfInputs();
 	private PlayerInputs inputsReceived = new PlayerInputs();
-	private PlayerInputs lastFrameInput;
-	private PlayerInputs currentFrameInput;
+	private PlayerInputs lastFrameInput = null;
+	private PlayerInputs currentFrameInput = null;
 
 	private PlayerHalfState stateToSend = new PlayerHalfState();
-	private PlayerState lastFramePlayerState = new PlayerState();
+	private PlayerState stateReceived = new PlayerState();
+	private PlayerState lastFramePlayerState = null;
 	private PlayerState currentFramePlayerState = new PlayerState();
 	void Awake()
 	{
@@ -256,6 +260,9 @@ public class PlayerControls : NetworkBehaviour
 	{
 		if (!IsOwner)
 			return;
+
+		if (!IsHost)
+			playerMovPrediction = new PlayerMovPrediction();
 
 		playerInput = GetComponentInParent<PlayerInput>();
 		//Set the actions
@@ -285,9 +292,6 @@ public class PlayerControls : NetworkBehaviour
 			if (Action_Close.WasPressedThisFrame())
 				Application.Quit();
 
-		if (IsHost)
-			DequeueClientInputs();
-
 		OnUpdate();
 	}
 
@@ -296,32 +300,65 @@ public class PlayerControls : NetworkBehaviour
 		if (GameManager.Paused)
 			return;
 
-//DequeClients on Loop
+		if (IsOwner)
+			ProcessClientFrame();
+		else if (IsHost)
+			ProcessServerFrame();
+	}
 
+	private void ProcessClientFrame()
+	{
+		if (!IsHost)
+			Reconciliate();
 		if (teleportDest.sqrMagnitude > 0)
 		{
-			cTransform.position = teleportDest;
-			interpolationController.ResetTransforms();
-			teleportDest = Vector3.zero;
+			TeleportThisFrame();
 			return;
 		}
 
-		if ((IsOwner) && (!IsHost))
+		inputsToSend.Set(Move(false),
+						Look(),
+						viewDirection,
+						wishFire,
+						wishJump,
+						CrouchPressed(false),
+						CurrentWeapon,
+						NetworkManager.LocalTime.Tick);
+		inputsReceived.Get(inputsToSend);
+		if (!IsHost)
 		{
-			inputsToSend.Set(Move(),
-							Look(),
-							viewDirection,
-							wishFire,
-							wishJump,
-							CrouchPressed(),
-							CurrentWeapon,
-							0);
+			int cacheIndex = NetworkManager.LocalTime.Tick % PlayerMovPrediction.STATE_CACHE_SIZE;
 			SendInputDataServerRpc(inputsToSend);
+			playerMovPrediction.inputStateCache[cacheIndex].Get(inputsToSend);
 		}
-
-		if ((IsOwner) || (IsHost))
-			OnFixedUpdate();
+		currentFrameInput = inputsReceived;
+		OnFixedUpdate();
+		lastFrameInput = currentFrameInput;
 	}
+
+	private void ProcessServerFrame()
+	{
+		while (clientInputs.Count > 0 && (currentFrameInput = clientInputs.Dequeue()) != null)
+		{
+			viewDirection = currentFrameInput.ViewDirection;
+			if (teleportDest.sqrMagnitude > 0)
+			{
+				TeleportThisFrame();
+				return;
+			}
+			wishJump = currentFrameInput.Jump;
+			OnFixedUpdate();
+			lastFrameInput = currentFrameInput;
+		}
+	}
+	private void TeleportThisFrame()
+	{
+		cTransform.position = teleportDest;
+		interpolationController.ResetTransforms();
+		teleportDest = Vector3.zero;
+		return;
+	}
+
 	private void SetMovementDir()
 	{
 		Vector2 currentMove = Move();
@@ -499,6 +536,11 @@ public class PlayerControls : NetworkBehaviour
 
 	private void OnUpdate()
 	{
+		if (!IsOwner)
+		{
+			if ((IsHost) && (lastFrameInput == null))
+				return;
+		}
 		if ((IsOwner) && (playerThing.Dead))
 		{
 			SetCameraBobActive(false);
@@ -540,7 +582,6 @@ public class PlayerControls : NetworkBehaviour
 		playerThing.avatar.ChangeView(viewDirection, Time.deltaTime);
 		playerThing.avatar.CheckLegTurn(ForwardDir());
 
-		controllerIsGrounded = IsControllerGrounded();
 		playerThing.avatar.isGrounded = controllerIsGrounded;
 
 		//Player can only crouch if it is grounded
@@ -616,11 +657,11 @@ public class PlayerControls : NetworkBehaviour
 				stateToSend.Set(cTransform.position,
 							motion,
 							viewDirection,
-							IsControllerGrounded(),
+							controllerIsGrounded,
 							false,
 							currentMoveType,
 							CurrentWeapon,
-							0);
+							NetworkManager.LocalTime.Tick);
 				SendStateDataClientRpc(stateToSend);
 			}
 			return;
@@ -631,24 +672,29 @@ public class PlayerControls : NetworkBehaviour
 
 		RotateTorwardDir();
 
-		controllerIsGrounded = IsControllerGrounded();
 		//Movement Checks
 		CheckMovements();
 
 		//apply move
 		motion = ApplyMove();
 
-		if (IsHost)
+		if ((IsOwner) || (IsHost))
 		{
 			stateToSend.Set(cTransform.position,
 				motion,
 				viewDirection,
-				IsControllerGrounded(),
+				controllerIsGrounded,
 				wishFire,
 				currentMoveType,
 				CurrentWeapon,
-				0);
-			SendStateDataClientRpc(stateToSend);
+				NetworkManager.LocalTime.Tick);
+			if (IsHost)
+				SendStateDataClientRpc(stateToSend);
+			else
+			{
+				int cacheIndex = NetworkManager.LocalTime.Tick % PlayerMovPrediction.STATE_CACHE_SIZE;
+				playerMovPrediction.simulationStateCache[cacheIndex].Get(stateToSend);
+			}
 		}
 
 		if (wishFire)
@@ -825,47 +871,42 @@ public class PlayerControls : NetworkBehaviour
 			if (IsHost)
 				viewDirection = currentFrameInput.ViewDirection;
 			else
-				Debug.LogWarning("Don't Forget to add SetViewDirection");
+				viewDirection = currentFramePlayerState.ViewDirection;
 			return;
 		}
 		Vector2 Look = Action_Look.ReadValue<Vector2>();
 
-		if (playerInput.currentControlScheme == "Keyboard&Mouse")
+//		if (playerInput.currentControlScheme == "Keyboard&Mouse")
 		{
 			viewDirection.y += Look.x * Time.smoothDeltaTime * GameOptions.MouseSensitivity.x;
 			viewDirection.x -= Look.y * Time.smoothDeltaTime * GameOptions.MouseSensitivity.y;
 		}
-		else
+/*		else
 		{
 			viewDirection.y += Look.x * GameOptions.GamePadSensitivity.x * axisAnimationCurve.Evaluate(Mathf.Abs(Look.x));
 			viewDirection.x -= Look.y * GameOptions.GamePadSensitivity.y * axisAnimationCurve.Evaluate(Mathf.Abs(Look.y));
 		}
-	}
-	public Vector2 Move()
+*/	}
+	public Vector2 Move(bool ProcessLocalAsServer = true)
 	{
-		if (!IsOwner)
+		if ((!IsOwner) || (ProcessLocalAsServer))
 			return currentFrameInput.Move;
 
 		return Action_Move.ReadValue<Vector2>();
 	}
 	public Vector2 Look()
-	{ 
-		if (!IsOwner) 
+	{
+		if (!IsOwner)
+		{
+			if (lastFrameInput == null)
+				return Vector2.zero;
 			return currentFrameInput.Look;
-		
+		}
 		return Action_Look.ReadValue<Vector2>(); 
 	}
 	public Vector3 ForwardDir()
 	{ 
 		return playerCamera.cTransform.forward;
-	}
-	public bool IsControllerGrounded()
-	{ 
-		if (!IsOwner)
-			if (!IsHost)
-				return currentFramePlayerState.isGrounded;
-
-		return controller.isGrounded; 
 	}
 	public bool CrouchPressedThisFrame()
 	{ 
@@ -891,9 +932,9 @@ public class PlayerControls : NetworkBehaviour
 		return (Action_Crouch.WasPressedThisFrame()); 
 	}
 
-	public bool CrouchPressed()
+	public bool CrouchPressed(bool ProcessLocalAsServer = true)
 	{
-		if (!IsOwner)
+		if ((!IsOwner) || (ProcessLocalAsServer))
 			return currentFrameInput.Crouch;
 		return (Action_Crouch.IsPressed());
 	}
@@ -1104,7 +1145,7 @@ public class PlayerControls : NetworkBehaviour
 		float deltaTime = Time.fixedDeltaTime;
 		lastPosition = cTransform.position;
 		motion = (playerVelocity + impulseVector + jumpPadVel) * deltaTime;
-		controller.Move(motion);
+		controllerIsGrounded = (controller.Move(motion) & CollisionFlags.Below) != 0;
 
 		//dampen impulse
 		if (impulseVector.sqrMagnitude > 0)
@@ -1167,12 +1208,6 @@ public class PlayerControls : NetworkBehaviour
 
 		cTransform.rotation = Quaternion.Euler(0, viewDirection.y, 0);
 	}
-	public void DequeueClientInputs()
-	{
-		lastFrameInput = currentFrameInput;
-		if (clientInputs.Count != 0)
-			currentFrameInput = clientInputs.Dequeue();
-	}
 
 	[ServerRpc(Delivery = RpcDelivery.Unreliable)]
 	private void SendInputDataServerRpc(PlayerHalfInputs playerHalfInputs)
@@ -1186,5 +1221,122 @@ public class PlayerControls : NetworkBehaviour
 	{
 		lastFramePlayerState = currentFramePlayerState;
 		currentFramePlayerState.Get(playerHalfState);
+
+	}
+
+	private void Reconciliate()
+	{
+		// Sanity check, don't reconciliate for old states.
+		if (currentFramePlayerState.Tick <= lastCorrectedTick)
+		{
+			//Debug.LogWarning($"Serversimulated tick is older than lastCorrectedTick for Tick {serverSimulationState.tick}.");
+			return;
+		}
+
+		// Determine the cache index 
+		int cacheIndex = currentFramePlayerState.Tick % PlayerMovPrediction.STATE_CACHE_SIZE;
+
+		// Obtain the cached input and simulation states.
+		PlayerInputs cachedInputState = playerMovPrediction.inputStateCache[cacheIndex];
+		PlayerState cachedSimulationState = playerMovPrediction.simulationStateCache[cacheIndex];
+
+		// If there's missing cache data for either input or simulation 
+		// snap the player's position to match the server.
+		if (cachedInputState == null || cachedSimulationState == null)
+		{
+			//ReconciliationCorrections++;
+			/*
+            this.transform.position = serverSimulationState.position;
+            this.MovementDirection = serverSimulationState.velocity;
+            //this.transform.rotation = serverSimulationState.rotation;
+
+            // Set the last corrected frame to equal the server's frame.
+            lastCorrectedTick = serverSimulationState.tick;
+
+            Debug.LogWarning($"Snapped to server position for tick {lastCorrectedTick}.");
+            */
+			return;
+		}
+
+		Vector3 ReconciliationDebug = (cachedSimulationState.Position - currentFramePlayerState.Position);
+		float DifferenceDistance = ReconciliationDebug.magnitude;
+
+		if (DifferenceDistance > playerMovPrediction.SnapDistance)
+		{
+			cTransform.position = currentFramePlayerState.Position;
+//			this.MovementDirection = serverSimulationState.velocity;
+			Debug.LogWarning($"Client's values are over snapping treshold of {playerMovPrediction.SnapDistance} units! Snapped to server position for tick {NetworkManager.LocalTime.Tick}.");
+
+			// Set the last corrected frame to equal the server's frame.
+			lastCorrectedTick = currentFramePlayerState.Tick;
+			return;
+		}
+/*		else if (DifferenceDistance > playerMovPrediction.DistanceTolerance)
+		{
+			// Set the player's position to match the server's state. 
+			cTransform.position = currentFramePlayerState.Position;
+//			this.MovementDirection = serverSimulationState.velocity;
+
+			// Declare the rewindFrame as we're about to resimulate our cached inputs. 
+			int rewindFrame = currentFramePlayerState.Tick;
+
+			// Loop through and apply cached inputs until we're 
+			// caught up to our current simulation frame. 
+			while (rewindFrame < NetworkManager.LocalTime.Tick)
+			{
+				// Determine the cache index 
+				int rewindCacheIndex = rewindFrame % PlayerMovPrediction.STATE_CACHE_SIZE;
+
+				// Obtain the cached input and simulation states.
+				PlayerInputs rewindCachedInputState = playerMovPrediction.inputStateCache[rewindCacheIndex];
+				PlayerState rewindCachedSimulationState = playerMovPrediction.simulationStateCache[rewindCacheIndex];
+
+				// If there's no state to simulate, for whatever reason, 
+				// increment the rewindFrame and continue.
+				if (rewindCachedInputState == null || rewindCachedSimulationState == null)
+				{
+					++rewindFrame;
+					continue;
+				}
+
+				// Process the cached inputs. 
+				movementcontroller.Move(rewindCachedInputState);
+				playerweaponcontroller.DetermineWeaponState(rewindCachedInputState);
+
+				// Replace the simulationStateCache index with the new value.
+				SimulationState rewoundSimulationState = CurrentSimulationState(rewindCachedInputState);
+				rewoundSimulationState.tick = rewindFrame;
+				simulationStateCache[rewindCacheIndex] = rewoundSimulationState;
+
+				// Increase the amount of frames that we've rewound.
+				++rewindFrame;
+			}
+			if (DifferenceDistance > Distancetolerance) //If we have still a difference in the predictions.
+			{
+				this.transform.position = serverSimulationState.position;
+				this.MovementDirection = serverSimulationState.velocity;
+				// Set the last corrected frame to equal the server's frame.
+				lastCorrectedTick = serverSimulationState.tick;
+			}
+		}
+
+		// Once we're complete, update the lastCorrectedTick to match.
+		// NOTE: Set this even if there's no correction to be made. 
+		lastCorrectedTick = serverSimulationState.tick;
+		*/
+	}
+	public override void OnNetworkSpawn()
+	{
+		NetworkManager.NetworkTickSystem.Tick += Tick;
+	}
+
+	private void Tick()
+	{
+//		Debug.Log($"Tick: {NetworkManager.LocalTime.Tick}");
+	}
+
+	public override void OnNetworkDespawn()
+	{
+		NetworkManager.NetworkTickSystem.Tick -= Tick;
 	}
 }
