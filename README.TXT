@@ -1,3 +1,20 @@
+PORTED TO GODOT:
+
+This Project as been Archive and all worked has been ported to Godot, check out:
+https://github.com/TriggerCoder/Quadot-Arena
+
+
+WHY PORTED?
+
+Because of the Unity Fiasco back in September 2022
+https://web.archive.org/web/20230912151806/https://unity.com/pricing-updates
+Unity can't be trusted any longer, because in the future they could pull something like this again.
+This was the wake-up call
+
+
+
+ORIGINAL README
+//----------------------------------------------
 WHAT IS QURENITY?
 
 QURENITY is the QUAKE 3 ARENA module of the "United Generations" (Behemoth) Project, that aims to have all the Classic ID games (Wolf3d, DOOM, Quake1 and Quake3), playable under the Unity Engine in the spirit of the late Quake2 Generations (https://web.archive.org/web/20020306115539/http://www.planetquake.com/generations/) 
